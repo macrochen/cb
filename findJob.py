@@ -3,6 +3,7 @@
 import json
 import time
 
+import numpy as np
 from pyecharts import options as opts
 from pyecharts.charts import BMap
 from pyecharts.globals import ChartType, SymbolType, ThemeType
@@ -11,6 +12,304 @@ import requests
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from lxml import etree
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+from openpyxl import Workbook
+
+# 解决中文显示不出来
+plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+
+salary_range = {
+    '3k以下': {'min': 0, 'max': 3000, 'count': 0},
+    '3k-5k': {'min': 3000, 'max': 5000, 'count': 0},
+    '5k-6k': {'min': 5000, 'max': 6000, 'count': 0},
+    '6k-8k': {'min': 6000, 'max': 8000, 'count': 0},
+    '8k-10k': {'min': 8000, 'max': 10000, 'count': 0},
+    '10k-15k': {'min': 10000, 'max': 15000, 'count': 0},
+    '15k-20k': {'min': 15000, 'max': 20000, 'count': 0},
+    '20k-30k': {'min': 20000, 'max': 30000, 'count': 0},
+    '30k以上': {'min': 30000, 'max': 300000, 'count': 0},
+}
+
+def createExcel():
+    # 新建工作簿
+    workbook = Workbook()
+    sheet1 = workbook.active
+    # 给新建的工作表改名
+    sheet1.title = '招聘岗位薪资待遇'
+    # workbook = xlwt.Workbook(encoding='utf-8')  # 新建工作簿
+    # sheet1 = workbook.add_sheet("招聘岗位薪资待遇")  # 新建sheet
+
+    # sheet1.write(0, 0, "公司")  # 第1行第1列数据
+    sheet1.cell(row=1, column=1, value="职位")
+    sheet1.cell(row=1, column=2, value="职务类别1")
+    sheet1.cell(row=1, column=3, value="职务类别2")
+    sheet1.cell(row=1, column=4, value="职务类别3")
+    sheet1.cell(row=1, column=5, value="薪资")
+    sheet1.cell(row=1, column=6, value="年限要求")
+    sheet1.cell(row=1, column=7, value="学历要求")
+    sheet1.cell(row=1, column=8, value="区域")
+    # sheet1.cell(row=1, column=3, value="所属区域")
+    # sheet1.cell(row=1, column=3, value="公司规模")
+
+    # 读取json文件
+    # 先按公司将相同职位合并
+
+    jobs = getJobs()
+
+    count = 2
+    for data in jobs:
+        # print(data)
+        sheet1.cell(row=count, column=1, value=data['positionName'])  # "职位"
+        sheet1.cell(row=count, column=2, value=data['firstType'])  # "职务类别1")
+        sheet1.cell(row=count, column=3, value=data['secondType'])  # "职务类别2")
+        sheet1.cell(row=count, column=4, value=data['thirdType'])  # "职务类别3")
+        sheet1.cell(row=count, column=5, value=data['salary'])  # "薪资")
+        sheet1.cell(row=count, column=6, value=data['workYear'])  # "年限要求")
+        sheet1.cell(row=count, column=7, value=data['education'])  # "学历要求")
+        # sheet1.cell(row=1, column=8, value=data['skillLables'])  # "技能要求")
+        sheet1.cell(row=count, column=8, value=data['district'])  # "区域")
+
+        count +=1
+
+    # sheet1.write(0, 1, "学号")  # 第1行第2列数据
+    # sheet1.write(1, 0, "张三")  # 第2行第1列数据
+    # sheet1.write(1, 1, "036")  # 第2行第2列数据
+    workbook.save(r'jobs.xlsx')  # 保存
+
+
+def getJobs():
+    f = open("original_jobs_data.txt", "r")
+    jobs = json.loads(f.read())
+    newJobs = {}
+    for job in jobs:
+        newJobs[job['companyShortName'] + job['positionName']] = job
+    return newJobs.values()
+
+
+def drawDistrict():
+    # 按区域统计
+    # 先按公司将相同职位合并
+    jobs = getJobs()
+
+    districts = {}
+    labels = []
+    for data in jobs:
+        districts[data['district']] = districts.get(data['district'], 0) + 1
+
+    for key, value in districts.items():
+        labels.append(key + "(" + str(value) + ")")
+    sizes = districts.values()
+
+    # 设置分离的距离，0表示不分离
+    explode = []
+
+    max_value = 0
+    max_index = 0
+
+    count = 0
+    for key, value in districts.items():
+        if value > max_value:
+            max_value = value
+            max_index = count
+        count += 1
+
+    for i in range(len(districts)):
+        if i == max_index:
+            # 把最大的凸显出来
+            explode.append(0.1)
+        else:
+            explode.append(0)
+
+    plt.pie(sizes, explode=explode, labels=labels,  autopct='%1.1f%%', shadow=True, startangle=90)
+
+    # Equal aspect ratio 保证画出的图是正圆形
+    plt.axis('equal')
+    plt.title('职位区域分布情况')
+    plt.show()
+
+def drawYearSalary():
+    jobs = getJobs()
+
+    labels = []
+    salary_data = []
+    for job in jobs:
+        # 把范围处理一下在统计
+        ss = job['salary'].split('-')
+        min = int(ss[0].replace('k', '')) * 1000
+        max = int(ss[1].replace('k', '')) * 1000
+        salary_data.append({'min': min, 'max': max, 'year': job['workYear']})
+        # salarys[data['salary']] = salarys.get(data['salary'], 0) + 1
+
+
+    #{"30k以上":{"3-5":0}}
+    year_salary = {}
+
+    for data in salary_data:
+        for key, value in salary_range.items():
+            if value['min'] <= data['min'] <= value['max'] or value['min'] <= data['max'] <= value['max']:
+                year_salary.setdefault(key, {data['year']: 0})
+                year_salary[key].setdefault(data['year'], 0)
+                year_salary[key][data['year']] = year_salary[key][data['year']] + 1
+
+    for key in salary_range.keys():
+        labels.append(key)
+
+    sizes = []
+    for v in salary_range.values():
+        sizes.append(v['count'])
+
+    workYear = {'在校/应届': 'red', '1-3年': 'orange', '3-5年': 'blue', '5-10年': 'green', '不限': 'purple'}
+
+    # 数据对齐
+    for k, v in year_salary.items():
+        for year in workYear:
+            v.setdefault(year, 0)
+
+    bottom = True
+    count = np.array(sizes)
+    for year, color in workYear.items():
+        # 从年限维度拆分数据
+        data = []
+        # 数据堆叠
+        for k in labels:
+            data.append(year_salary[k][year])
+
+        if bottom:
+            plt.bar(labels, data, color=color, alpha=0.6, label=year)
+            bottom = False
+        else:
+            plt.bar(labels, data, bottom=count, alpha=0.6, color=color, label=year)
+
+        count += np.array(data)
+
+    plt.legend()
+    plt.title('薪资的工作年限分布')
+    plt.show()
+
+def drawEduSalary():
+    jobs = getJobs()
+
+    labels = []
+    salary_data = []
+    for job in jobs:
+        # 把范围处理一下在统计
+        ss = job['salary'].split('-')
+        min = int(ss[0].replace('k', '')) * 1000
+        max = int(ss[1].replace('k', '')) * 1000
+        salary_data.append({'min': min, 'max': max, 'edu': job['education']})
+
+
+    #{"30k以上":{"本科":0}}
+    edu_salary = {}
+
+    for data in salary_data:
+        for key, value in salary_range.items():
+            if value['min'] <= data['min'] <= value['max'] or value['min'] <= data['max'] <= value['max']:
+                edu_salary.setdefault(key, {data['edu']: 0})
+                edu_salary[key].setdefault(data['edu'], 0)
+                edu_salary[key][data['edu']] = edu_salary[key][data['edu']] + 1
+
+    for key in salary_range.keys():
+        labels.append(key)
+
+    sizes = []
+    for v in salary_range.values():
+        sizes.append(v['count'])
+
+    edus = {'大专': 'red', '本科': 'orange', '不限': 'purple'}
+
+    # 数据对齐
+    for k, v in edu_salary.items():
+        for edu in edus:
+            v.setdefault(edu, 0)
+
+    bottom = True
+    count = np.array(sizes)
+    for edu, color in edus.items():
+        # 从年限维度拆分数据
+        data = []
+        # 数据堆叠
+        for k in labels:
+            data.append(edu_salary[k][edu])
+
+        if bottom:
+            plt.bar(labels, data, color=color, alpha=0.6, label=edu)
+            bottom = False
+        else:
+            plt.bar(labels, data, bottom=count, alpha=0.6, color=color, label=edu)
+
+        count += np.array(data)
+
+    plt.legend()
+    plt.title('薪资的学历分布')
+    plt.show()
+
+def drawDistrictSalary():
+    jobs = getJobs()
+
+    labels = []
+    salary_data = []
+    for job in jobs:
+        # 把范围处理一下在统计
+        ss = job['salary'].split('-')
+        min = int(ss[0].replace('k', '')) * 1000
+        max = int(ss[1].replace('k', '')) * 1000
+        salary_data.append({'min': min, 'max': max, 'district': job['district']})
+
+
+    #{"30k以上":{"本科":0}}
+    district_salary = {}
+
+    for data in salary_data:
+        for key, value in salary_range.items():
+            if value['min'] <= data['min'] <= value['max'] or value['min'] <= data['max'] <= value['max']:
+                district_salary.setdefault(key, {data['district']: 0})
+                district_salary[key].setdefault(data['district'], 0)
+                district_salary[key][data['district']] = district_salary[key][data['district']] + 1
+
+    for key in salary_range.keys():
+        labels.append(key)
+
+    sizes = []
+    for v in salary_range.values():
+        sizes.append(v['count'])
+
+    d = []
+    for job in jobs:
+        d.append(job['district'])
+
+    # {'西湖区', '淳安县', '下沙', '滨江区', '余杭区', '江干区', '桐庐县', '拱墅区', '萧山区'}
+    d = set(d)
+
+    districts = {'西湖区': 'red', '滨江区': 'orange', '下沙': 'pink', '余杭区': 'grey', '江干区': 'brown', '拱墅区': 'black', '萧山区': 'green', '桐庐县': 'purple', '淳安县': 'yellow'}
+
+    # 数据对齐
+    for k, v in district_salary.items():
+        for edu in districts:
+            v.setdefault(edu, 0)
+
+    bottom = True
+    count = np.array(sizes)
+    for edu, color in districts.items():
+        # 从年限维度拆分数据
+        data = []
+        # 数据堆叠
+        for k in labels:
+            data.append(district_salary[k][edu])
+
+        if bottom:
+            plt.bar(labels, data, color=color, alpha=0.6, label=edu)
+            bottom = False
+        else:
+            plt.bar(labels, data, bottom=count, alpha=0.6, color=color, label=edu)
+
+        count += np.array(data)
+
+    plt.legend()
+    plt.title('薪资的地区分布')
+    plt.show()
 
 
 # url = "https://www.lagou.com/jobs/list_%E4%BC%9A%E8%AE%A1/p-city_6?&cl=false&fromSearch=true&labelWords=&suginput="
@@ -66,61 +365,72 @@ class Data:
     position = {}
 
 
-companies = {}
-original_position_list = []
+def buildMapData():
+    companies = {}
+    original_position_list = []
 
-# for i in range(8):
-for i in range(1):
-    page = get_json("https://www.lagou.com/jobs/positionAjax.json?city=%E6%9D%AD%E5%B7%9E&needAddtionalResult=false",
-                    i + 1)
-    # fixme (1)
-    # positions = page['content']['positionResult']['result']
+    # for i in range(8):
+    for i in range(1):
+        page = get_json(
+            "https://www.lagou.com/jobs/positionAjax.json?city=%E6%9D%AD%E5%B7%9E&needAddtionalResult=false",
+            i + 1)
+        # fixme (1)
+        # positions = page['content']['positionResult']['result']
 
-    # fixme (2)
-    positions = page
+        # fixme (2)
+        positions = page
 
-    for p in positions:
-        original_position_list.append(p)
+        for p in positions:
+            original_position_list.append(p)
 
-        # {content:"我的备注test",title:"test",imageOffset: {width:0,height:3},position:{lat:30.309139,lng:120.125877}}
-        name = p['companyShortName']
-        data = companies.get(name)
-        if data == None:
-            data = Data()
-            data.jobs = []
-            data.position = {'lat': p['latitude'], 'lng': p['longitude']}
-            companies[name] = data
+            # {content:"我的备注test",title:"test",imageOffset: {width:0,height:3},position:{lat:30.309139,lng:120.125877}}
+            name = p['companyShortName']
+            data = companies.get(name)
+            if data == None:
+                data = Data()
+                data.jobs = []
+                data.position = {'lat': p['latitude'], 'lng': p['longitude']}
+                companies[name] = data
 
-        data.jobs.append("职位:" + p['positionName'] + ", 薪资：" + p['salary'] + ", 年限：" + p['workYear'])
+            data.jobs.append("职位:" + p['positionName'] + ", 薪资：" + p['salary'] + ", 年限：" + p['workYear'])
 
-    print("process page:" + str(i + 1) + " is OK!")
-    # fixme (1) 打开注释, 暂停10s
-    # fixme (2) 读取本地文件, 无需暂停
-    # time.sleep(10)
+        print("process page:" + str(i + 1) + " is OK!")
+        # fixme (1) 打开注释, 暂停10s
+        # fixme (2) 读取本地文件, 无需暂停
+        # time.sleep(10)
 
-# fixme (1) 需要打开注释: 把原始数据写入保存, 避免多次爬数据被屏蔽
-# fixme (2) 注释掉文件写入
-# f = open("original_jobs_data.txt", "w")
-# f.write(json.dumps(original_position_list))
-# f.close()
+    # fixme (1) 需要打开注释: 把原始数据写入保存, 避免多次爬数据被屏蔽
+    # fixme (2) 注释掉文件写入
+    # f = open("original_jobs_data.txt", "w")
+    # f.write(json.dumps(original_position_list))
+    # f.close()
 
-rows = []
-for key, data in companies.items():
-    row = {
-        'title': key,
-        "content": '<br>'.join(set(data.jobs)),
-        'imageOffset': {'width': 0, 'height': 3},
-        'position': {'lat': data.position['lat'], 'lng': data.position['lng']}
-    }
-    rows.append(row)
+    rows = []
+    for key, data in companies.items():
+        row = {
+            'title': key,
+            "content": '<br>'.join(set(data.jobs)),
+            'imageOffset': {'width': 0, 'height': 3},
+            'position': {'lat': data.position['lat'], 'lng': data.position['lng']}
+        }
+        rows.append(row)
 
-# print(json.dumps(rows))
+    # print(json.dumps(rows))
 
-f = open("jobs.txt", 'w')
-f.write(json.dumps(rows))
-f.close()
+    f = open("jobs.txt", 'w')
+    f.write(json.dumps(rows))
+    f.close()
 
-print("write file is ok")
+    print("write file is ok")
+
+
+if __name__ == "__main__":
+    # createExcel()
+    drawDistrict()
+    drawYearSalary()
+    drawEduSalary()
+    drawDistrictSalary()
+    print("任务完成")
 
 # header = {
 #     "Origin": "http://www.lagou.com",
