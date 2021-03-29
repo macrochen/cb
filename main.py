@@ -1,7 +1,5 @@
-# This is a sample Python script.
+#抓取宁稳网的数据
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 import datetime
 from io import StringIO
 
@@ -57,10 +55,31 @@ def buildRows(trs):
             # 过滤掉空行
             if type(td) == bs4.element.NavigableString:
                 continue
-
-            buildRow(row, td)
+            try:
+                buildRow(row, td)
+            except Exception as e:
+                print("数据解析出错.row=" + str(row), e)
+                raise e
         rows.append(row)
     return rows
+
+
+def dayYear2Year(text):
+    # 把含有天的转成年
+    if text.endswith('天'):
+        years = '0'
+        if text.find('年') > -1:
+            ss = text.split('年')
+            years = ss[0].replace('年', '')
+            days = ss[1].replace('天', '')
+        else:
+            days = text.replace('天', '')
+
+        text = int(years) + round(float(days) / 365.0, 2)
+    else:
+        text = text.replace('年', '')
+
+    return text
 
 
 def buildRow(row, td):
@@ -147,10 +166,10 @@ def buildRow(row, td):
     elif 'cb_t_id' in cls:
         # bond_t1
         if 'bond_t1' in cls:
-            row['bond_t1'] = text
+            row['bond_t1'] = dayYear2Year(text)
         # red_t
         elif 'red_t' in cls:
-            row['red_t'] = text
+            row['red_t'] = dayYear2Year(text)
         else:
             row['cb_t_id'] = text
 
@@ -335,5 +354,3 @@ if __name__ == "__main__":
     insertDb(rows)
 
     print("可转债数据抓取更新完成")
-
-    # print(percentage2float("ddd", "0.57%"))
