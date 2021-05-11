@@ -81,6 +81,30 @@ def dayYear2Year(text):
 
     return text
 
+def buildTag(row, td):
+    if type(td.next) == bs4.element.NavigableString:
+        return
+
+    # 检查所满足的各种条件
+    tags = list(td.next())
+    if len(tags) > 0:
+        for tag in tags:
+            if tag.text == '!':
+                # 强赎中(将退市)
+                if tag.attrs['style'].find('color:red') > -1:
+                    row['enforce_get'] = '强赎中'
+                # 满足强赎条件
+                if tag.attrs['style'].find('color:Fuchsia') > -1:
+                    row['enforce_get'] = '满足强赎'
+                # 公告不强赎条件
+                if tag.attrs['style'].find('color:gray') > -1:
+                    row['enforce_get'] = '公告不强赎'
+                # 满足回售条件
+                if tag.attrs['style'].find('color:#3cb371') > -1:
+                    row['buy_back'] = 1
+                # 满足下修条件
+                if tag.attrs['style'].find('color:blue') > -1:
+                    row['down_revise'] = 1
 
 def buildRow(row, td):
     cls = td.attrs['class']
@@ -93,6 +117,7 @@ def buildRow(row, td):
         row['bond_code'] = text
     # cb_name_id
     elif 'cb_name_id' in cls:
+        buildTag(row, td)
         text = text.replace('!', '')
         row['cb_name_id'] = text.replace('*', '')
     # bond_date_id
@@ -302,7 +327,10 @@ def createDb():
             cb_nl_rank int NOT NULL,
             cb_ma20_deviate real NOT NULL,
             cb_hot int NOT NULL,
-            duration real
+            duration real,
+            enforce_get text,
+            buy_back int,
+            down_revise int
             )""")
 
     # 打印数据表数据
@@ -321,8 +349,8 @@ def insertDb(rows):
 
         for row in rows:
             # execute执行脚本
-            con_file.execute("""insert into changed_bond(cb_num_id,bond_code,cb_name_id,bond_date_id,stock_code,stock_name,industry,sub_industry,cb_price2_id,cb_mov2_id,cb_mov3_id,stock_price_id,cb_mov_id,cb_price3_id,cb_strike_id,cb_premium_id,cb_value_id,cb_t_id,bond_t1,red_t,remain_amount,cb_trade_amount_id,cb_trade_amount2_id,cb_to_share,cb_to_share_shares,market_cap,stock_pb,BT_yield,AT_yield,BT_red,AT_red,npv_red,npv_value,rating,discount_rate,elasticity,cb_ol_value,cb_ol_rank,cb_nl_value,cb_nl_rank,cb_ma20_deviate,cb_hot,duration)
-                             values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            con_file.execute("""insert into changed_bond(cb_num_id,bond_code,cb_name_id,bond_date_id,stock_code,stock_name,industry,sub_industry,cb_price2_id,cb_mov2_id,cb_mov3_id,stock_price_id,cb_mov_id,cb_price3_id,cb_strike_id,cb_premium_id,cb_value_id,cb_t_id,bond_t1,red_t,remain_amount,cb_trade_amount_id,cb_trade_amount2_id,cb_to_share,cb_to_share_shares,market_cap,stock_pb,BT_yield,AT_yield,BT_red,AT_red,npv_red,npv_value,rating,discount_rate,elasticity,cb_ol_value,cb_ol_rank,cb_nl_value,cb_nl_rank,cb_ma20_deviate,cb_hot,duration,enforce_get,buy_back,down_revise)
+                             values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                              (row["cb_num_id"], row["bond_code"], row["cb_name_id"], row["bond_date_id"], row["stock_code"],
                               row["stock_name"], row["industry"], row["sub_industry"], row["cb_price2_id"],
                               row["cb_mov2_id"], row["cb_mov3_id"], row["stock_price_id"], row["cb_mov_id"],
@@ -332,7 +360,7 @@ def insertDb(rows):
                               row["stock_pb"], row["BT_yield"], row["AT_yield"], row["BT_red"], row["AT_red"],
                               row["npv_red"], row["npv_value"], row["rating"], row["discount_rate"], row["elasticity"],
                               row["cb_ol_value"], row["cb_ol_rank"], row["cb_nl_value"], row["cb_nl_rank"],
-                              row["cb_ma20_deviate"], row["cb_hot"], row["duration"])
+                              row["cb_ma20_deviate"], row["cb_hot"], row["duration"], row.get("enforce_get"), row.get("buy_back"), row.get("down_revise"))
                              )
         con_file.commit()
         con_file.close()

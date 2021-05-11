@@ -1,0 +1,749 @@
+
+            <style>
+            div{
+
+              overflow:auto;
+
+              width:1324px;
+
+              height:890px; /* 固定高度 */
+              border:1px solid gray;
+              border-bottom: 0;
+              border-right: 0;
+
+
+            }
+
+            td, th {
+
+              border-right :1px solid gray;
+              border-bottom :1px solid gray;
+
+              width:100px;
+
+              height:30px;
+
+              box-sizing: border-box;
+
+              font-size:7;
+
+            }
+
+            th {
+
+              background-color:lightblue;
+
+            }
+
+
+            table {
+              border-collapse:separate;
+              table-layout: fixed;
+              width: 100%; /* 固定寬度 */
+
+            }
+
+            td:first-child, th:first-child {
+
+              position:sticky;
+
+              left:0; /* 首行在左 */
+
+              z-index:1;
+
+              background-color:lightpink;
+
+            }
+
+            thead tr th {
+
+              position:sticky;
+
+              top:0; /* 第一列最上 */
+
+            }
+
+            th:first-child{
+
+              z-index:2;
+
+              background-color:lightblue;
+
+            }
+          </style>
+
+            
+        <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+    </head>
+    <body>
+    <div>
+        <br><center> =========双低策略=========</center><br><table>
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>信用</th>
+            <th>转债价格</th>
+            <th>溢价率</th>
+            <th>双低值</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz127018.html'>本钢转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz000761.html'>[正股]</a></td>
+            <td>AAA</td>
+            <td>101.9</td>
+            <td>-2.0</td>
+            <td>99.9</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128085.html'>鸿达转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002002.html'>[正股]</a></td>
+            <td>BB</td>
+            <td>101.57</td>
+            <td>-0.5</td>
+            <td>101.07</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz127027.html'>靖远转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz000552.html'>[正股]</a></td>
+            <td>AA+</td>
+            <td>100.4</td>
+            <td>1.0</td>
+            <td>101.4</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128127.html'>文科转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002775.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>99.291</td>
+            <td>4.1</td>
+            <td>103.39</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113610.html'>灵康转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603669.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>105.09</td>
+            <td>1.7</td>
+            <td>106.79</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz127028.html'>英特转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz000411.html'>[正股]</a></td>
+            <td>AA+</td>
+            <td>108.5</td>
+            <td>-1.2</td>
+            <td>107.3</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113033.html'>利群转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh601366.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>98.86</td>
+            <td>9.5</td>
+            <td>108.36</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128087.html'>孚日转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002083.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>100.296</td>
+            <td>8.8</td>
+            <td>109.1</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123080.html'>海波转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300517.html'>[正股]</a></td>
+            <td>A+</td>
+            <td>109.1</td>
+            <td>0.1</td>
+            <td>109.2</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113039.html'>嘉泽转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh601619.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>102.72</td>
+            <td>6.6</td>
+            <td>109.32</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123089.html'>九洲转2</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300040.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>108.157</td>
+            <td>1.9</td>
+            <td>110.06</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128013.html'>洪涛转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002325.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>105.26</td>
+            <td>5.3</td>
+            <td>110.56</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh110072.html'>广汇转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh600297.html'>[正股]</a></td>
+            <td>AA+</td>
+            <td>90.0</td>
+            <td>20.9</td>
+            <td>110.9</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123102.html'>华自转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300490.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>103.017</td>
+            <td>7.9</td>
+            <td>110.92</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128081.html'>海亮转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002203.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>111.999</td>
+            <td>-0.4</td>
+            <td>111.6</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113046.html'>金田转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh601609.html'>[正股]</a></td>
+            <td>AA+</td>
+            <td>102.73</td>
+            <td>9.4</td>
+            <td>112.13</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123086.html'>海兰转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300065.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>102.653</td>
+            <td>9.7</td>
+            <td>112.35</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128051.html'>光华转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002741.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>113.0</td>
+            <td>0.5</td>
+            <td>113.5</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128145.html'>日丰转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002953.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>108.501</td>
+            <td>5.2</td>
+            <td>113.7</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123097.html'>美力转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300611.html'>[正股]</a></td>
+            <td>A+</td>
+            <td>102.911</td>
+            <td>11.0</td>
+            <td>113.91</td>
+        </tr>
+    </tbody>
+</table><br><center> =========活性债策略=========</center><br><table>
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>信用</th>
+            <th>转债价格</th>
+            <th>溢价率</th>
+            <th>续存期</th>
+            <th>营收(亿元)</th>
+            <th>净利润(亿元)</th>
+            <th>ROE(%)</th>
+            <th>利润率(%)</th>
+            <th>ma20乖离</th>
+            <th>热门度</th>
+            <th>双低值</th>
+            <th>股票市值</th>
+            <th>余额/股本(%)</th>
+            <th>转股余额</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128081.html'>海亮转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002203.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>111.999</td>
+            <td>-0.4</td>
+            <td>1.4</td>
+            <td>345.16</td>
+            <td>5.42</td>
+            <td>5.68</td>
+            <td>1.57</td>
+            <td>0.061</td>
+            <td>52</td>
+            <td>111.6</td>
+            <td>215.0</td>
+            <td>16.0</td>
+            <td>30.5</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128051.html'>光华转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002741.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>113.0</td>
+            <td>0.5</td>
+            <td>2.33</td>
+            <td>14.08</td>
+            <td>0.21</td>
+            <td>1.69</td>
+            <td>1.52</td>
+            <td>0.027</td>
+            <td>26</td>
+            <td>113.5</td>
+            <td>54.0</td>
+            <td>5.2</td>
+            <td>2.47</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh110057.html'>现代转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh600420.html'>[正股]</a></td>
+            <td>AAA</td>
+            <td>111.26</td>
+            <td>3.7</td>
+            <td>2.03</td>
+            <td>93.64</td>
+            <td>6.31</td>
+            <td>8.02</td>
+            <td>6.74</td>
+            <td>0.074</td>
+            <td>24</td>
+            <td>114.96</td>
+            <td>109.0</td>
+            <td>15.9</td>
+            <td>16.2</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128106.html'>华统转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002840.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>115.014</td>
+            <td>0.9</td>
+            <td>1.01</td>
+            <td>61.43</td>
+            <td>0.91</td>
+            <td>5.98</td>
+            <td>1.48</td>
+            <td>0.017</td>
+            <td>8</td>
+            <td>115.91</td>
+            <td>48.0</td>
+            <td>12.7</td>
+            <td>5.35</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128057.html'>博彦转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002649.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>113.814</td>
+            <td>2.9</td>
+            <td>2.11</td>
+            <td>43.1</td>
+            <td>3.31</td>
+            <td>11.45</td>
+            <td>7.68</td>
+            <td>-0.076</td>
+            <td>27</td>
+            <td>116.71</td>
+            <td>50.0</td>
+            <td>11.2</td>
+            <td>5.07</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128064.html'>司尔转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002538.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>113.0</td>
+            <td>4.2</td>
+            <td>2.01</td>
+            <td>33.08</td>
+            <td>2.01</td>
+            <td>5.14</td>
+            <td>6.08</td>
+            <td>0.062</td>
+            <td>49</td>
+            <td>117.2</td>
+            <td>47.0</td>
+            <td>18.4</td>
+            <td>8.0</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128130.html'>景兴转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002067.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>116.199</td>
+            <td>1.8</td>
+            <td>0.64</td>
+            <td>34.78</td>
+            <td>2.03</td>
+            <td>4.57</td>
+            <td>5.85</td>
+            <td>0.009</td>
+            <td>14</td>
+            <td>118.0</td>
+            <td>45.0</td>
+            <td>27.4</td>
+            <td>10.8</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh110045.html'>海澜转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh600398.html'>[正股]</a></td>
+            <td>AA+</td>
+            <td>108.67</td>
+            <td>9.6</td>
+            <td>2.78</td>
+            <td>117.78</td>
+            <td>12.9</td>
+            <td>9.57</td>
+            <td>10.95</td>
+            <td>0.057</td>
+            <td>56</td>
+            <td>118.27</td>
+            <td>313.0</td>
+            <td>9.4</td>
+            <td>29.5</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128075.html'>远东转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002406.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>116.51</td>
+            <td>1.8</td>
+            <td>1.53</td>
+            <td>15.82</td>
+            <td>2.5</td>
+            <td>8.35</td>
+            <td>15.83</td>
+            <td>-0.01</td>
+            <td>15</td>
+            <td>118.31</td>
+            <td>40.0</td>
+            <td>15.7</td>
+            <td>5.44</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz127020.html'>中金转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz000060.html'>[正股]</a></td>
+            <td>AA+</td>
+            <td>116.37</td>
+            <td>2.4</td>
+            <td>0.74</td>
+            <td>219.19</td>
+            <td>6.26</td>
+            <td>5.62</td>
+            <td>2.85</td>
+            <td>0.129</td>
+            <td>15</td>
+            <td>118.77</td>
+            <td>191.0</td>
+            <td>22.6</td>
+            <td>38.0</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123073.html'>同和转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300636.html'>[正股]</a></td>
+            <td>A+</td>
+            <td>116.715</td>
+            <td>2.2</td>
+            <td>0.48</td>
+            <td>3.39</td>
+            <td>0.6</td>
+            <td>8.28</td>
+            <td>17.83</td>
+            <td>-0.031</td>
+            <td>11</td>
+            <td>118.92</td>
+            <td>35.0</td>
+            <td>11.8</td>
+            <td>3.6</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128107.html'>交科转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002061.html'>[正股]</a></td>
+            <td>AA+</td>
+            <td>109.4</td>
+            <td>9.6</td>
+            <td>0.97</td>
+            <td>231.22</td>
+            <td>4.41</td>
+            <td>5.54</td>
+            <td>1.91</td>
+            <td>-0.045</td>
+            <td>17</td>
+            <td>119.0</td>
+            <td>74.0</td>
+            <td>33.9</td>
+            <td>25.0</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh110074.html'>精达转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh600577.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>113.24</td>
+            <td>6.4</td>
+            <td>0.63</td>
+            <td>124.47</td>
+            <td>4.19</td>
+            <td>11.48</td>
+            <td>3.37</td>
+            <td>0.085</td>
+            <td>12</td>
+            <td>119.64</td>
+            <td>76.0</td>
+            <td>11.0</td>
+            <td>7.87</td>
+        </tr>
+    </tbody>
+</table><br><center> =========高收益策略=========</center><br><table>
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>信用</th>
+            <th>转债价格</th>
+            <th>收益率</th>
+            <th>性价比</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113595.html'>花王转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603007.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>86.47</td>
+            <td>7.59</td>
+            <td>21.12</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113596.html'>城地转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603887.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>89.08</td>
+            <td>4.87</td>
+            <td>15.79</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113589.html'>天创转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603608.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>91.01</td>
+            <td>4.84</td>
+            <td>13.83</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123085.html'>万顺转2</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300057.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>91.961</td>
+            <td>3.88</td>
+            <td>11.92</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113576.html'>起步转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603557.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>92.52</td>
+            <td>5.8</td>
+            <td>13.28</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123076.html'>强力转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300429.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>93.29</td>
+            <td>4.51</td>
+            <td>11.22</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123088.html'>威唐转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300707.html'>[正股]</a></td>
+            <td>A+</td>
+            <td>93.55</td>
+            <td>4.91</td>
+            <td>11.36</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128132.html'>交建转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002941.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>93.7</td>
+            <td>4.38</td>
+            <td>10.68</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113569.html'>科达转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603660.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>93.77</td>
+            <td>5.41</td>
+            <td>11.64</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128044.html'>岭南转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002717.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>93.97</td>
+            <td>5.45</td>
+            <td>11.48</td>
+        </tr>
+    </tbody>
+</table><br><center> =========回售策略=========</center><br><table>
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>信用</th>
+            <th>转债价格</th>
+            <th>回售收益率</th>
+            <th>回售年限</th>
+            <th>性价比</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113017.html'>吉视转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh601929.html'>[正股]</a></td>
+            <td>AA+</td>
+            <td>96.4</td>
+            <td>6.74</td>
+            <td>0.63</td>
+            <td>6.11</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128026.html'>众兴转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002772.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>97.86</td>
+            <td>5.34</td>
+            <td>0.60</td>
+            <td>4.74</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128037.html'>岩土转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002542.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>97.05</td>
+            <td>4.84</td>
+            <td>0.85</td>
+            <td>4.0</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123004.html'>铁汉转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300197.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>99.199</td>
+            <td>3.08</td>
+            <td>0.61</td>
+            <td>2.47</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113014.html'>林洋转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh601222.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>100.46</td>
+            <td>2.13</td>
+            <td>0.47</td>
+            <td>1.66</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128022.html'>众信转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002707.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>100.032</td>
+            <td>2.1</td>
+            <td>0.56</td>
+            <td>1.54</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113535.html'>XD大业转</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603278.html'>[正股]</a></td>
+            <td>AA</td>
+            <td>99.29</td>
+            <td>1.7</td>
+            <td>0.998</td>
+            <td>0.71</td>
+        </tr>
+    </tbody>
+</table><br><center> =========低溢价低余额策略=========</center><br><table>
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>信用</th>
+            <th>转债价格</th>
+            <th>溢价率</th>
+            <th>股票市值(亿元)</th>
+            <th>转股余额(亿元)</th>
+            <th>余额/股本(%)</th>
+            <th>双低值</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123080.html'>海波转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300517.html'>[正股]</a></td>
+            <td>A+</td>
+            <td>109.1</td>
+            <td>0.1</td>
+            <td>24.0</td>
+            <td>2.45</td>
+            <td>11.0</td>
+            <td>109.2</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128051.html'>光华转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002741.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>113.0</td>
+            <td>0.5</td>
+            <td>54.0</td>
+            <td>2.47</td>
+            <td>5.2</td>
+            <td>113.5</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128040.html'>华通转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002758.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>105.911</td>
+            <td>11.2</td>
+            <td>48.0</td>
+            <td>2.22</td>
+            <td>4.4</td>
+            <td>117.11</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113570.html'>百达转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603331.html'>[正股]</a></td>
+            <td>A+</td>
+            <td>100.85</td>
+            <td>17.3</td>
+            <td>18.0</td>
+            <td>2.8</td>
+            <td>13.6</td>
+            <td>118.15</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123112.html'>万讯转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz300112.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>102.196</td>
+            <td>16.6</td>
+            <td>23.0</td>
+            <td>2.46</td>
+            <td>9.4</td>
+            <td>118.8</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128143.html'>锋龙转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sz002931.html'>[正股]</a></td>
+            <td>A+</td>
+            <td>102.165</td>
+            <td>16.7</td>
+            <td>22.0</td>
+            <td>2.45</td>
+            <td>9.6</td>
+            <td>118.87</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113565.html'>宏辉转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603336.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>105.87</td>
+            <td>14.1</td>
+            <td>31.0</td>
+            <td>2.25</td>
+            <td>6.7</td>
+            <td>119.97</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113567.html'>君禾转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603617.html'>[正股]</a></td>
+            <td>A+</td>
+            <td>107.96</td>
+            <td>12.3</td>
+            <td>22.0</td>
+            <td>2.1</td>
+            <td>9.2</td>
+            <td>120.26</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113541.html'>荣晟转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603165.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>120.35</td>
+            <td>0.0</td>
+            <td>35.0</td>
+            <td>2.39</td>
+            <td>8.2</td>
+            <td>120.35</td>
+        </tr>
+        <tr>
+            <td><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113598.html'>法兰转债</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/sh603966.html'>[正股]</a></td>
+            <td>AA-</td>
+            <td>121.5</td>
+            <td>-0.2</td>
+            <td>36.0</td>
+            <td>2.8</td>
+            <td>9.5</td>
+            <td>121.3</td>
+        </tr>
+    </tbody>
+</table>
+            </div>
+        </body>
+        </html>
+            

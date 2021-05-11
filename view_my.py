@@ -4,6 +4,7 @@
 import numpy as np  # 数组相关的库
 import matplotlib.pyplot as plt  # 绘图库
 import sqlite3
+import common
 
 import matplotlib.pyplot as plt
 from prettytable import PrettyTable
@@ -32,9 +33,9 @@ con_file = None
 def print_table(type, cur, html, color=None):
     table = from_db_cursor(cur)
     if color != None:
-        myCb[type] = {'color': color, 'rows': table._rows}
+        myCb[type] = {'color': color, 'table': table}
 
-    return html + "<br><center> =========" + type + "=========</center><br>" + table.get_html_string()
+    return html + "<br><center> =========我的" + type + "=========</center><br>" + common.get_html_string(table)
 
 def draw_figure(myCb):
 
@@ -46,10 +47,13 @@ def draw_figure(myCb):
 
         x = []
         y = []
-        for row in data['rows']:
-            plt.annotate(row[0].replace('转债', ''), (row[2], row[3]))
-            x.append(row[2])
-            y.append(row[3])
+        table = data['table']
+        rows = table._rows
+        for row in rows:
+            record = common.getRecord(table, row)
+            plt.annotate(record['名称'].replace('转债', ''), (record['转债价格'], record['溢价率']))
+            x.append(record['转债价格'])
+            y.append(record['溢价率'])
 
         color = data['color']
         handle = plt.scatter(x, y, marker='o', c=color, alpha=0.6, label=label)
@@ -61,9 +65,9 @@ def draw_figure(myCb):
     # 所有的
 
     # 溢价率中位数
-    midYield = 29.7
+    midYield = 29.49
     # 转债价格中位数
-    midPrice = 107.7
+    midPrice = 108.13
 
     # 水平线
     plt.axhline(y=midYield, color='grey', linestyle='--', alpha=0.6)
@@ -75,16 +79,16 @@ def draw_figure(myCb):
     if len(select) > 1:
         # 四象限文字输出
         # 第1象限（高价格高溢价）
-        plt.text(120, 110, "高价格高溢价", bbox=dict(facecolor='yellow', alpha=0.5))
+        plt.text(120, 180, "高价格高溢价", bbox=dict(facecolor='yellow', alpha=0.5))
 
         # 第2象限（低价格高溢价）
-        plt.text(92, 110, "低价格高溢价", bbox=dict(facecolor='yellow', alpha=0.5))
+        plt.text(92, 180, "低价格高溢价", bbox=dict(facecolor='yellow', alpha=0.5))
 
         # 第3象限（低价格低溢价）
-        plt.text(92, -15, "低价格低溢价", bbox=dict(facecolor='yellow', alpha=0.5))
+        plt.text(92, -20, "低价格低溢价", bbox=dict(facecolor='yellow', alpha=0.5))
 
         # 第4象限（高价格低溢价）
-        plt.text(120, -15, "高价格低溢价", bbox=dict(facecolor='yellow', alpha=0.5))
+        plt.text(120, -20, "高价格低溢价", bbox=dict(facecolor='yellow', alpha=0.5))
 
     # 转债价格
     plt.xlabel("转债价格(元)", bbox=dict(facecolor='green', alpha=0.5))
@@ -137,9 +141,9 @@ try:
 
     # =========我的低价高收益=========
     cur.execute("""
-        SELECT cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(bt_yield*100,2) as 收益率, round(100- cb_price2_id + BT_yield * 100, 2) as 性价比, h.hold_price as 买入价
+        SELECT cb.bond_code as id, stock_code, cb.cb_name_id as 名称, h.hold_price as 买入价, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(bt_yield*100,2) as 收益率, round(100- cb_price2_id + BT_yield * 100, 2) as 性价比, rating as 信用
 from changed_bond cb, hold_bond h
-WHERE cb.bond_code = h.bond_code AND h.strategy_type = '低价格高收益' and h.hold_owner = 'me'
+WHERE cb.bond_code = h.bond_code AND h.strategy_type = '低价格高收益' and h.hold_owner = 'me' and h.hold_amount != -1
 ORDER by 性价比 desc
         """)
 
@@ -147,9 +151,9 @@ ORDER by 性价比 desc
 
     # =========我的回售=========
     cur.execute("""
-SELECT cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(bt_red * 100,2) as 税前回售收益率, red_t as 回售年限, h.hold_price as 买入价
+SELECT cb.bond_code as id, cb.stock_code, cb.cb_name_id as 名称, h.hold_price as 买入价, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(bt_red * 100,2) as 税前回售收益率, red_t as 回售年限, rating as 信用
 from changed_bond cb, hold_bond h
-WHERE cb.bond_code = h.bond_code AND h.strategy_type = '回售' and h.hold_owner = 'me'
+WHERE cb.bond_code = h.bond_code AND h.strategy_type = '回售' and h.hold_owner = 'me' and h.hold_amount != -1
 order by 税前回售收益率
         """)
 
@@ -157,9 +161,9 @@ order by 税前回售收益率
 
     # =========我的双低=========
     cur.execute("""
-SELECT cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, h.hold_price as 买入价
+SELECT cb.bond_code as id, cb.stock_code, cb.cb_name_id as 名称, h.hold_price as 买入价, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, rating as 信用
 from changed_bond cb, hold_bond h
-WHERE cb.bond_code = h.bond_code AND h.strategy_type = '双低' and h.hold_owner = 'me'
+WHERE cb.bond_code = h.bond_code AND h.strategy_type = '双低' and h.hold_owner = 'me' and h.hold_amount != -1
 order by 双低值
         """)
 
@@ -167,9 +171,9 @@ order by 双低值
 
     # =========我的每周精选=========
     cur.execute("""
-SELECT cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值
+SELECT cb.bond_code as id, cb.stock_code, cb.cb_name_id as 名称, h.hold_price as 买入价, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, rating as 信用
 from changed_bond cb, hold_bond h
-WHERE cb.bond_code = h.bond_code AND h.strategy_type = '每周精选' and h.hold_owner = 'me'
+WHERE cb.bond_code = h.bond_code AND h.strategy_type = '每周精选' and h.hold_owner = 'me' and h.hold_amount != -1
 order by 转债价格
         """)
 
@@ -177,9 +181,9 @@ order by 转债价格
 
     # =========我的网格=========
     cur.execute("""
-SELECT cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值
+SELECT cb.bond_code as id, stock_code, cb.cb_name_id as 名称, h.hold_price as 买入价, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, rating as 信用
 from changed_bond cb, hold_bond h
-WHERE cb.bond_code = h.bond_code AND h.strategy_type = '网格' and h.hold_owner = 'me'
+WHERE cb.bond_code = h.bond_code AND h.strategy_type = '网格' and h.hold_owner = 'me' and h.hold_amount != -1
 order by 转债价格
         """)
 
@@ -187,10 +191,10 @@ order by 转债价格
 
     # =========活性债=========
     cur.execute("""
-SELECT cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, h.hold_price as 买入价
+SELECT cb.bond_code as id, stock_code, cb.cb_name_id as 名称, h.hold_price as 买入价, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, rating as 信用
 from changed_bond cb, hold_bond h
 WHERE cb.bond_code = h.bond_code 
-AND h.strategy_type = '活性债' 
+AND h.strategy_type = '活性债' and h.hold_owner = 'me' and h.hold_amount != -1 
 --and h.hold_owner = '水晶杯'
 order by 转债价格
         """)
@@ -199,11 +203,12 @@ order by 转债价格
 
     # =========低溢价低余额=========
     cur.execute("""
-SELECT cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, h.hold_price as 买入价, remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2)  as '余额/股本(%)'
+SELECT cb.bond_code as id, stock_code, cb.cb_name_id as 名称, h.hold_price as 买入价, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2)  as '余额/股本(%)', rating as 信用
 from changed_bond cb, hold_bond h
 WHERE cb.bond_code = h.bond_code 
 AND h.strategy_type = '低溢价低余额' 
-and h.hold_owner = 'me'
+and h.hold_owner = 'me' 
+and h.hold_amount != -1
 order by 转债价格
         """)
 
@@ -211,9 +216,9 @@ order by 转债价格
 
     # =========基本面=========
     cur.execute("""
-SELECT cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, h.hold_price as 买入价
+SELECT cb.bond_code as id, stock_code, cb.cb_name_id as 名称, h.hold_price as 买入价, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, rating as 信用
 from changed_bond cb, hold_bond h
-WHERE cb.bond_code = h.bond_code AND h.strategy_type = '基本面' and h.hold_owner = 'me'
+WHERE cb.bond_code = h.bond_code AND h.strategy_type = '基本面' and h.hold_owner = 'me' and h.hold_amount != -1
 order by 转债价格
         """)
 
@@ -221,9 +226,9 @@ order by 转债价格
 
     # =========其他=========
     cur.execute("""
-SELECT cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(bt_yield*100,2) as 收益率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, h.hold_price as 买入价
+SELECT cb.bond_code as id, stock_code, cb.cb_name_id as 名称, h.hold_price as 买入价, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(bt_yield*100,2) as 收益率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, rating as 信用
 from changed_bond cb, hold_bond h
-WHERE cb.bond_code = h.bond_code AND h.strategy_type is null and h.hold_owner = 'me'
+WHERE cb.bond_code = h.bond_code AND h.strategy_type is null and h.hold_owner = 'me' and h.hold_amount != -1
 order by 双低值
         """)
 
@@ -231,16 +236,16 @@ order by 双低值
 
     # =========全表=========
     cur.execute("""
-SELECT c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
 cb_price2_id as '转债价格', round(cb_premium_id*100,2) as 溢价率,
 rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
 round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate as '应收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate as '净利润同比', s.margin as '利润率(%)', s.yoy_margin_rate as '利润率同比', s.roe as 'ROE(%)', s.yoy_roe_rate as 'ROE同比', round(s.al_ratio,2) as 负债率, s.yoy_al_ratio_rate as '负债率同比', last_date as 报告期, stock_pb as PB,
 market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
 round(cb_price2_id + cb_premium_id * 100, 2) as 双低值
 , cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
-    from changed_bond c, stock_report s, (select distinct bond_code, hold_owner from hold_bond) h
+    from changed_bond c, stock_report s, (select distinct bond_code, hold_owner, hold_amount from hold_bond where hold_amount != -1) h
 	where c.bond_code = s.bond_code and c.bond_code = h.bond_code
-	and h.hold_owner='me'
+	and h.hold_owner='me' and h.hold_amount != -1
 	--and duration < 3
 	-- and cb_price2_id > 108
 	and cb_price2_id < 130
@@ -254,7 +259,7 @@ round(cb_price2_id + cb_premium_id * 100, 2) as 双低值
         """)
 
     html = print_table("全表", cur, html)
-    f = open('view_my.html', 'w')
+    f = open('view/view_my.html', 'w')
     s = ("""
     <style>
     div{
@@ -338,7 +343,7 @@ round(cb_price2_id + cb_premium_id * 100, 2) as 双低值
     """)
     f.write(s)
     f.close()
-    filename = 'file:///' + os.getcwd() + '/' + 'view_my.html'
+    filename = 'file:///' + os.getcwd() + '/view/' + 'view_my.html'
     webbrowser.open_new_tab(filename)
 
     con_file.close()
