@@ -94,67 +94,21 @@ def draw_figures():
         """
     try:
 
-        # =========双低债=========
-        if "双低策略" in config['type']:
-            sql = """
-        SELECT bond_code as id, stock_code, cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值
-        from changed_bond cb where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null
-        ORDER by 双低值
-        limit 20
-            """
-            html = draw_figure(con_file, sql, "双低策略", html, midY=29.7)
-
-        # =========活性债策略=========
-        if "活性债策略" in config['type']:
-            sql = """
-        SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, duration as 续存期,
-        round(s.revenue,2) as '营收(亿元)', round(s.net,2) as '净利润(亿元)', s.roe as 'ROE(%)', s.margin as  '利润率(%)', cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, 
-        round(cb_price2_id + cb_premium_id * 100,2) as 双低值 , market_cap as 股票市值, round(cb_to_share_shares * 100,2)  as '余额/股本(%)', remain_amount as 转股余额
-            from changed_bond c, stock_report s
-            where c.bond_code = s.bond_code
-            and duration < 3 
-            and cb_price2_id > 108 and cb_price2_id < 125 
-            -- and roe > 5 
-            and s.net > 0
-            -- and s.margin > 10
-            and cb_t_id = '转股中' 
-            and (enforce_get not in ('强赎中', '满足强赎') or enforce_get is null)
-            -- and 溢价率 < 20 
-            and 双低值 < 120
-            order by 双低值 ASC
-            """
-            html = draw_figure(con_file, sql, "活性债策略", html, midY=13)
-
-        # =========高收益策略=========
-        if "高收益策略" in config['type']:
-            sql = """
-        SELECT bond_code as id, stock_code, cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(bt_yield*100,2) as 收益率, round(100- cb_price2_id + BT_yield * 100, 2) as 性价比
-        from changed_bond cb
-        WHERE
-        cb.rating in ('AA+', 'AA-', 'AA', 'AAA', 'A', 'A+')
-        and cb.cb_name_id not in( '亚药转债' , '本钢转债','搜特转债','广汇转债')
-        and (enforce_get not in ('强赎中', '满足强赎') or enforce_get is null)
-        AND bt_yield > 0
-        and cb_price2_id < 110
-        order by 转债价格 ASC, 收益率 DESC
-        limit  10;
-            """
-            draw_plot = lambda row: plt.plot(row['转债价格'], row['收益率'], 'ro', alpha=0.6)
-            get_annotate = lambda row: plt.annotate(row['名称'].replace('转债', ''),
-                                                    (row['转债价格'], row['收益率']))
-            html = draw_figure(con_file, sql, "高收益策略", html, midX=98, midY=2, labelY="到期收益率(%)", show_quadrant=False, draw_plot=draw_plot, get_annotate=get_annotate)
-
         # =========回售策略=========
         if "回售策略" in config['type']:
             sql = """
-        SELECT cb.bond_code as id, cb.stock_code, cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(bt_red * 100,2) as 回售收益率, red_t as 回售年限, round((bt_red * 100) + (2-bond_t1),2) as 性价比
-        from changed_bond cb
+        SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+  FROM (
+      SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(bt_red * 100,2) as 回售收益率, red_t as 回售年限, round((bt_red * 100) + (2-bond_t1),2) as 性价比
+        from changed_bond c
         WHERE 回售年限 not in('无权', '回售内')
         and (enforce_get not in ('强赎中', '满足强赎') or enforce_get is null)
         and 回售年限 < 1
         and 回售收益率 > 1
         --ORDER by 回售年限 ASC, 回售收益率 DESC;
-        ORDER by 性价比 DESC
+        ORDER by 性价比 DESC) d left join 
+        (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1 and strategy_type = '回售') e 
+        on d.id = e.bond_code
             """
             draw_plot = lambda row: plt.plot(row['转债价格'], row['回售收益率'], 'ro', alpha=0.6)
             get_annotate = lambda row: plt.annotate(row['名称'].replace('转债', ''),
@@ -164,19 +118,101 @@ def draw_figures():
         # =========低溢价低余额策略=========
         if "低溢价低余额策略" in config['type']:
             sql = """
-        SELECT cb.bond_code as id, cb.stock_code, cb.cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, 
-        market_cap as '股票市值(亿元)', remain_amount as '转股余额(亿元)', round(cb_to_share_shares * 100,2)  as '余额/股本(%)', round(cb_price2_id + cb_premium_id * 100,2) as 双低值
-        from changed_bond cb
+        SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+  FROM (
+      SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, remain_amount as '余额(亿元)', 
+        cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        market_cap as '股票市值(亿元)', round(cb_to_share_shares * 100,2)  as '余额/股本(%)', 
+        rating as 信用
+        from changed_bond c
         where cb_premium_id * 100 < 30 
         and (enforce_get not in ('强赎中', '满足强赎') or enforce_get is null)
         and remain_amount < 3 
-        and cb_price2_id < 130
-        ORDER by 双低值 ASC
-        limit 10
+        and cb_price2_id < 115
+        ORDER by 转债价格 ASC
+        limit 10) d left join 
+        (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1 and strategy_type = '低溢价低余额') e 
+        on d.id = e.bond_code
             """
             get_annotate = lambda row: plt.annotate(row['名称'].replace('转债', '') + '(' + str(row['转股余额(亿元)']) + '亿元)',
                                                     (row['转债价格'], row['溢价率']))
-            html = draw_figure(con_file, sql, "低溢价低余额策略", html, midX=130, midY=30, show_quadrant=False, get_annotate=get_annotate)
+            html = draw_figure(con_file, sql, "低溢价低余额策略", html, midX=120, midY=30, show_quadrant=False, get_annotate=get_annotate)
+
+        # =========双低债=========
+        if "双低策略" in config['type']:
+            sql = """
+        SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+  FROM (
+      SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+    cb_price2_id as '转债价格', round(cb_premium_id*100,2) as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+    rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
+    round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
+    s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
+    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as 市盈率, c.stock_pb as 市净率,
+    market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
+    cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
+    from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s
+    where c.bond_code = s.bond_code
+        ORDER by 双低值
+        limit 20) d left join 
+        (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1 and strategy_type = '双低') e 
+        on d.id = e.bond_code
+        
+            """
+            html = draw_figure(con_file, sql, "双低策略", html, midY=29.7)
+
+        # =========高收益策略=========
+        if "高收益策略" in config['type']:
+            sql = """
+        SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+  FROM (
+      SELECT bond_code as id, stock_code, cb_name_id as 名称, rating as 信用, cb_price2_id as 转债价格, round(bt_yield*100,2) as 到期收益率, round(100- cb_price2_id + BT_yield * 100, 2) as 性价比
+        from changed_bond c
+        WHERE
+        c.rating in ('AA+', 'AA-', 'AA', 'AAA', 'A', 'A+')
+        and c.cb_name_id not in( '亚药转债' , '本钢转债','搜特转债','广汇转债')
+        and (enforce_get not in ('强赎中', '满足强赎') or enforce_get is null)
+        AND bt_yield > 0
+        and cb_price2_id < 110
+        order by 转债价格 ASC, 到期收益率 DESC
+        limit  10) d left join 
+        (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1 and strategy_type = '低价格高收益') e 
+        on d.id = e.bond_code;
+            """
+            draw_plot = lambda row: plt.plot(row['转债价格'], row['到期收益率'], 'ro', alpha=0.6)
+            get_annotate = lambda row: plt.annotate(row['名称'].replace('转债', ''),
+                                                    (row['转债价格'], row['到期收益率']))
+            html = draw_figure(con_file, sql, "高收益策略", html, midX=98, midY=2, labelY="到期收益率(%)", show_quadrant=False, draw_plot=draw_plot, get_annotate=get_annotate)
+
+            # =========活性债策略=========
+            if "活性债策略" in config['type']:
+                sql = """
+          SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+        FROM (
+            SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+          cb_price2_id as '转债价格', round(cb_premium_id*100,2) as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+          rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
+          round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
+          s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
+          round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as 市盈率, c.stock_pb as 市净率,
+          market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
+          cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
+          from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s
+          where c.bond_code = s.bond_code
+          and duration < 3 
+          and cb_price2_id > 108 and cb_price2_id < 125 
+          -- and roe > 5 
+          and s.net > 0
+          -- and s.margin > 10
+          and cb_t_id = '转股中' 
+          and (enforce_get not in ('强赎中', '满足强赎') or enforce_get is null)
+          -- and 溢价率 < 20 
+          and 双低值 < 120
+          order by 双低值 ASC) d left join 
+              (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1 and strategy_type = '活性债') e 
+              on d.id = e.bond_code
+                  """
+                html = draw_figure(con_file, sql, "活性债策略", html, midY=13)
 
         con_file.close()
 

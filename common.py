@@ -43,7 +43,7 @@ def get_html_string(table):
                 if bond_id.startswith('11'):
                     market = 'sh'
                 prefix = "<a target = '_blank' href = 'http://quote.eastmoney.com/bond/" + market + bond_id + ".html'>"
-                suffix = "</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/bond/" + market + stock_code + ".html'>[正股]</a>"
+                suffix = "</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'>[正股]</a>"
 
             lines.append(
                 ("            <td>" + prefix + "%s" + suffix + "</td>") % datum.replace("\n", linebreak)

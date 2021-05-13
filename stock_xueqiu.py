@@ -1,4 +1,5 @@
 # 从雪球抓数据
+import datetime
 import json
 import time
 
@@ -49,13 +50,67 @@ def createDb():
             
             al_ratio real,
             qoq_rl_ratio_rate real,
-            yoy_al_ratio_rate real
+            yoy_al_ratio_rate real,
+            
+            pe real
             
             )""")
 
     con.commit()
     con.close()
     print("create db is successful")
+
+def update_pe():
+    # 遍历可转债列表
+    # 打开文件数据库
+    con_file = sqlite3.connect('cb.db3')
+
+    try:
+        # 查询可转债
+        bond_cursor = con_file.execute("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
+        # 当前日月
+        y = datetime.datetime.now().year
+        m = datetime.datetime.now().month
+        d = datetime.datetime.now().day
+        t = datetime.datetime(y, m, d)
+        # 记录更新时间(秒)
+        s = (t-datetime.datetime(1970, 1, 1)).total_seconds()
+
+        i = 0
+        for bond_row in bond_cursor:
+            bond_code = bond_row[0]
+            stock_code = bond_row[2]
+            stock_name = bond_row[3]
+
+            stock_cursor = con_file.execute("""SELECT modify_date from stock_report where bond_code = ?""", [bond_code])
+            stocks = list(stock_cursor)
+            if len(stocks) == 0:
+                continue
+
+            # 已经更新了
+            if stocks[0][0] is not None and stocks[0][0] >= s:
+                continue
+
+            pe = get_stock_pe(stock_code)
+
+            con_file.execute("""update stock_report set pe = ?, modify_date = ? where bond_code = ?""",
+                             (pe, s, bond_code)
+                             )
+            print("update " + stock_name + " pe: " + str(pe) + " is successful. count:" + str(i + 1))
+            # 暂停5s再执行， 避免被网站屏蔽掉
+            time.sleep(5)
+            i += 1
+
+        print("共处理" + str(i) + "条记录")
+
+    except Exception as e:
+        # con_file.close()
+        print("db操作出现异常" + str(e), e)
+    except TimeoutError as e:
+        print("网络超时, 请手工重试")
+    finally:
+        con_file.commit()
+        con_file.close()
 
 def getContent():
     # test data
@@ -854,6 +909,10 @@ neteaseClickStat();
     con_file = sqlite3.connect('cb.db3')
 
     try:
+
+        # 当前报告期
+        report_date = get_report_date()
+
         # 查询可转债
 
         bond_cursor = con_file.execute("""
@@ -907,12 +966,17 @@ neteaseClickStat();
                                   )
                                  )
                 print("insert " + stock_name + " is successful. count:" + str(i+1))
+                # 暂停10s再执行， 避免被网站屏蔽掉
+                time.sleep(20)
+                i += 1
             else:
                 # todo 补充前面几年/季度的财务数据
                 # fixme 为了解决中途被中断， 继续执行时， 简化处理不更新
-                continue
+                # continue
                 last_date = stocks[0][2]
-                if last_date != earnings.lastDate:
+
+                if last_date != report_date:
+                    earnings = getEarnings(stock_code)
                     con_file.execute("""update stock_report
                                 set last_date = ?,
                                 revenue = ?,qoq_revenue_rate = ?,yoy_revenue_rate = ?,
@@ -947,45 +1011,100 @@ neteaseClickStat();
                                       )
                                      )
                     print("update " + stock_name + " is successful. count:" + str(i+1))
-
-            # 暂停10s再执行， 避免被网站屏蔽掉
-            time.sleep(20)
-            i += 1
+                    # 暂停10s再执行， 避免被网站屏蔽掉
+                    time.sleep(20)
+                    i += 1
 
         print("共处理" + str(i) + "条记录")
 
-    except Error as e:
+    except Exception as e:
         con_file.close()
-        print("db操作出现异常" + e, e)
+        print("db操作出现异常" + str(e), e)
     finally:
         con_file.commit()
         con_file.close()
 
 
-def getEarnings(stock_code):
+def get_report_date():
+    # 计算最近的报告期
+    report_dates = {331: '03-31', 630: '06-30', 930: '09-30', 1231: '12-31'}
+    # 当前日月
+    y = datetime.datetime.now().year
+    m = datetime.datetime.now().month
+    d = datetime.datetime.now().day
+    current = m * 100 + d
+    count = 0
+    for key, value in report_dates.items():
+        if key < current:
+            count += 1
+            continue
+
+        return str(y) + "-" + list(report_dates.values())[count - 1]
+
+    raise Exception('计算报告期错误')
+
+
+def get_stock_pe(stock_code):
+    stock_code = rebuild_stock_code(stock_code)
+
+    url = "https://stock.xueqiu.com/v5/stock/quote.json?extend=detail&symbol=" + stock_code
+
+    i = 0
+    while i < 3:
+        try:
+            response = requests.get(url=url, headers=header, timeout=5)
+            code = response.status_code
+            if code != 200:
+                print("获取数据失败， 状态码：" + str(code))
+
+            data = json.loads(response.text)
+            return data['data']['quote']['pe_forecast']
+        except requests.exceptions.RequestException as e:
+            i += 1
+            print("connect occur error. retry time: " + str(i) + "e" + str(e))
+
+    raise TimeoutError
+
+
+def rebuild_stock_code(stock_code):
     # 沪市A股票买卖的代码是以600、601或603打头, 688创业板
     # 深市A股票买卖的代码是以000打头, 中小板股票代码以002打头, 创业板股票代码以300打头
-    if stock_code.startswith('600') or stock_code.startswith('601') or stock_code.startswith('603') or stock_code.startswith('688'):
+    if stock_code.startswith('600') or stock_code.startswith('601') or stock_code.startswith(
+            '603') or stock_code.startswith('688'):
         stock_code = 'SH' + stock_code
-    elif stock_code.startswith('000') or stock_code.startswith('001') or stock_code.startswith('002') or stock_code.startswith('300'):
+    elif stock_code.startswith('000') or stock_code.startswith('001') or stock_code.startswith(
+            '002') or stock_code.startswith('300'):
         stock_code = 'SZ' + stock_code
     else:
         raise Exception("未知股票类型。" + stock_code)
+    return stock_code
+
+def getData(url):
+    i = 0
+    while i < 3:
+        try:
+            response = requests.get(url=url, headers=header, timeout=5)
+            code = response.status_code
+            if code != 200:
+                print("获取数据失败， 状态码：" + str(code))
+
+            return json.loads(response.text)
+        except requests.exceptions.RequestException as e:
+            i += 1
+            print("connect occur error. retry time: " + str(i) + "e" + str(e))
+
+    raise TimeoutError
+
+def getEarnings(stock_code):
+    stock_code = rebuild_stock_code(stock_code)
 
     url = "https://stock.xueqiu.com/v5/stock/finance/cn/indicator.json?symbol=" + stock_code + "&type=all&is_detail=true&count=5&timestamp=" + str(int(round(time.time() * 1000)))
     # # response = requests.get(url=url)
-    response = requests.get(url=url, headers=header)
-    # print(response.text)
 
-    code = response.status_code
-    if code != 200:
-        print("获取数据失败， 状态码：" + str(code))
-
-    # s = """{"data":{"quote_name":"国投资本","currency_name":"人民币","org_type":1,"last_report_name":"2020三季报","statuses":null,"currency":"CNY","list":[{"report_date":1601395200000,"report_name":"2020三季报","ctime":1603957524000,"avg_roe":[8.8,0.3435114503816795],"np_per_share":[9.8811,0.07882870587721495],"operate_cash_flow_ps":[1.276,1.3599038283706308],"basic_eps":[0.84,0.4482758620689656],"capital_reserve":[4.8804,-0.0030437358282433997],"undistri_profit_ps":[3.2052,0.27200571473926505],"net_interest_of_total_assets":[1.9515,0.16500507432392095],"net_selling_rate":[1233.3863,1.7193328102149628],"gross_selling_rate":[null,null],"total_revenue":[9.82306584811E9,0.19712962581483248],"operating_income_yoy":[-47.9534,0.3094765641874864],"net_profit_atsopc":[3.55210199874E9,0.4464549151731331],"net_profit_atsopc_yoy":[44.6455,-0.6390205920497288],"net_profit_after_nrgal_atsolc":[3.49834629027E9,0.42693772104046357],"np_atsopc_nrgal_yoy":[42.6938,-0.6718176486278524],"ore_dlt":[7.8988,0.2453175253831114],"rop":[74.3063,0.6470493053277414],"asset_liab_ratio":[78.3895,0.026037889953167664],"current_ratio":[1.4477,0.025501168803570187],"quick_ratio":[1.4239,0.021156052782558703],"equity_multiplier":[4.6274,0.09206334222264163],"equity_ratio":[4.001,0.1258371320839666],"holder_equity":[21.6105,-0.0842930872295528],"ncf_from_oa_to_total_liab":[0.03,0.8072289156626505],"inventory_turnover_days":[68.2715,1.1368231611893584],"receivable_turnover_days":[429.2528,1.2755167655588933],"accounts_payable_turnover_days":[112.1169,4.450081665986117],"cash_cycle":[385.4074,0.9268626189329865],"operating_cycle":[497.5243,1.2554285172879784],"total_capital_turnover":[0.0016,-0.5675675675675677],"inventory_turnover":[3.9548,-0.5320150993408829],"account_receivable_turnover":[0.629,-0.560539369803675],"accounts_payable_turnover":[2.4082,-0.8165166972700744],"current_asset_turnover_rate":[0.0573,-0.054455445544554525],"fixed_asset_turnover_ratio":[1.0914,-0.47014273230410725]},{"report_date":1593446400000,"report_name":"2020中报","ctime":1598514321000,"avg_roe":[5.7,0.25550660792951546],"np_per_share":[9.6095,0.07136486275559127],"operate_cash_flow_ps":[2.2949,2.9350137174211244],"basic_eps":[0.54,0.35000000000000003],"capital_reserve":[4.8804,-0.0030437358282433997],"undistri_profit_ps":[2.8843,0.23302838577291388],"net_interest_of_total_assets":[1.3517,0.18083340613261104],"net_selling_rate":[1117.6723,1.8151451358264996],"gross_selling_rate":[null,null],"total_revenue":[6.14904960699E9,0.09867757491402117],"operating_income_yoy":[-52.7375,-1.1741953570442074],"net_profit_atsopc":[2.29379089944E9,0.3601049841900788],"net_profit_atsopc_yoy":[36.0105,-0.6504832601179857],"net_profit_after_nrgal_atsolc":[2.25220119164E9,0.35488175697081953],"np_atsopc_nrgal_yoy":[35.4882,-0.6645169706869951],"ore_dlt":[5.6469,0.2695083293990691],"rop":[108.0993,1.4450493649842235],"asset_liab_ratio":[77.7798,0.006946889823311215],"current_ratio":[1.3691,0.006691176470588151],"quick_ratio":[1.3364,-0.00963391136801534],"equity_multiplier":[4.5004,0.024144915003527213],"equity_ratio":[3.8872,0.043907941026398466],"holder_equity":[22.2202,-0.023579765169092316],"ncf_from_oa_to_total_liab":[0.0614,2.5085714285714285],"inventory_turnover_days":[38.2767,0.11959459459459447],"receivable_turnover_days":[386.1832,1.4904520992741779],"accounts_payable_turnover_days":[90.5752,1.6716141439645102],"cash_cycle":[333.8847,1.1492320279213422],"operating_cycle":[424.4599,1.2428113614807652],"total_capital_turnover":[0.0012,-0.5862068965517242],"inventory_turnover":[4.7026,-0.10681861348528003],"account_receivable_turnover":[0.4661,-0.5984665747760166],"accounts_payable_turnover":[1.9873,-0.6256945360028628],"current_asset_turnover_rate":[0.0387,-0.06521739130434785],"fixed_asset_turnover_ratio":[0.7808,-0.5269025690741639]},{"report_date":1585584000000,"report_name":"2020一季报","ctime":1588067172000,"avg_roe":[1.61,-0.5121212121212121],"np_per_share":[9.3792,0.048951518201644166],"operate_cash_flow_ps":[2.9982,8.581975071907959],"basic_eps":[0.15,-0.48275862068965514],"capital_reserve":[4.8953,0.0],"undistri_profit_ps":[2.6597,0.15053856469265037],"net_interest_of_total_assets":[0.3804,-0.524202626641651],"net_selling_rate":[895.0454,1.0160378374214403],"gross_selling_rate":[null,null],"total_revenue":[3.02444791148E9,0.10236245581694034],"operating_income_yoy":[-73.6006,-9.910915782846628],"net_profit_atsopc":[6.3570305065E8,-0.47796175136011315],"net_profit_atsopc_yoy":[-47.7962,-1.334290356355274],"net_profit_after_nrgal_atsolc":[6.0861317197E8,-0.497151465797712],"np_atsopc_nrgal_yoy":[-49.7151,-1.3464650392634034],"ore_dlt":[1.6034,-0.5023278912409213],"rop":[142.4743,8.63895109294978],"asset_liab_ratio":[77.9851,0.009216685280350493],"current_ratio":[1.3651,0.03794099756691002],"quick_ratio":[1.3602,0.036421822615056436],"equity_multiplier":[4.5424,0.032363636363636226],"equity_ratio":[3.92,0.05367846679031261],"holder_equity":[22.0149,-0.03133703816148999],"ncf_from_oa_to_total_liab":[0.0815,7.670212765957446],"inventory_turnover_days":[69.7512,0.9266850262549478],"receivable_turnover_days":[598.0066,3.454485050823773],"accounts_payable_turnover_days":[138.8246,null],"cash_cycle":[528.9332,2.103141139178497],"operating_cycle":[667.7578,2.9175962109909657],"total_capital_turnover":[4.0E-4,-0.7777777777777778],"inventory_turnover":[1.2903,-0.4809734513274337],"account_receivable_turnover":[0.1505,-0.7755071599045347],"accounts_payable_turnover":[0.6483,null],"current_asset_turnover_rate":[0.0194,-0.049019607843137296],"fixed_asset_turnover_ratio":[0.2684,-0.7397964129907901]},{"report_date":1577721600000,"report_name":"2019年报","ctime":1585209628000,"avg_roe":[7.88,0.7056277056277056],"np_per_share":[9.2446,0.07334347316234954],"operate_cash_flow_ps":[-0.3513,0.8933580231922773],"basic_eps":[0.7,0.7499999999999998],"capital_reserve":[4.8953,0.0],"undistri_profit_ps":[2.5116,0.11955068200053501],"net_interest_of_total_assets":[2.0986,0.5433151934107957],"net_selling_rate":[523.8841,5.116011618323141],"gross_selling_rate":[null,null],"total_revenue":[1.126740453983E10,0.07167524962898655],"operating_income_yoy":[-71.7421,-1.3046512092056837],"net_profit_atsopc":[2.96750397987E9,0.7669400211169536],"net_profit_atsopc_yoy":[76.694,3.182011647789509],"net_profit_after_nrgal_atsolc":[2.92497821086E9,0.7788893512374063],"np_atsopc_nrgal_yoy":[77.8889,3.3294364293233807],"ore_dlt":[7.5938,0.6462095428038761],"rop":[27.6819,4.669615975422427],"asset_liab_ratio":[75.8344,0.019301490354631377],"current_ratio":[1.4565,0.08734602463605823],"quick_ratio":[1.4344,0.07485949793930302],"equity_multiplier":[4.1381,0.05942140296978994],"equity_ratio":[3.4563,0.08798161672122894],"holder_equity":[24.1656,-0.05609024435972751],"ncf_from_oa_to_total_liab":[-0.011,0.9086378737541528],"inventory_turnover_days":[50.1442,1.03954282925242],"receivable_turnover_days":[263.2734,2.6436299923327953],"accounts_payable_turnover_days":[48.8579,2.1195185800025538],"cash_cycle":[264.5597,2.2589351045457122],"operating_cycle":[313.4176,2.2363875929608907],"total_capital_turnover":[0.004,-0.7484276729559749],"inventory_turnover":[7.1793,-0.5096943827898242],"account_receivable_turnover":[1.3674,-0.7255484414828494],"accounts_payable_turnover":[7.3683,-0.6794384310176806],"current_asset_turnover_rate":[0.0842,-0.045351473922902535],"fixed_asset_turnover_ratio":[2.1969,-0.723608227967541]},{"report_date":1569772800000,"report_name":"2019三季报","ctime":1603957343000,"avg_roe":[6.55,1.1760797342192693],"np_per_share":[9.1591,0.05599880093158387],"operate_cash_flow_ps":[0.5407,1.4357672469374596],"basic_eps":[0.58,1.2307692307692306],"capital_reserve":[4.8953,0.0],"undistri_profit_ps":[2.5198,0.15338490410582697],"net_interest_of_total_assets":[1.6751,0.9430460503421878],"net_selling_rate":[453.5621,6.042080568381894],"gross_selling_rate":[null,null],"total_revenue":[8.20551562361E9,0.018501390064762483],"operating_income_yoy":[-69.445,-1.1954759471273382],"net_profit_atsopc":[2.45572949525E9,1.236787860325055],"net_profit_atsopc_yoy":[123.6788,3.873998749817004],"net_profit_after_nrgal_atsolc":[2.45164609407E9,1.30091740358774],"np_atsopc_nrgal_yoy":[130.0917,4.152935616388556],"ore_dlt":[6.3428,1.118149941559526],"rop":[45.1148,-0.060135746040740366],"asset_liab_ratio":[76.4002,0.016774066473426923],"current_ratio":[1.4117,-0.019380383439844426],"quick_ratio":[1.3944,-0.02659685863874347],"equity_multiplier":[4.2373,0.053399627097576216],"equity_ratio":[3.5538,0.07969011089169065],"holder_equity":[23.5998,-0.0506995116692545],"ncf_from_oa_to_total_liab":[0.0166,1.3816091954022989],"inventory_turnover_days":[31.95,0.24879322407532617],"receivable_turnover_days":[188.6397,1.9480204286388516],"accounts_payable_turnover_days":[20.5716,null],"cash_cycle":[200.0181,1.2330102831982297],"operating_cycle":[220.5897,1.462672470479484],"total_capital_turnover":[0.0037,-0.7238805970149254],"inventory_turnover":[8.4507,-0.19922866997687913],"account_receivable_turnover":[1.4313,-0.6607891930323497],"accounts_payable_turnover":[13.1249,null],"current_asset_turnover_rate":[0.0606,-0.04566929133858268],"fixed_asset_turnover_ratio":[2.0598,-0.7088580757325192]}]},"error_code":0,"error_description":""}"""
-    data = json.loads(response.text)
+    data = getData(url)
     row = data['data']['list'][0]
     # print(row)
-    preRow = data['data']['list'][4]
+    pre_row = data['data']['list'][4]
 
     earnings = Earnings()
 
@@ -1002,9 +1121,9 @@ def getEarnings(stock_code):
 
     # 利润率
     earnings.margin = round(row['net_profit_atsopc'][0]/row['total_revenue'][0]*100, 2)
-    preMargin = round(preRow['net_profit_atsopc'][0] / preRow['total_revenue'][0] * 100, 2)
+    pre_margin = round(pre_row['net_profit_atsopc'][0] / pre_row['total_revenue'][0] * 100, 2)
     # 同比增长率
-    earnings.yoyMarginRate = round((earnings.margin - preMargin)/preMargin * 100, 2)
+    earnings.yoyMarginRate = round((earnings.margin - pre_margin)/pre_margin * 100, 2)
 
     # 资产负债率
     earnings.alRatio = round(row['asset_liab_ratio'][0], 2)
@@ -1191,6 +1310,7 @@ class Earnings:
 
 if __name__ == "__main__":
     # createDb()
-    getContent()
+    # getContent()
+    update_pe()
 
     # getEarnings('600061')
