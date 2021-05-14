@@ -139,6 +139,17 @@ try:
 <div>
     """
 
+    # =========我的强赎=========
+    cur.execute("""
+SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, enforce_get as 强赎状态, round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, 
+h.hold_price || ' (' || h.hold_amount || ')' as '买入价(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率
+from (select * from changed_bond where enforce_get in ('强赎中', '满足强赎')) c, hold_bond h
+WHERE c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount != -1
+order by 转债价格 desc 
+        """)
+
+    html = print_table("强赎", cur, html, 'r')
+
     # =========我的回售=========
     cur.execute("""
 SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, 
@@ -215,14 +226,14 @@ order by 转债价格
 SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
     round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '买入价(量)', 
     cb_price2_id as '转债价格', round(cb_premium_id*100,2) as 溢价率,
+    round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
     rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
     round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
     s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
-    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as 市盈率, c.stock_pb as 市净率,
+    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as '市盈率(动)', c.stock_pb as 市净率,
     market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
-    round(cb_price2_id + cb_premium_id * 100, 2) as 双低值
-    , cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
-    from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s, 
+    cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
+    from changed_bond c, stock_report s, 
     (select distinct bond_code, hold_owner, hold_amount, hold_price, strategy_type from hold_bond where hold_amount != -1) h
 	where c.bond_code = s.bond_code and c.bond_code = h.bond_code
 	 AND h.strategy_type = '基本面' and h.hold_owner = 'me' and h.hold_amount != -1
@@ -235,14 +246,14 @@ SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 
     cur.execute("""
 SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
     round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '买入价(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) as 溢价率, 
+    round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
     rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
     round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
     s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
-    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as 市盈率, c.stock_pb as 市净率,
+    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as '市盈率(动)', c.stock_pb as 市净率,
     market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
-    round(cb_price2_id + cb_premium_id * 100, 2) as 双低值
-    , cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
-    from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s, 
+    cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
+    from changed_bond c, stock_report s, 
     (select distinct bond_code, hold_owner, hold_amount, hold_price, strategy_type from hold_bond where hold_amount != -1) h
 	where c.bond_code = s.bond_code and c.bond_code = h.bond_code 
 	AND h.strategy_type = '每周精选' and h.hold_owner = 'me' and h.hold_amount != -1
@@ -256,13 +267,13 @@ order by 转债价格
 SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
     round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '买入价(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) as 溢价率,
     rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
+    round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
     round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
     s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
-    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as 市盈率, c.stock_pb as 市净率,
+    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as '市盈率(动)', c.stock_pb as 市净率,
     market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
-    round(cb_price2_id + cb_premium_id * 100, 2) as 双低值
-    , cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
-    from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s, 
+    cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
+    from changed_bond c, stock_report s, 
     (select distinct bond_code, hold_owner, hold_amount, hold_price, strategy_type from hold_bond where hold_amount != -1) h
 	where c.bond_code = s.bond_code and c.bond_code = h.bond_code
 AND h.strategy_type = '活性债' and h.hold_owner = 'me' and h.hold_amount != -1 
@@ -276,17 +287,17 @@ order by 转债价格
     cur.execute("""
     SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
     round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '买入价(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) as 溢价率,
+    round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
     rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
     round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
     s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
-    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as 市盈率, c.stock_pb as 市净率,
+    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as '市盈率(动)', c.stock_pb as 市净率,
     market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
-    round(cb_price2_id + cb_premium_id * 100, 2) as 双低值
-    , cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.memo as 备注
-    from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s, 
+    cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.memo as 备注
+    from changed_bond c, stock_report s, 
     (select distinct bond_code, hold_owner, hold_amount, hold_price, strategy_type, memo from hold_bond where hold_amount != -1) h
 	where c.bond_code = s.bond_code and c.bond_code = h.bond_code 
-	AND h.strategy_type is null and h.hold_owner = 'me' and h.hold_amount != -1
+	AND h.strategy_type = '其他' and h.hold_owner = 'me' and h.hold_amount != -1
 order by 双低值
         """)
 
@@ -295,28 +306,22 @@ order by 双低值
     # =========全表=========
     cur.execute("""
     SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-    round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '买入价(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) as 溢价率,
-    rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
+    h.strategy_type as 策略类型,
+    round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '买入价(量)', 
+    cb_price2_id as '转债价格', round(cb_premium_id*100,2) as 溢价率,
+    round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) as 到期收益, remain_amount as '余额(亿元)', 
     round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
     s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
-    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as 市盈率, c.stock_pb as 市净率,
-    market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
-    round(cb_price2_id + cb_premium_id * 100, 2) as 双低值
-    , cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.memo as 备注
-    from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s, 
-    (select distinct bond_code, hold_owner, hold_amount, hold_price, memo from hold_bond where hold_amount != -1) h
+    round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as '市盈率(动)', c.stock_pb as 市净率,
+    market_cap as '市值(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
+    cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, 
+    rating as '信用', duration as 续存期, h.memo as 备注
+    from changed_bond c, stock_report s, 
+    (select distinct bond_code, hold_owner, hold_amount, hold_price, strategy_type, memo from hold_bond where hold_amount != -1) h
 	where c.bond_code = s.bond_code and c.bond_code = h.bond_code
 	and h.hold_owner='me' and h.hold_amount != -1
-	--and duration < 3
-	-- and cb_price2_id > 108
 	and cb_price2_id < 130
-	-- and roe > 5
-	-- and s.net > 0
-	-- and s.margin > 10
-	-- and cb_t_id = '转股中'
-	-- and 溢价率 < 20
-	-- and 双低值 < 120
-	order by 双低值 ASC;
+	order by 策略类型 ASC;
         """)
 
     html = print_table("全表", cur, html)
@@ -336,13 +341,24 @@ from changed_bond c, hold_bond h
     profit = result[1]
     # 收益率
     yield_rate = round(profit/invest*100, 2)
+    # 持仓个数
+    cur.execute("SELECT count(DISTINCT cb_name_id ) from hold_bond where hold_amount != -1 and hold_owner='me'")
+    result = cur.fetchone()
+    count = result[0]
+
+    x = PrettyTable(["项目", "数据"])
+
+    x.add_row(["总个数", count])
+    x.add_row(["总投入", invest])
+    x.add_row(["总盈亏", profit])
+    x.add_row(["收益率", yield_rate])
+
 
     html += """
     <center>
         </br>=========数据汇总=========</br>
-        总投入: """ + str(invest) + """</br>
-        总盈亏: """ + str(profit) + """</br>
-        收益率: """ + str(yield_rate) + """%</br>
+        
+        """ + x.get_html_string() + """
     </center>
     """
 
@@ -353,7 +369,7 @@ from changed_bond c, hold_bond h
 
       overflow:auto;
 
-      width:1324px;
+      width:1424px;
 
       height:890px; /* 固定高度 */
       border:1px solid gray;
