@@ -369,16 +369,12 @@ def insertDb(rows):
         con_file.close()
         print("db操作出现异常", e)
 
+def fetch_data():
+    createDb()
+    rows = getContent()
+    insertDb(rows)
 
 if __name__ == "__main__":
-    # todo 获取当前时间
-    # todo 检查数据库中数据是否已存在， 若存在则不获取
-
-    # 只执行一次
-    createDb()
-
-    rows = getContent()
-
-    insertDb(rows)
+    fetch_data()
 
     print("可转债数据抓取更新完成")
