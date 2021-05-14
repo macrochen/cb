@@ -342,5 +342,5 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
         raise e
 
 if __name__ == "__main__":
-    draw_market_view(False, True)
+    draw_market_view(False, False)
     print("processing is successful")
