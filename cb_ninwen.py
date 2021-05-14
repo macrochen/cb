@@ -1,4 +1,4 @@
-#抓取宁稳网的数据
+#抓取宁稳网的数据(每天中午, 下午收盘更新, 非实时, 但是最全)
 
 import datetime
 from io import StringIO
@@ -11,7 +11,6 @@ import sqlite3
 
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
-    # "origin": "https://passport.mafengwo.cn",
     "Referer": "http://www.ninwin.cn/index.php?m=profile",
     'User-Agent': userAgent,
     'Cookie': "csrf_token=4d924a8e39c98eee; __51cke__=; P0s_Pw_verify_code=lNwst736TYc%3D; P0s_winduser=RaqSRnBfFwDoLZv5tGFqXXLD4fXwVZQynHEOTJOsq1fzXIiXiCJW%2FWYIGis%3D; P0s_visitor=Cmse9dUtYW7cclzpENrqCj4gRIGuNSePKoJ%2Bng6EdKzPslngncrLoDtmlqg%3D; __tins__4771153=%7B%22sid%22%3A%201615874339009%2C%20%22vd%22%3A%204%2C%20%22expires%22%3A%201615876387793%7D; __51laig__=98; P0s_lastvisit=269%091615874605%09%2Findex.php%3Fm%3DmyAdmin%26c%3Dlog"
@@ -19,14 +18,14 @@ header = {
 
 
 def getContent():
-    getUrl = "http://www.ninwin.cn/index.php?m=cb&a=cb_all&show_cb_only=Y&show_listed_only=Y"
+    url = "http://www.ninwin.cn/index.php?m=cb&a=cb_all&show_cb_only=Y&show_listed_only=Y"
 
-    responseRes = requests.get(getUrl, headers=header)
-    code = responseRes.status_code
+    response = requests.get(url, headers=header)
+    code = response.status_code
     if code != 200:
         print("获取数据失败， 状态码：" + code)
 
-    soup = bs4.BeautifulSoup(responseRes.text, "html5lib")
+    soup = bs4.BeautifulSoup(response.text, "html5lib")
     table = soup.find_all('table')[1]
     attr_id = table.attrs['id']
     if 'cb_hq' not in attr_id:
