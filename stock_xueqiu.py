@@ -1,4 +1,4 @@
-# 从雪球抓数据
+# 从雪球抓正股的相关数据
 import datetime
 import json
 import time

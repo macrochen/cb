@@ -79,7 +79,7 @@ def draw_figure(con_file,
     return html + "<br><center> =========<b><font color='red'>" + title + "</font></b>=========</center><br>" + common.get_html_string(table)
 
 
-def draw_figures():
+def draw_market_view(need_show_figure, need_open_page):
     # 打开文件数据库
     con_file = sqlite3.connect('db/cb.db3')
 
@@ -245,8 +245,6 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
 
         con_file.close()
 
-
-
         f = open('view/view_market.html', 'w')
         s = ("""
             <style>
@@ -332,14 +330,18 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
         f.write(s)
         f.close()
         filename = 'file:///' + os.getcwd() + '/view/' + 'view_market.html'
-        webbrowser.open_new_tab(filename)
 
-        plt.show()
+        if need_open_page:
+            webbrowser.open_new_tab(filename)
+
+        if need_show_figure:
+            plt.show()
+
     except Exception as e:
         con_file.close()
-        print("操作失败. " + str(e), e)
+        print("processing is failure. " + str(e), e)
         raise e
 
 if __name__ == "__main__":
-    draw_figures()
-    print("显示完成")
+    draw_market_view(False, True)
+    print("processing is successful")

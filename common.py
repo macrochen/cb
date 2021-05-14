@@ -1,3 +1,4 @@
+#一些公共方法
 
 def get_html_string(table):
     lines = []
