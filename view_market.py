@@ -81,7 +81,7 @@ def draw_figure(con_file,
 
 def draw_figures():
     # 打开文件数据库
-    con_file = sqlite3.connect('cb.db3')
+    con_file = sqlite3.connect('db/cb.db3')
 
     html = """
         <!DOCTYPE html>

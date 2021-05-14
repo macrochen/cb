@@ -123,7 +123,7 @@ def draw_figure(myCb):
 
 try:
     # 打开文件数据库
-    con_file = sqlite3.connect('cb.db3')
+    con_file = sqlite3.connect('db/cb.db3')
     cur = con_file.cursor()
 
     # {"高收益":{"color":"co","rows":["广汇转债":{"x":111,"y":222}]}}

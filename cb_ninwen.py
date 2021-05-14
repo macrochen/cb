@@ -278,7 +278,7 @@ def createDb():
     # 使用:memory:标识打开的是内存数据库
     # con = sqlite3.connect(":memory:")
 
-    con = sqlite3.connect("cb.db3")
+    con = sqlite3.connect("db/cb.db3")
     # cur = con.cursor()
     # 使用executescript可以执行多个脚本
     con.executescript("""
@@ -343,7 +343,7 @@ def createDb():
 
 def insertDb(rows):
     # 打开文件数据库
-    con_file = sqlite3.connect('cb.db3')
+    con_file = sqlite3.connect('db/cb.db3')
 
     try:
 

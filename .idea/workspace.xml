@@ -2,22 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c05e7547-d0be-4b62-8cc5-8cefd533ef14" name="Default Changelist" comment="update">
-      <change afterPath="$PROJECT_DIR$/common.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/view/view_market.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/view/view_my.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/~$cb.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cb.db3" beforeDir="false" afterPath="$PROJECT_DIR$/cb.db3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/cb_ninwen.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock_bad.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock2.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock_xueqiu.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view3.py" beforeDir="false" afterPath="$PROJECT_DIR$/view_time.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view_market.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/view_market.py" beforeDir="false" afterPath="$PROJECT_DIR$/view_market.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view_my.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/view_my.py" beforeDir="false" afterPath="$PROJECT_DIR$/view_my.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/可转债数据处理.xmind" beforeDir="false" afterPath="$PROJECT_DIR$/可转债数据处理.xmind" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cb.csv" beforeDir="false" afterPath="$PROJECT_DIR$/unused/cb.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cb.sqbpro" beforeDir="false" afterPath="$PROJECT_DIR$/unused/cb.sqbpro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cb.sql" beforeDir="false" afterPath="$PROJECT_DIR$/doc/cb.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cb.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/unused/cb.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/unused/demo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_bad.py" beforeDir="false" afterPath="$PROJECT_DIR$/unused/stock_bad.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/unused/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view_time.py" beforeDir="false" afterPath="$PROJECT_DIR$/unused/view_time.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/可转债数据处理.xmind" beforeDir="false" afterPath="$PROJECT_DIR$/doc/可转债数据处理.xmind" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,11 +64,13 @@
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/unused" />
+      <recent name="$PROJECT_DIR$/doc" />
       <recent name="$PROJECT_DIR$/view" />
       <recent name="$PROJECT_DIR$/job" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.view_my">
+  <component name="RunManager" selected="Python.stock_xueqiu">
     <configuration name="cb_ninwen" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="cb" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -132,7 +128,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/unused/test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -198,7 +194,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/view_time.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/unused/view_time.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -209,11 +205,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.stock_xueqiu" />
         <item itemvalue="Python.view_my" />
         <item itemvalue="Python.view_market" />
-        <item itemvalue="Python.stock_xueqiu" />
-        <item itemvalue="Python.view_time" />
         <item itemvalue="Python.test" />
+        <item itemvalue="Python.view_time" />
       </list>
     </recent_temporary>
   </component>
@@ -233,7 +229,8 @@
       <workItem from="1619750883390" duration="120000" />
       <workItem from="1619751019900" duration="14147000" />
       <workItem from="1620393807573" duration="6983000" />
-      <workItem from="1620638304157" duration="12152000" />
+      <workItem from="1620638304157" duration="50582000" />
+      <workItem from="1620971389998" duration="971000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <created>1616418722192</created>
@@ -270,7 +267,42 @@
       <option name="project" value="LOCAL" />
       <updated>1617020241314</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="update">
+      <created>1620703563254</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1620703563254</updated>
+    </task>
+    <task id="LOCAL-00007" summary="update">
+      <created>1620703797367</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1620703797367</updated>
+    </task>
+    <task id="LOCAL-00008" summary="update">
+      <created>1620897793462</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1620897793462</updated>
+    </task>
+    <task id="LOCAL-00009" summary="update">
+      <created>1620970707372</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1620970707372</updated>
+    </task>
+    <task id="LOCAL-00010" summary="update">
+      <created>1620971913182</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1620971913182</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -296,7 +328,7 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/test.py</url>
+          <url>file://$PROJECT_DIR$/unused/test.py</url>
           <line>4</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
@@ -322,37 +354,53 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/view_my.py</url>
-          <line>343</line>
+          <line>446</line>
           <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/stock_xueqiu.py</url>
-          <line>991</line>
-          <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/cb_ninwen.py</url>
           <line>351</line>
           <option name="timeStamp" value="18" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/unused/test.py</url>
+          <line>35</line>
+          <option name="timeStamp" value="23" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stock_xueqiu.py</url>
+          <line>1023</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/unused/test.py</url>
+          <line>45</line>
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/view_my.py</url>
+          <line>336</line>
+          <option name="timeStamp" value="38" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="row" language="Python" />
+        <watch expression="report_dates.values()" language="Python" />
       </configuration>
     </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/cb$test.coverage" NAME="test Coverage Results" MODIFIED="1616989297089" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/cb$cb_ninwen.coverage" NAME="cb_ninwen Coverage Results" MODIFIED="1620639778626" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/cb$test.coverage" NAME="test Coverage Results" MODIFIED="1620824924635" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/cb$cb_ninwen.coverage" NAME="cb_ninwen Coverage Results" MODIFIED="1620965083311" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/cb$findJob.coverage" NAME="findJob Coverage Results" MODIFIED="1616483362364" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/cb$view2.coverage" NAME="view_my Coverage Results" MODIFIED="1616751501728" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/cb$stock_xueqiu.coverage" NAME="stock_xueqiu Coverage Results" MODIFIED="1620290980238" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/cb$view_market.coverage" NAME="view_market Coverage Results" MODIFIED="1620655596299" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/cb$stock_xueqiu.coverage" NAME="stock_xueqiu Coverage Results" MODIFIED="1620869046440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/cb$view_market.coverage" NAME="view_market Coverage Results" MODIFIED="1620965095086" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/cb$main.coverage" NAME="cb_ninwen Coverage Results" MODIFIED="1620367650600" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/cb$view.coverage" NAME="view_market Coverage Results" MODIFIED="1616749601247" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/cb$view3.coverage" NAME="view3 Coverage Results" MODIFIED="1619751290603" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/cb$view_my.coverage" NAME="view_my Coverage Results" MODIFIED="1620702334735" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/cb$view_my.coverage" NAME="view_my Coverage Results" MODIFIED="1620966103585" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
