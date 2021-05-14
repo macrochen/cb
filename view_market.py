@@ -234,7 +234,6 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
           and s.net > 0
           -- and s.margin > 10
           and cb_t_id = '转股中' 
-          and (enforce_get not in ('强赎中', '满足强赎') or enforce_get is null)
           -- and 溢价率 < 20 
           and 双低值 < 120
           order by 双低值 ASC) d left join 
