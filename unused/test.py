@@ -39,9 +39,11 @@ find_date = ''
 # print(find_date)
 import time
 
-y = datetime.datetime.now().year
-m = datetime.datetime.now().month
-d = datetime.datetime.now().day
-t = datetime.datetime(y, m, d)
-print(t.toordinal())
-print((t-datetime.datetime(1970,1,1)).total_seconds())
+# y = datetime.datetime.now().year
+# m = datetime.datetime.now().month
+# d = datetime.datetime.now().day
+# t = datetime.datetime(y, m, d)
+# print(t.toordinal())
+# print((t-datetime.datetime(1970,1,1)).total_seconds())
+
+print(str(int(round(time.time() * 1000))))
