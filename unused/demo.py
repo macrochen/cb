@@ -8,8 +8,8 @@ import bs4
 
 
 import akshare as ak
-stock_financial_abstract_df = ak.stock_financial_abstract(stock="600004")
-print(stock_financial_abstract_df)
+stock_zh_a_daily_qfq_df = ak.stock_zh_a_daily(symbol="sz000002", start_date="20101103", end_date="20201116", adjust="qfq")
+print(stock_zh_a_daily_qfq_df)
 #
 #
 # url = "http://77.push2.eastmoney.com/api/qt/clist/get"
@@ -53,5 +53,5 @@ print(stock_financial_abstract_df)
 #     con.close()
 
 
-d = datetime.datetime.strptime('2021-03-15', '%Y-%m-%d')
-print(str())
+# d = datetime.datetime.strptime('2021-03-15', '%Y-%m-%d')
+# print(str())
