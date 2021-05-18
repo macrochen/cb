@@ -95,6 +95,17 @@ def draw_market_view(need_show_figure, need_open_page):
         """
     try:
 
+        # =========强赎=========
+        sql = """
+    SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, enforce_get as 强赎状态, 
+    cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率
+    from (select * from changed_bond where enforce_get in ('强赎中')) c
+    order by 转债价格 desc 
+            """
+        html = draw_figure(con_file, sql, "强赎转债", "强赎转债", html,
+                           midX=102, midY=0,
+                           show_quadrant=False)
+
         # =========回售策略=========
         if "回售策略" in config['type']:
             sql = """
@@ -102,6 +113,7 @@ def draw_market_view(need_show_figure, need_open_page):
   FROM (
       SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
       cb_price2_id as 转债价格, round(bt_red * 100,2) || '%' as 回售收益率, red_t as '回售年限(年)', round((bt_red * 100) + (2-bond_t1),2) as 性价比,
+      round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
         round(bt_yield*100,2) as 税前收益,
         round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
@@ -110,7 +122,7 @@ def draw_market_view(need_show_figure, need_open_page):
         market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
         cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
         rating as '信用', duration as 续存期
-        from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
         where c.bond_code = s.bond_code
          and red_t not in('无权', '回售内')
          and red_t < 1
@@ -132,28 +144,30 @@ def draw_market_view(need_show_figure, need_open_page):
             sql = """
 SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
   FROM (
-      SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, remain_amount as '余额(亿元)', 
-        cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
-        market_cap as '市值(亿元)', round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
+      SELECT c.cb_num_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, remain_amount as '余额(亿元)', 
+        cb_price2_id as 转债价格, round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_premium_id*100,2) || '%' as 溢价率, 
+        round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        market_cap as '市值(亿元)', round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
     rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
     round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
     s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
     round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as '市盈率(动)', c.stock_pb as 市净率,
     cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
-    from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s
+    from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
     where c.bond_code = s.bond_code
-        and cb_premium_id * 100 < 30 
+        --and cb_premium_id * 100 < 30 
         and remain_amount < 3 
-        and cb_price2_id < 115
-        ORDER by 转债价格 ASC
-        limit 10) d left join 
+        and cb_price2_id < 110
+        ORDER by remain_amount ASC
+        limit 20) d left join 
         (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1 and strategy_type = '低溢价低余额') e 
         on d.id = e.bond_code            
             """
             get_annotate = lambda row: plt.annotate(row['名称'].replace('转债', '') + '(' + str(row['余额(亿元)']) + '亿元)',
                                                     (row['转债价格'], row['溢价率']))
-            html = draw_figure(con_file, sql, "低溢价低余额策略", "低余额策略(价格<115, 余额<3亿, 溢价率<30%)", html,
+            html = draw_figure(con_file, sql, "低溢价低余额策略", "低余额策略(价格<110, 余额<3亿)", html,
                                midX=120, midY=30, show_quadrant=False, get_annotate=get_annotate)
 
         # =========双低债=========
@@ -163,6 +177,7 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
   FROM (
       SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
       cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+      round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
       c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
     round(bt_yield*100,2) as 税前收益,
     round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
@@ -171,7 +186,7 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
     market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
     cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
     rating as '信用', duration as 续存期
-    from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s
+    from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
     where c.bond_code = s.bond_code
         ORDER by 双低值
         limit 20) d left join 
@@ -188,6 +203,7 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
   FROM (
       SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
       cb_price2_id as '转债价格', round(bt_yield*100,2) || '%' as 到期收益率, round(100- cb_price2_id + BT_yield * 100, 2) as 性价比,
+      round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
       c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
     round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
     s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
@@ -195,7 +211,7 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
     market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
     cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
     round(cb_premium_id*100,2) as 溢价率, rating as '信用', duration as 续存期
-        from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
     where c.bond_code = s.bond_code
         and c.rating in ('AA+', 'AA-', 'AA', 'AAA', 'A', 'A+')
         --and c.cb_name_id not in( '亚药转债' , '本钢转债','搜特转债','广汇转债')
@@ -220,13 +236,14 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
         FROM (
             SELECT c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
           cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+          round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
           rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
           round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
           s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
           round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as '市盈率(动)', c.stock_pb as 市净率,
           market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
           cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
-          from (select * from changed_bond where enforce_get not in ('强赎中', '满足强赎') or enforce_get is null) c, stock_report s
+          from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
           where c.bond_code = s.bond_code
           and duration < 3 
           and cb_price2_id > 108 and cb_price2_id < 125 
@@ -237,7 +254,7 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
           -- and 溢价率 < 20 
           and 双低值 < 120
           order by 双低值 ASC) d left join 
-              (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1 and strategy_type = '活性债') e 
+              (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1 and strategy_type = '活性债策略') e 
               on d.id = e.bond_code
                   """
                 html = draw_figure(con_file, sql, "活性债策略", "活性债策略(价格在108~120, 净利润为正, 双低值<120, 存续期<3年)", html, midY=13)
@@ -246,6 +263,9 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
 
         f = open('view/view_market.html', 'w')
         s = ("""
+        <html>
+        <head>
+        <title>市场策略</title>
             <style>
             div{
 
@@ -318,7 +338,8 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
 
             }
           </style>
-
+        </head>
+        <body>
             """
              + html
              + """

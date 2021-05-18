@@ -10,7 +10,7 @@ def get_html_string(table):
     lines.append("    <thead>")
     lines.append("        <tr>")
     for field in table._field_names:
-        if field == 'id' or field == 'stock_code':
+        if field == 'nid' or field == 'id' or field == 'stock_code':
             continue
 
         lines.append(
@@ -29,7 +29,7 @@ def get_html_string(table):
         lines.append("        <tr>")
         record = getRecord(table, row)
         for field, datum in record.items():
-            if field == 'id' or field == 'stock_code':
+            if field == 'nid' or field == 'id' or field == 'stock_code':
                 continue
 
             # 标题增加链接
@@ -46,6 +46,11 @@ def get_html_string(table):
                 prefix = "<a target = '_blank' href = 'http://quote.eastmoney.com/bond/" + market + bond_id + ".html'>"
                 suffix = "</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'>[正股]</a>"
 
+                nid = record.get('nid')
+                if nid is not None:
+                    #http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157
+                    suffix += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + nid + "'>[走势]</a>"
+
             lines.append(
                 ("            <td>" + prefix + "%s" + suffix + "</td>") % datum.replace("\n", linebreak)
             )
@@ -57,3 +62,22 @@ def get_html_string(table):
 
 def getRecord(table, row):
     return dict(zip(table._field_names, row))
+
+def rebuild_stock_code(stock_code):
+    # 沪市A股票买卖的代码是以600、601或603打头, 688创业板
+    # 深市A股票买卖的代码是以000打头, 中小板股票代码以002打头, 创业板股票代码以300打头
+    if stock_code.startswith('600') or stock_code.startswith('601') or stock_code.startswith(
+            '603') or stock_code.startswith('688'):
+        stock_code = 'SH' + stock_code
+    elif stock_code.startswith('000') or stock_code.startswith('001') or stock_code.startswith(
+            '002') or stock_code.startswith('300'):
+        stock_code = 'SZ' + stock_code
+    else:
+        raise Exception("未知股票类型。" + stock_code)
+    return stock_code
+
+def rebuild_bond_code(bond_code):
+    market = 'sz'
+    if bond_code.startswith('11'):
+        market = 'sh'
+    return market + bond_code
