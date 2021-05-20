@@ -144,13 +144,13 @@ def draw_market_view(need_show_figure, need_open_page):
             sql = """
 SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
   FROM (
-      SELECT c.cb_num_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, remain_amount as '余额(亿元)', 
-        cb_price2_id as 转债价格, round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_premium_id*100,2) || '%' as 溢价率, 
-        round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
+      SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, remain_amount as '余额(亿元)', 
+        cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
+        round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        round(bt_yield*100,2) as 税前收益, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         market_cap as '市值(亿元)', round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
-    rating as '信用', duration as 续存期, round(bt_yield*100,2) as 税前收益,
+    rating as '信用', duration as 续存期, 
     round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比', round(s.net,2) as '净利润(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
     s.margin || '%' as '利润率(%)', s.yoy_margin_rate || '%' as '利润率同比', s.roe || '%' as 'ROE(%)', s.yoy_roe_rate || '%' as 'ROE同比',  
     round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as '市盈率(动)', c.stock_pb as 市净率,

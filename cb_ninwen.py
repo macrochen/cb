@@ -49,6 +49,7 @@ def buildRows(trs):
     # 遍历所有行
     for tr in trs:
         row = {}
+        row['data_id'] = tr.attrs['data-id']
         tds = tr.children
         for td in tds:
             # 过滤掉空行
@@ -329,7 +330,8 @@ def createDb():
             duration real,
             enforce_get text,
             buy_back int,
-            down_revise int
+            down_revise int,
+            data_id INTEGER
             )""")
 
     # 打印数据表数据
@@ -348,8 +350,8 @@ def insertDb(rows):
 
         for row in rows:
             # execute执行脚本
-            con_file.execute("""insert into changed_bond(cb_num_id,bond_code,cb_name_id,bond_date_id,stock_code,stock_name,industry,sub_industry,cb_price2_id,cb_mov2_id,cb_mov3_id,stock_price_id,cb_mov_id,cb_price3_id,cb_strike_id,cb_premium_id,cb_value_id,cb_t_id,bond_t1,red_t,remain_amount,cb_trade_amount_id,cb_trade_amount2_id,cb_to_share,cb_to_share_shares,market_cap,stock_pb,BT_yield,AT_yield,BT_red,AT_red,npv_red,npv_value,rating,discount_rate,elasticity,cb_ol_value,cb_ol_rank,cb_nl_value,cb_nl_rank,cb_ma20_deviate,cb_hot,duration,enforce_get,buy_back,down_revise)
-                             values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            con_file.execute("""insert into changed_bond(cb_num_id,bond_code,cb_name_id,bond_date_id,stock_code,stock_name,industry,sub_industry,cb_price2_id,cb_mov2_id,cb_mov3_id,stock_price_id,cb_mov_id,cb_price3_id,cb_strike_id,cb_premium_id,cb_value_id,cb_t_id,bond_t1,red_t,remain_amount,cb_trade_amount_id,cb_trade_amount2_id,cb_to_share,cb_to_share_shares,market_cap,stock_pb,BT_yield,AT_yield,BT_red,AT_red,npv_red,npv_value,rating,discount_rate,elasticity,cb_ol_value,cb_ol_rank,cb_nl_value,cb_nl_rank,cb_ma20_deviate,cb_hot,duration,enforce_get,buy_back,down_revise,data_id)
+                             values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                              (row["cb_num_id"], row["bond_code"], row["cb_name_id"], row["bond_date_id"], row["stock_code"],
                               row["stock_name"], row["industry"], row["sub_industry"], row["cb_price2_id"],
                               row["cb_mov2_id"], row["cb_mov3_id"], row["stock_price_id"], row["cb_mov_id"],
@@ -359,7 +361,7 @@ def insertDb(rows):
                               row["stock_pb"], row["BT_yield"], row["AT_yield"], row["BT_red"], row["AT_red"],
                               row["npv_red"], row["npv_value"], row["rating"], row["discount_rate"], row["elasticity"],
                               row["cb_ol_value"], row["cb_ol_rank"], row["cb_nl_value"], row["cb_nl_rank"],
-                              row["cb_ma20_deviate"], row["cb_hot"], row["duration"], row.get("enforce_get"), row.get("buy_back"), row.get("down_revise"))
+                              row["cb_ma20_deviate"], row["cb_hot"], row["duration"], row.get("enforce_get"), row.get("buy_back"), row.get("down_revise"), row['data_id'])
                              )
         con_file.commit()
         con_file.close()
