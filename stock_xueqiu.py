@@ -62,57 +62,6 @@ def createDb():
     con.close()
     print("create db is successful")
 
-def update_pe():
-    # 遍历可转债列表
-    # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
-
-    try:
-        # 查询可转债
-        bond_cursor = con_file.execute("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
-        # 当前日月
-        y = datetime.datetime.now().year
-        m = datetime.datetime.now().month
-        d = datetime.datetime.now().day
-        t = datetime.datetime(y, m, d)
-        # 记录更新时间(秒)
-        s = (t-datetime.datetime(1970, 1, 1)).total_seconds()
-
-        i = 0
-        for bond_row in bond_cursor:
-            bond_code = bond_row[0]
-            stock_code = bond_row[2]
-            stock_name = bond_row[3]
-
-            stock_cursor = con_file.execute("""SELECT modify_date from stock_report where bond_code = ?""", [bond_code])
-            stocks = list(stock_cursor)
-            if len(stocks) == 0:
-                continue
-
-            # 已经更新了
-            if stocks[0][0] is not None and stocks[0][0] >= s:
-                continue
-
-            pe = get_stock_pe(stock_code)
-
-            con_file.execute("""update stock_report set pe = ?, modify_date = ? where bond_code = ?""",
-                             (pe, s, bond_code)
-                             )
-            print("update " + stock_name + " pe: " + str(pe) + " is successful. count:" + str(i + 1))
-            # 暂停5s再执行， 避免被网站屏蔽掉
-            time.sleep(5)
-            i += 1
-
-        print("共处理" + str(i) + "条记录")
-
-    except Exception as e:
-        # con_file.close()
-        print("db操作出现异常" + str(e), e)
-    except TimeoutError as e:
-        print("网络超时, 请手工重试")
-    finally:
-        con_file.commit()
-        con_file.close()
 
 def getContent():
     # test data
@@ -261,27 +210,6 @@ def get_report_date():
 
     raise Exception('计算报告期错误')
 
-
-def get_stock_pe(stock_code):
-    stock_code = common.rebuild_stock_code(stock_code)
-
-    url = "https://stock.xueqiu.com/v5/stock/quote.json?extend=detail&symbol=" + stock_code
-
-    i = 0
-    while i < 3:
-        try:
-            response = requests.get(url=url, headers=header, timeout=5)
-            code = response.status_code
-            if code != 200:
-                print("获取数据失败， 状态码：" + str(code))
-
-            data = json.loads(response.text)
-            return data['data']['quote']['pe_forecast']
-        except requests.exceptions.RequestException as e:
-            i += 1
-            print("connect occur error. retry time: " + str(i) + "e" + str(e))
-
-    raise TimeoutError
 
 def getData(url):
     i = 0
@@ -514,7 +442,6 @@ class Earnings:
 
 if __name__ == "__main__":
     # createDb()
-    # getContent()
-    update_pe()
+    getContent()
 
     # getEarnings('600061')

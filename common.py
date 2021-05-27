@@ -39,14 +39,22 @@ def get_html_string(table):
             suffix = ''
             if field == '名称':
                 bond_id = record['id']
+                nid = record.get('nid')
                 stock_code = record['stock_code']
                 market = 'sz'
                 if bond_id.startswith('11'):
                     market = 'sh'
                 prefix = "<a target = '_blank' href = 'http://quote.eastmoney.com/bond/" + market + bond_id + ".html'>"
-                suffix = "</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'>[正股]</a>"
 
-                nid = record.get('nid')
+                suffix = ''
+                if nid is not None:
+                    suffix += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + nid + "'>[nw]</a>"
+
+                suffix += "</a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/" + bond_id + "'>[jsl]</a>"
+                suffix += "</a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'>[正股]</a>"
+                suffix += "</a>&nbsp;<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'>[诊断]</a>"
+
+
                 if nid is not None:
                     #http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157
                     suffix += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + nid + "'>[走势]</a>"
