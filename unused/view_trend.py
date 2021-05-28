@@ -464,7 +464,7 @@ def handle_client(client_socket):
             client_socket.send(response.encode("utf-8"))  # 转码utf-8并send数据到浏览器
             client_socket.close()
         elif ret.group(1) == 'view/echarts.min.js':
-            f = open('echarts.min.js', "rb")  # 以二进制读取文件内容
+            f = open('../view/echarts.min.js', "rb")  # 以二进制读取文件内容
             response_body = f.read()
             f.close()
             # 返回数据给浏览器
