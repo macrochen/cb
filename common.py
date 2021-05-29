@@ -1,4 +1,62 @@
 #一些公共方法
+import os
+
+from jinja2 import Environment, FileSystemLoader
+
+from selenium import webdriver
+
+import re
+
+env = Environment(
+            keep_trailing_newline=True,
+            trim_blocks=True,
+            lstrip_blocks=True,
+            loader=FileSystemLoader(
+                (
+                    os.path.join(os.path.dirname(__file__), "templates")
+                )
+            )
+        )
+
+#转股价格中位数
+MID_X = 111.110
+#转股溢价率中位数
+MID_Y = 31.22
+#到期收益率中位数
+MID_YIELD = -0.88
+
+def get_cb_sum_data():
+
+    driver = webdriver.Chrome()
+
+    driver.implicitly_wait(10)
+
+    url = "https://www.jisilu.cn/data/cbnew/cb_index/"
+
+    # fixme 需要把chromedriver放到/usr/local/bin目录下
+    driver.get(url)
+
+    div = driver.find_element_by_id("cb_index")
+
+    s = div.text
+    ss = re.findall(r"转股溢价率 (\d+\.?\d*)%", s)
+    if len(ss) != 1:
+        raise Exception("没有找到转股溢价率中位数:" + s)
+    MID_Y = ss[0]
+
+    ss = re.findall(r"中位数价格 (\d+\.?\d*)", s)
+    if len(ss) != 1:
+        raise Exception("没有找到转股价格中位数:" + s)
+    MID_X = ss[0]
+
+    ss = re.findall(r"到期收益率 (-?\d+\.?\d*)%", s)
+    if len(ss) != 1:
+        raise Exception("没有找到到期收益率中位数:" + s)
+    MID_YIELD = ss[0]
+
+    print("MID_Y = " + MID_Y + ' \nMID_X = ' + MID_X + '\nMID_YIELD = ' + MID_YIELD)
+
+    driver.close()
 
 def get_html_string(table):
     lines = []
@@ -96,3 +154,6 @@ def rebuild_bond_code(bond_code):
     if bond_code.startswith('11'):
         market = 'sh'
     return market + bond_code
+
+if __name__ == "__main__":
+    get_cb_sum_data()

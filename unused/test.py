@@ -140,7 +140,7 @@ from pyecharts.globals import CurrentConfig
 
 # from pyecharts import options as opts
 # from pyecharts.charts import Pie
-# from pyecharts.faker import Faker
+from pyecharts.faker import Faker
 #
 # list = [list(z) for z in zip(Faker.choose(), Faker.values())]
 #
@@ -160,63 +160,160 @@ from pyecharts.globals import CurrentConfig
 import pyecharts.options as opts
 from pyecharts.charts import Scatter
 
-"""
-Gallery 使用 pyecharts 1.1.0
-参考地址: https://echarts.apache.org/examples/editor.html?c=scatter-simple
-目前无法实现的功能:
-1、暂无
-"""
-
-data = [
-    [10.0, 8.04],
-    [8.0, 6.95],
-    [13.0, 7.58],
-    [9.0, 8.81],
-    [11.0, 8.33],
-    [14.0, 9.96],
-    [6.0, 7.24],
-    [4.0, 4.26],
-    [12.0, 10.84],
-    [7.0, 4.82],
-    [5.0, 5.68],
-]
-data.sort(key=lambda x: x[0])
-x_data = [d[0] for d in data]
-y_data = [d[1] for d in data]
-
-(
-    Scatter()
-    .add_xaxis(xaxis_data=x_data)
-    .add_yaxis(
-        series_name="aaa",
-        y_axis=y_data,
-        symbol_size=20,
-        label_opts=opts.LabelOpts(is_show=False),
-    )
-    .add_yaxis(
-        series_name="bbb",
-        y_axis=y_data,
-        symbol_size=10,
-        label_opts=opts.LabelOpts(is_show=False),
-    )
-    .set_series_opts()
-    .set_global_opts(
-        xaxis_opts=opts.AxisOpts(
-            type_="value", splitline_opts=opts.SplitLineOpts(is_show=False)
-        ),
-        yaxis_opts=opts.AxisOpts(
-            type_="value",
-            axistick_opts=opts.AxisTickOpts(is_show=True),
-            splitline_opts=opts.SplitLineOpts(is_show=False),
-        ),
-        tooltip_opts=opts.TooltipOpts(is_show=True),
-    )
-    .render("basic_scatter_chart.html")
-)
-filename = 'file:///' + os.getcwd() + '/' + 'basic_scatter_chart.html'
-
-webbrowser.open_new_tab(filename)
-# import re
+# """
+# Gallery 使用 pyecharts 1.1.0
+# 参考地址: https://echarts.apache.org/examples/editor.html?c=scatter-simple
+# 目前无法实现的功能:
+# 1、暂无
+# """
 #
-# string = "综合诊断：5.5分 打败了52%的股票！"
+# data = [
+#     [10.0, 8.04],
+#     [8.0, 6.95],
+#     [13.0, 7.58],
+#     [9.0, 8.81],
+#     [11.0, 8.33],
+#     [14.0, 9.96],
+#     [6.0, 7.24],
+#     [4.0, 4.26],
+#     [12.0, 10.84],
+#     [7.0, 4.82],
+#     [5.0, 5.68],
+# ]
+# data.sort(key=lambda x: x[0])
+# x_data = [d[0] for d in data]
+# y_data = [d[1] for d in data]
+#
+# (
+#     Scatter()
+#     .add_xaxis(xaxis_data=x_data)
+#     .add_yaxis(
+#         series_name="aaa",
+#         y_axis=y_data,
+#         symbol_size=20,
+#         label_opts=opts.LabelOpts(is_show=False),
+#     )
+#     .add_yaxis(
+#         series_name="bbb",
+#         y_axis=y_data,
+#         symbol_size=10,
+#         label_opts=opts.LabelOpts(is_show=False),
+#     )
+#     .set_series_opts()
+#     .set_global_opts(
+#         xaxis_opts=opts.AxisOpts(
+#             type_="value", splitline_opts=opts.SplitLineOpts(is_show=False)
+#         ),
+#         yaxis_opts=opts.AxisOpts(
+#             type_="value",
+#             axistick_opts=opts.AxisTickOpts(is_show=True),
+#             splitline_opts=opts.SplitLineOpts(is_show=False),
+#         ),
+#         tooltip_opts=opts.TooltipOpts(is_show=True),
+#     )
+#     .render("basic_scatter_chart.html")
+# )
+# filename = 'file:///' + os.getcwd() + '/' + 'basic_scatter_chart.html'
+#
+# webbrowser.open_new_tab(filename)
+
+from pyecharts import options as opts
+from pyecharts.charts import Scatter
+from pyecharts.commons.utils import JsCode
+from pyecharts.faker import Faker
+
+# choose = Faker.values()
+# c = (
+#     Scatter()
+#     .add_xaxis(choose)
+#     .add_yaxis(
+#         "Lab A",
+#         # [list(z) for z in zip(choose, Faker.values())],
+#         Faker.values(),
+#         label_opts=opts.LabelOpts(
+#             formatter=JsCode(
+#                 "function(params){return params.value[1] +' : '+ params.value[2];}"
+#             )
+#         ),
+#     )
+#     .add_yaxis(
+#             "Lab B",
+#             # [list(z) for z in zip(choose, Faker.values())],
+#             Faker.values(),
+#             label_opts=opts.LabelOpts(
+#                 formatter=JsCode(
+#                     "function(params){return params.value[1] +' : '+ params.value[2];}"
+#                 )
+#             ),
+#         )
+#     .set_global_opts(
+#         title_opts=opts.TitleOpts(title="Scatter-Scatter_multi_dimension"),
+#         tooltip_opts=opts.TooltipOpts(
+#             formatter=JsCode(
+#                 "function (params) {return params.name + ' : ' + params.value[2];}"
+#             )
+#         ),
+#         visualmap_opts=opts.VisualMapOpts(
+#             type_="color", max_=150, min_=20, dimension=1
+#         ),
+#         xaxis_opts={
+#                     'data': None,
+#                     'type': 'value',
+#                     'scale': True,
+#                     "splitLine": {
+#                         "show": False,
+#                     }
+#                 },
+#         yaxis_opts={
+#                     # 'data': None,
+#                     'type': 'value',
+#                     'scale': True,
+#                     "splitLine": {
+#                         "show": False,
+#                     }
+#                 },
+#     )
+#     .set_series_opts(emphasis={
+#                 'focus': 'series'
+#             })
+#     .render("scatter_multi_dimension.html")
+# )
+
+# 例5 多维度+自定义数据
+# scatter5=(
+#     Scatter()
+#         .add_xaxis(Faker.choose())
+#         .add_yaxis(
+#         "商家A",
+#         [list(z) for z in zip(Faker.values(), Faker.choose())],
+#         label_opts=opts.LabelOpts(
+#             formatter=JsCode(# 调用js代码设置方法提取参数第2个值和参数第3个值
+#                 "function(params){return params.value[1] +' : '+ params.value[2];}"
+#             )
+#         ),
+#     )
+#         .set_global_opts(
+#         title_opts=opts.TitleOpts(title="例5 Scatter-多维度数据"),
+#         tooltip_opts=opts.TooltipOpts(# tooltip是鼠标移上去的提示
+#             formatter=JsCode(# 调用js代码设置方法提取参数名字和参数第3个值
+#                 "function (params) {return params.name + ' : ' + params.value[2];}"
+#             )
+#         ),
+#         visualmap_opts=opts.VisualMapOpts(
+#              max_=150, min_=20, dimension=1
+#             # dimension设置维度为1维
+#         ),
+#     )
+# )
+# scatter5.render('echarts-scatter.html')
+# filename = 'file:///' + os.getcwd() + '/' + 'echarts-scatter.html'
+
+# webbrowser.open_new_tab(filename)
+import re
+
+string = "当前指数：1622.084↓    -1.900    -0.120%    成交额 572.80亿元    " \
+         "平均价格 127.859    转股溢价率 31.22%    到期收益率 -0.88%    中位数价格 111.110    换手率 9.84%"
 # print(re.findall(r"\d+\.?\d*", string))
+print(re.findall(r"转股溢价率 (\d+\.?\d*)%", string))
+# re.findall(r"中位数价格 \d+\.?\d*", string)
+print(re.findall(r"到期收益率 (-?\d+\.?\d*)%", string))
