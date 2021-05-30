@@ -41,8 +41,7 @@ config = {'type': [
 ],
 }
 
-draw_plot = lambda row: plt.plot(row['转债价格'], row['溢价率'], 'ro', alpha=0.6)
-get_annotate = lambda row: plt.annotate(row['名称'].replace('转债', ''), (row['转债价格'], row['溢价率']))
+use_personal_features = True
 
 default_get_label = lambda row: row['名称'].replace('转债', '')
 
@@ -84,9 +83,9 @@ def draw_figure(con_file,
         x1 = record['转债价格']
         x.append(x1)
         y1 = record[field_name].replace('%', '')
-        y.append([y1, get_label(record)])
+        y.append([y1, get_label(record), record.get("持有成本", 0), record.get("持有数量", 0)])
 
-        if record.get('持有') is not None and record.get('持有') == '':
+        if use_personal_features and record.get('持有') is not None and record.get('持有') == '':
             unselects.append(opts.MarkPointItem(
                     coord=[x1, y1],
                     itemstyle_opts=opts.ItemStyleOpts(color='#fff', border_color='#000')
@@ -124,11 +123,17 @@ def draw_figure(con_file,
         )
     )
 
+    hover_text = ''
+    if len(unselects) > 0:
+        hover_text = "function (params) {return '价格:' + params.value[0] + '元<br/> " + field_name + ":' + params.value[1] + '%<br/>持有成本:' + params.value[3] + '元<br/>持有数量:' + params.value[4] + '张';}"
+    else:
+        hover_text = "function (params) {return '价格:' + params.value[0] + '元<br/> " + field_name + ":' + params.value[1] + '%';}"
+
     scatter.set_global_opts(
         title_opts=opts.TitleOpts(title="========="+type+"=========", subtitle=sub_title, pos_left='center'),
         tooltip_opts=opts.TooltipOpts(
             formatter=JsCode(
-                "function (params) {return '价格:' + params.value[0] + '元<br/> 溢价率:' + params.value[1] + '%';}"
+                hover_text
             )
         ),
         toolbox_opts=opts.ToolboxOpts(feature={
@@ -198,7 +203,7 @@ def draw_market_view(need_show_figure, need_open_page):
         # =========回售策略=========
         if "回售策略" in config['type']:
             sql = """
-        SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+        SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
       SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as 转债价格, round(bt_red * 100,2) || '%' as 回售收益率, red_t as '回售年限(年)', round((bt_red * 100) + (2-bond_t1),2) as 性价比,round(bt_yield*100,2) || '%' as 税前收益率,
@@ -229,7 +234,7 @@ def draw_market_view(need_show_figure, need_open_page):
          and round(bt_red * 100,2) > 1
         --ORDER by 回售年限 ASC, 回售收益率 DESC;
         ORDER by 性价比 DESC) d left join 
-        (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+        (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
         on d.id = e.bond_code
             """
             html = draw_figure(con_file, sql, "回售策略", "回售年限<1年, 回收收益率>1%", html,
@@ -238,7 +243,7 @@ def draw_market_view(need_show_figure, need_open_page):
         # =========低余额策略=========
         if "低余额策略" in config['type']:
             sql = """
-    SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+    SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
       SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, remain_amount as '余额(亿元)', 
         cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
@@ -270,7 +275,7 @@ def draw_market_view(need_show_figure, need_open_page):
         and cb_price2_id < 110
         ORDER by remain_amount ASC
         limit 20) d left join 
-        (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+        (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
         on d.id = e.bond_code            
             """
 
@@ -282,7 +287,7 @@ def draw_market_view(need_show_figure, need_open_page):
         # =========双低债=========
         if "双低策略" in config['type']:
             sql = """
-        SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+        SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
       SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 税前收益率,
@@ -310,7 +315,7 @@ def draw_market_view(need_show_figure, need_open_page):
     where c.stock_code = s.stock_code
         ORDER by 双低值
         limit 20) d left join 
-        (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+        (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
         on d.id = e.bond_code
         
             """
@@ -319,7 +324,7 @@ def draw_market_view(need_show_figure, need_open_page):
         # =========高收益策略=========
         if "高收益策略" in config['type']:
             sql = """
-        SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+        SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
       SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as '转债价格', round(bt_yield*100,2) || '%' as 到期收益率, round(100- cb_price2_id + BT_yield * 100, 2) as 性价比,
@@ -351,7 +356,7 @@ def draw_market_view(need_show_figure, need_open_page):
         and cb_price2_id < 110
         order by 性价比 DESC
         limit  20) d left join 
-        (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+        (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
         on d.id = e.bond_code;
             """
 
@@ -361,7 +366,7 @@ def draw_market_view(need_show_figure, need_open_page):
         # =========活性债策略=========
         if "活性债策略" in config['type']:
             sql = """
-      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
         SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
         
@@ -398,7 +403,7 @@ def draw_market_view(need_show_figure, need_open_page):
       -- and 溢价率 < 20 
       and 双低值 < 120
       order by 双低值 ASC) d left join 
-          (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+          (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
           on d.id = e.bond_code
           """
             html = draw_figure(con_file, sql, "活性债策略", "价格在99~115, 净利润为正, ROE>1, 双低值<120, 存续期<3年", html)
@@ -406,7 +411,7 @@ def draw_market_view(need_show_figure, need_open_page):
         # =========低溢价率策略=========
         if "溢价率折价策略" in config['type']:
             sql = """
-      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
         SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         round(cb_premium_id*100,2) || '%' as 溢价率, cb_price2_id as '转债价格', cb_t_id as 距离转股日,
@@ -444,7 +449,7 @@ def draw_market_view(need_show_figure, need_open_page):
       -- and 溢价率 < 20 
       -- and 双低值 < 120
       order by cb_premium_id) d left join 
-          (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+          (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
           on d.id = e.bond_code
               """
             html = draw_figure(con_file, sql, "溢价率折价策略", "溢价率为负", html)
@@ -452,7 +457,7 @@ def draw_market_view(need_show_figure, need_open_page):
         # =========高收益率策略=========
         if "高收益率策略" in config['type']:
             sql = """
-    SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+    SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
     SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, round(bt_yield*100,2) || '%' as 税前收益率, cb_price2_id as '转债价格', 
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', round(cb_premium_id*100,2) || '%' as 溢价率, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
@@ -487,7 +492,7 @@ def draw_market_view(need_show_figure, need_open_page):
     -- and 溢价率 < 20 
     -- and 双低值 < 120
     order by bt_yield desc limit 10) d left join 
-      (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+      (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
       on d.id = e.bond_code
           """
             html = draw_figure(con_file, sql, "高收益率策略", "高收益率top5", html)
@@ -495,7 +500,7 @@ def draw_market_view(need_show_figure, need_open_page):
         # =========快到期保本策略=========
         if "快到期保本策略" in config['type']:
             sql = """
-      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
         SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         round(bt_yield*100,2) || '%' as 税前收益率, bond_t1 as 剩余年限,
@@ -535,7 +540,7 @@ def draw_market_view(need_show_figure, need_open_page):
       --and cb_premium_id*100 < 20 
       -- and 双低值 < 120
       order by (2.5-bond_t1) + bt_yield * 100 desc limit 5) d left join 
-          (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+          (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
           on d.id = e.bond_code
               """
             html = draw_figure(con_file, sql, "快到期保本策略", "收益率>0, 剩余年限<3", html)
@@ -543,7 +548,7 @@ def draw_market_view(need_show_figure, need_open_page):
         # =========广撒网筛选策略=========
         if "广撒网筛选策略" in config['type']:
             sql = """
-      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
         SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         
@@ -581,7 +586,7 @@ def draw_market_view(need_show_figure, need_open_page):
       and cb_premium_id*100 < 20 
       -- and 双低值 < 120
       order by bt_yield desc) d left join 
-          (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+          (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
           on d.id = e.bond_code
               """
             html = draw_figure(con_file, sql, "广撒网筛选策略", "价格<105, 溢价率<20%, pb>1", html)
@@ -589,7 +594,7 @@ def draw_market_view(need_show_figure, need_open_page):
         # =========正股优秀策略=========
         if "正股优秀策略" in config['type']:
             sql = """
-      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有
+      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
         SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         
@@ -633,7 +638,7 @@ def draw_market_view(need_show_figure, need_open_page):
       and cb_price2_id < 115
       order by fact_base desc
       ) d left join 
-          (select id as hold_id, bond_code from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+          (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
           on d.id = e.bond_code
               """
             html = draw_figure(con_file, sql, "正股优秀策略", "正股综合评分>6, 转债价格<115, 双低值<130", html)

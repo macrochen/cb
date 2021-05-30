@@ -59,6 +59,8 @@ def get_cb_sum_data():
     driver.close()
 
 def get_html_string(table):
+    ignore_fields = ['nid', 'id', 'stock_code', '持有', '持有成本', '持有数量']
+
     lines = []
     linebreak = "<br>"
 
@@ -67,8 +69,9 @@ def get_html_string(table):
     # Headers
     lines.append("    <thead>")
     lines.append("        <tr>")
+
     for field in table._field_names:
-        if field == 'nid' or field == 'id' or field == 'stock_code':
+        if ignore_fields.count(field) > 0:
             continue
 
         lines.append(
@@ -76,7 +79,6 @@ def get_html_string(table):
         )
     lines.append("        </tr>")
     lines.append("    </thead>")
-
 
     # Data
     lines.append("    <tbody>")
@@ -87,7 +89,7 @@ def get_html_string(table):
         lines.append("        <tr>")
         record = getRecord(table, row)
         for field, datum in record.items():
-            if field == 'nid' or field == 'id' or field == 'stock_code':
+            if ignore_fields.count(field) > 0:
                 continue
 
             # 标题增加链接

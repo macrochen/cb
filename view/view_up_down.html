@@ -1,0 +1,2887 @@
+
+        <html>
+        <head>
+        <meta charset="UTF-8">
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.1.2-dev.20210512/dist/echarts.min.js"></script>
+        <title>我的策略</title>
+        
+        <style>
+
+        td, th {
+
+          border-right :1px solid gray;
+          border-bottom :1px solid gray;
+
+          width:100px;
+
+          height:30px;
+
+          box-sizing: border-box;
+
+          font-size:7;
+
+        }
+
+        th {
+
+          background-color:lightblue;
+
+        }
+
+
+        table {
+          border-collapse:separate;
+          table-layout: fixed;
+          width: 100%; /* 固定寬度 */
+
+        }
+
+        td:first-child, th:first-child {
+
+          position:sticky;
+
+          left:0; /* 首行在左 */
+
+          z-index:1;
+
+          background-color:lightpink;
+
+        }
+
+        thead tr th {
+
+          position:sticky;
+
+          top:0; /* 第一列最上 */
+
+        }
+
+        th:first-child{
+
+          z-index:2;
+
+          background-color:lightblue;
+
+        }
+      </style>
+      </head>
+      <body>
+        <br/> <div id="fccf6314bf1041819ea1ad77f45586c6" class="chart-container" style="width:1424px; height:700px;"></div>
+    <script>
+        var chart_fccf6314bf1041819ea1ad77f45586c6 = echarts.init(
+            document.getElementById('fccf6314bf1041819ea1ad77f45586c6'), 'shine', {renderer: 'canvas'});
+        var option_fccf6314bf1041819ea1ad77f45586c6 = {
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "series": [
+        {
+            "type": "bar",
+            "name": "\u6da8",
+            "legendHoverLink": true,
+            "data": [
+                3.55,
+                2.42,
+                1.26,
+                1.15,
+                1.14,
+                1.12,
+                0.94,
+                0.8,
+                0.8,
+                0.36,
+                0.33,
+                0.3,
+                0.26,
+                0.24,
+                0.22,
+                0.21,
+                0.18,
+                0.16,
+                0.15,
+                0.14
+            ],
+            "showBackground": false,
+            "barWidth": 25,
+            "barMinHeight": 0,
+            "barCategoryGap": "1%",
+            "barGap": "1%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "top",
+                "margin": 8,
+                "formatter": function(x){return x.data +'%';}
+            },
+            "itemStyle": {
+                "color": function(x){return x.data>0?'#c23531':'#1d953f'}
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        },
+        {
+            "type": "bar",
+            "name": "\u8dcc",
+            "yAxisIndex": 1,
+            "legendHoverLink": true,
+            "data": [
+                -0.77,
+                -0.82,
+                -0.82,
+                -0.87,
+                -0.88,
+                -0.92,
+                -0.94,
+                -0.99,
+                -1.02,
+                -1.03,
+                -1.03,
+                -1.06,
+                -1.15,
+                -1.24,
+                -1.3,
+                -1.36,
+                -1.43,
+                -1.47,
+                -2.22,
+                -2.83
+            ],
+            "showBackground": false,
+            "barWidth": 25,
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "bottom",
+                "margin": 8,
+                "formatter": function(x){return x.data +'%';}
+            },
+            "itemStyle": {
+                "color": function(x){return x.data>0?'#c23531':'#1d953f'}
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u6da8",
+                "\u8dcc"
+            ],
+            "selected": {
+                "\u6da8": true,
+                "\u8dcc": true
+            },
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14
+        }
+    ],
+    "tooltip": {
+        "show": false,
+        "trigger": "item",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "textStyle": {
+            "fontSize": 14
+        },
+        "borderWidth": 0,
+        "padding": 5
+    },
+    "xAxis": [
+        {
+            "show": true,
+            "scale": true,
+            "nameLocation": "middle",
+            "nameGap": 15,
+            "gridIndex": 0,
+            "axisLine": {
+                "show": true,
+                "onZero": true,
+                "onZeroAxisIndex": 0
+            },
+            "axisLabel": {
+                "show": true,
+                "position": "top",
+                "rotate": -60,
+                "margin": 8
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            },
+            "data": [
+                "\u8d77\u6b65",
+                "\u534e\u81ea",
+                "\u5174\u68ee",
+                "\u9f0e\u80dc",
+                "\u6d77\u5170",
+                "\u56fd\u6295",
+                "\u8d85\u58f0",
+                "\u585e\u529b",
+                "\u6e05\u6c34",
+                "\u9e3f\u8fbe",
+                "\u7ef4\u5c14",
+                "\u56fd\u57ce",
+                "\u6da6\u5efa",
+                "\u4eca\u98de",
+                "\u5929\u521b",
+                "\u676d\u94f6",
+                "\u8fea\u8d1d",
+                "\u5927\u79e6",
+                "\u541b\u79be",
+                "\u597d\u5ba2"
+            ]
+        },
+        {
+            "type": "category",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "gridIndex": 0,
+            "axisLabel": {
+                "show": true,
+                "position": "top",
+                "rotate": -60,
+                "margin": 8
+            },
+            "inverse": false,
+            "position": "top",
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            },
+            "data": [
+                "\u6c49\u5f97",
+                "\u4e2d\u88c5\u8f6c2",
+                "\u5927\u79b9",
+                "\u5168\u7b51",
+                "\u4e09\u661f",
+                "\u5b8f\u5ddd",
+                "\u4e9a\u6cf0",
+                "\u6e29\u6c0f",
+                "\u5229\u5fb7",
+                "\u5609\u6cfd",
+                "\u5f3a\u529b",
+                "\u6d77\u6ce2",
+                "\u4e50\u666e\u8f6c2",
+                "\u767e\u8fbe",
+                "\u5b9d\u901a",
+                "\u7075\u5eb7",
+                "\u82f1\u7279",
+                "\u4e09\u8d85",
+                "\u4e1c\u98ce",
+                "\u6625\u79cb"
+            ]
+        }
+    ],
+    "yAxis": [
+        {
+            "type": "value",
+            "name": "\u6da8\u5e45(%)",
+            "show": true,
+            "scale": true,
+            "nameLocation": "middle",
+            "nameGap": 35,
+            "gridIndex": 0,
+            "axisLine": {
+                "show": true,
+                "onZero": false,
+                "onZeroAxisIndex": 0
+            },
+            "axisLabel": {
+                "show": true,
+                "position": "top",
+                "margin": 8,
+                "formatter": "{value}%"
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "max": 5.75,
+            "minInterval": 0,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            }
+        },
+        {
+            "type": "value",
+            "name": "\u8dcc\u5e45(%)",
+            "show": true,
+            "scale": false,
+            "nameLocation": "middle",
+            "nameGap": 45,
+            "gridIndex": 0,
+            "axisLine": {
+                "show": true,
+                "onZero": true,
+                "onZeroAxisIndex": 0,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            },
+            "axisLabel": {
+                "show": true,
+                "position": "top",
+                "margin": 8,
+                "formatter": "{value}%"
+            },
+            "inverse": false,
+            "position": "right",
+            "offset": 0,
+            "splitNumber": 5,
+            "min": -5.75,
+            "minInterval": 0,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            }
+        }
+    ],
+    "title": [
+        {
+            "text": "=========\u6211\u6301\u6709\u7684\u53ef\u8f6c\u503a\u6da8\u8dccTOP20=========",
+            "left": "center",
+            "top": "-1px",
+            "padding": 5,
+            "itemGap": 10
+        }
+    ]
+};
+        chart_fccf6314bf1041819ea1ad77f45586c6.setOption(option_fccf6314bf1041819ea1ad77f45586c6);
+    </script><table>
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>可转债涨跌</th>
+            <th>正股名称</th>
+            <th>行业</th>
+            <th>子行业</th>
+            <th>盈亏</th>
+            <th>成本(量)</th>
+            <th>余额(亿元)</th>
+            <th>换手率(%)</th>
+            <th>正股涨跌</th>
+            <th>转债价格</th>
+            <th>溢价率</th>
+            <th>税前收益率</th>
+            <th>双低值</th>
+            <th>余额/股本(%)</th>
+            <th>营收(亿元)</th>
+            <th>营收同比</th>
+            <th>毛利率|行业均值</th>
+            <th>毛利率排名</th>
+            <th>净利润|均值(亿元)</th>
+            <th>净利润同比</th>
+            <th>净利润排名</th>
+            <th>利润率|行业均值</th>
+            <th>利润率同比</th>
+            <th>利润率排名</th>
+            <th>ROE|行业均值</th>
+            <th>ROE同比</th>
+            <th>ROE排名</th>
+            <th>负债率</th>
+            <th>负债率同比</th>
+            <th>净资产|行业均值</th>
+            <th>净资产排名</th>
+            <th>PE(动)|均值</th>
+            <th>PE排名</th>
+            <th>PB|行业均值</th>
+            <th>PB排名</th>
+            <th>市值|均值(亿元)</th>
+            <th>市值排名</th>
+            <th>技术|资金|消息|行业|基本面</th>
+            <th>综合评分</th>
+            <th>操作建议</th>
+            <th>信用</th>
+            <th>续存期</th>
+            <th>ma20乖离</th>
+            <th>热门度</th>
+            <th>账户</th>
+            <th>备注</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113576.html'>起步转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=439'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113576'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113576'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603557.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603557/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=439'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>3.55%</center></td>
+            <td><center>ST起步</center></td>
+            <td><center>服装纺织</center></td>
+            <td><center>鞋服行业</center></td>
+            <td><center>144.58</center></td>
+            <td><center>90.071 (20)</center></td>
+            <td><center>2.66</center></td>
+            <td><center>104.0%</center></td>
+            <td><center>5.07%</center></td>
+            <td><center>97.3</center></td>
+            <td><center>107.0</center></td>
+            <td><center>4.74%</center></td>
+            <td><center>204.3</center></td>
+            <td><center>5.1</center></td>
+            <td><center>3.18</center></td>
+            <td><center>24.41%</center></td>
+            <td><center>31.59|31.7</center></td>
+            <td><center>37|91【较高】</center></td>
+            <td><center>0.17|0.648</center></td>
+            <td><center>-46.58%</center></td>
+            <td><center>55|91【较低】</center></td>
+            <td><center>5.24|2.43</center></td>
+            <td><center>-57.12%</center></td>
+            <td><center>57|91【较低】</center></td>
+            <td><center>1.03|1.62</center></td>
+            <td><center>-44.02%</center></td>
+            <td><center>54|91【较低】</center></td>
+            <td><center>44.7%</center></td>
+            <td><center>21.43%</center></td>
+            <td><center>16.31|29.68</center></td>
+            <td><center>51|91【较低】</center></td>
+            <td><center>35.22|302.8</center></td>
+            <td><center>47|91【较低】</center></td>
+            <td><center>1.57|2.13</center></td>
+            <td><center>25|91【较高】</center></td>
+            <td><center>25.0|68.22</center></td>
+            <td><center>67|91【较低】</center></td>
+            <td><center>3.8|3.7|5.2|2.8|5.1</center></td>
+            <td><center>4.2</center></td>
+            <td><center>减持</center></td>
+            <td><center>A</center></td>
+            <td><center>1.06</center></td>
+            <td><center>-0.2</center></td>
+            <td><center>31</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123102.html'>华自转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=613'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123102'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123102'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300490.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300490/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=613'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>2.42%</center></td>
+            <td><center>华自科技</center></td>
+            <td><center>机械装备制造</center></td>
+            <td><center>机器人及工业自动化</center></td>
+            <td><center>371.98</center></td>
+            <td><center>100.0 (20)</center></td>
+            <td><center>6.7</center></td>
+            <td><center>41.5%</center></td>
+            <td><center>3.2%</center></td>
+            <td><center>118.599</center></td>
+            <td><center>0.0</center></td>
+            <td><center>1.2%</center></td>
+            <td><center>118.6</center></td>
+            <td><center>28.2</center></td>
+            <td><center>2.66</center></td>
+            <td><center>118.93%</center></td>
+            <td><center>32.77|26.39</center></td>
+            <td><center>34|129【较高】</center></td>
+            <td><center>0.03|0.976</center></td>
+            <td><center>123.11%</center></td>
+            <td><center>101|129【低】</center></td>
+            <td><center>1.26|7.64</center></td>
+            <td><center>-110.58%</center></td>
+            <td><center>106|129【低】</center></td>
+            <td><center>0.19|1.54</center></td>
+            <td><center>122.35%</center></td>
+            <td><center>102|129【低】</center></td>
+            <td><center>54.84%</center></td>
+            <td><center>34.42%</center></td>
+            <td><center>19.25|51.47</center></td>
+            <td><center>70|129【较低】</center></td>
+            <td><center>203.47|55.48</center></td>
+            <td><center>96|129【较低】</center></td>
+            <td><center>1.61|3.02</center></td>
+            <td><center>27|129【高】</center></td>
+            <td><center>28.0|110.0</center></td>
+            <td><center>102|129【低】</center></td>
+            <td><center>8.4|3.9|6.1|3.5|5.0</center></td>
+            <td><center>5.8</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.16</center></td>
+            <td><center>0.154</center></td>
+            <td><center>17</center></td>
+            <td><center>None</center></td>
+            <td><center>财通(赵):10, 财通(石):10</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123102.html'>华自转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=613'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123102'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123102'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300490.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300490/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=613'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>2.42%</center></td>
+            <td><center>华自科技</center></td>
+            <td><center>机械装备制造</center></td>
+            <td><center>机器人及工业自动化</center></td>
+            <td><center>294.38</center></td>
+            <td><center>103.88 (20)</center></td>
+            <td><center>6.7</center></td>
+            <td><center>41.5%</center></td>
+            <td><center>3.2%</center></td>
+            <td><center>118.599</center></td>
+            <td><center>0.0</center></td>
+            <td><center>1.2%</center></td>
+            <td><center>118.6</center></td>
+            <td><center>28.2</center></td>
+            <td><center>2.66</center></td>
+            <td><center>118.93%</center></td>
+            <td><center>32.77|26.39</center></td>
+            <td><center>34|129【较高】</center></td>
+            <td><center>0.03|0.976</center></td>
+            <td><center>123.11%</center></td>
+            <td><center>101|129【低】</center></td>
+            <td><center>1.26|7.64</center></td>
+            <td><center>-110.58%</center></td>
+            <td><center>106|129【低】</center></td>
+            <td><center>0.19|1.54</center></td>
+            <td><center>122.35%</center></td>
+            <td><center>102|129【低】</center></td>
+            <td><center>54.84%</center></td>
+            <td><center>34.42%</center></td>
+            <td><center>19.25|51.47</center></td>
+            <td><center>70|129【较低】</center></td>
+            <td><center>203.47|55.48</center></td>
+            <td><center>96|129【较低】</center></td>
+            <td><center>1.61|3.02</center></td>
+            <td><center>27|129【高】</center></td>
+            <td><center>28.0|110.0</center></td>
+            <td><center>102|129【低】</center></td>
+            <td><center>8.4|3.9|6.1|3.5|5.0</center></td>
+            <td><center>5.8</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.16</center></td>
+            <td><center>0.154</center></td>
+            <td><center>17</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128122.html'>兴森转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=502'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/128122'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz128122'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz002436.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/002436/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=502'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>1.26%</center></td>
+            <td><center>兴森科技</center></td>
+            <td><center>电子</center></td>
+            <td><center>元器件制造</center></td>
+            <td><center>61.22</center></td>
+            <td><center>105.289 (20)</center></td>
+            <td><center>2.69</center></td>
+            <td><center>4.1%</center></td>
+            <td><center>4.85%</center></td>
+            <td><center>108.35</center></td>
+            <td><center>58.1</center></td>
+            <td><center>1.1%</center></td>
+            <td><center>166.45</center></td>
+            <td><center>1.3</center></td>
+            <td><center>10.71</center></td>
+            <td><center>24.4%</center></td>
+            <td><center>31.98|13.84</center></td>
+            <td><center>95|303【较高】</center></td>
+            <td><center>1.01|1.08</center></td>
+            <td><center>158.76%</center></td>
+            <td><center>76|303【较高】</center></td>
+            <td><center>9.47|-98.19</center></td>
+            <td><center>108.13%</center></td>
+            <td><center>137|303【较高】</center></td>
+            <td><center>3.04|1.35</center></td>
+            <td><center>121.9%</center></td>
+            <td><center>104|303【较高】</center></td>
+            <td><center>46.78%</center></td>
+            <td><center>10.39%</center></td>
+            <td><center>35.33|49.65</center></td>
+            <td><center>88|303【较高】</center></td>
+            <td><center>34.0|91.67</center></td>
+            <td><center>92|303【较高】</center></td>
+            <td><center>4.51|6.0</center></td>
+            <td><center>186|303【较低】</center></td>
+            <td><center>145.0|193.6</center></td>
+            <td><center>92|303【较高】</center></td>
+            <td><center>5.9|4.7|6.0|7.2|6.9</center></td>
+            <td><center>6.1</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA</center></td>
+            <td><center>0.78</center></td>
+            <td><center>0.071</center></td>
+            <td><center>12</center></td>
+            <td><center>华宝</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113534.html'>鼎胜转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=302'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113534'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113534'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603876.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603876/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=302'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>1.15%</center></td>
+            <td><center>鼎胜新材</center></td>
+            <td><center>有色金属</center></td>
+            <td><center>小金属</center></td>
+            <td><center>171.45</center></td>
+            <td><center>101.761 (50)</center></td>
+            <td><center>12.0</center></td>
+            <td><center>4.5%</center></td>
+            <td><center>-0.8%</center></td>
+            <td><center>105.19</center></td>
+            <td><center>17.5</center></td>
+            <td><center>2.21%</center></td>
+            <td><center>122.69</center></td>
+            <td><center>18.2</center></td>
+            <td><center>34.06</center></td>
+            <td><center>30.21%</center></td>
+            <td><center>11.3|16.13</center></td>
+            <td><center>47|77【较低】</center></td>
+            <td><center>0.44|1.81</center></td>
+            <td><center>19.78%</center></td>
+            <td><center>48|77【较低】</center></td>
+            <td><center>1.3|3.11</center></td>
+            <td><center>-7.8%</center></td>
+            <td><center>67|77【低】</center></td>
+            <td><center>1.16|2.64</center></td>
+            <td><center>22.11%</center></td>
+            <td><center>57|77【较低】</center></td>
+            <td><center>75.52%</center></td>
+            <td><center>3.25%</center></td>
+            <td><center>38.51|85.34</center></td>
+            <td><center>39|77【较低】</center></td>
+            <td><center>33.62|64.57</center></td>
+            <td><center>43|77【较低】</center></td>
+            <td><center>1.63|5.86</center></td>
+            <td><center>19|77【高】</center></td>
+            <td><center>59.0|193.6</center></td>
+            <td><center>56|77【较低】</center></td>
+            <td><center>8.8|6.7|5.3|2.9|5.8</center></td>
+            <td><center>6.5</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA</center></td>
+            <td><center>2.08</center></td>
+            <td><center>0.054</center></td>
+            <td><center>37</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123086.html'>海兰转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=579'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123086'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123086'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300065.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300065/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=579'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>1.14%</center></td>
+            <td><center>海兰信</center></td>
+            <td><center>电子</center></td>
+            <td><center>电子产品</center></td>
+            <td><center>158.9</center></td>
+            <td><center>100.805 (20)</center></td>
+            <td><center>7.3</center></td>
+            <td><center>6.1%</center></td>
+            <td><center>-0.09%</center></td>
+            <td><center>108.75</center></td>
+            <td><center>11.9</center></td>
+            <td><center>2.37%</center></td>
+            <td><center>120.65</center></td>
+            <td><center>16.9</center></td>
+            <td><center>1.32</center></td>
+            <td><center>10.15%</center></td>
+            <td><center>16.83|25.89</center></td>
+            <td><center>71|111【较低】</center></td>
+            <td><center>-0.31|0.75</center></td>
+            <td><center>-96.1%</center></td>
+            <td><center>100|111【低】</center></td>
+            <td><center>-23.34|-37.27</center></td>
+            <td><center>78.03%</center></td>
+            <td><center>99|111【低】</center></td>
+            <td><center>-1.89|0.24</center></td>
+            <td><center>-117.24%</center></td>
+            <td><center>94|111【低】</center></td>
+            <td><center>43.11%</center></td>
+            <td><center>44.4%</center></td>
+            <td><center>16.3|40.68</center></td>
+            <td><center>58|111【较低】</center></td>
+            <td><center>负值|35.09</center></td>
+            <td><center>-|111【- -】</center></td>
+            <td><center>2.83|6.15</center></td>
+            <td><center>47|111【较高】</center></td>
+            <td><center>42.0|133.8</center></td>
+            <td><center>60|111【较低】</center></td>
+            <td><center>5.7|3.0|5.8|7.0|4.3</center></td>
+            <td><center>5.0</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.3</center></td>
+            <td><center>0.023</center></td>
+            <td><center>15</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh110073.html'>国投转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=503'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/110073'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh110073'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh600061.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/600061/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=503'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>1.12%</center></td>
+            <td><center>国投资本</center></td>
+            <td><center>金融</center></td>
+            <td><center>证券行业</center></td>
+            <td><center>-46.68</center></td>
+            <td><center>113.838 (60)</center></td>
+            <td><center>80.0</center></td>
+            <td><center>1.2%</center></td>
+            <td><center>1.83%</center></td>
+            <td><center>113.06</center></td>
+            <td><center>23.7</center></td>
+            <td><center>-0.45%</center></td>
+            <td><center>136.76</center></td>
+            <td><center>12.4</center></td>
+            <td><center>35.8</center></td>
+            <td><center>18.37%</center></td>
+            <td><center>-3.62|2.74</center></td>
+            <td><center>49|49【低】</center></td>
+            <td><center>10.77|8.79</center></td>
+            <td><center>69.49%</center></td>
+            <td><center>14|49【较高】</center></td>
+            <td><center>30.1|25.66</center></td>
+            <td><center>43.2%</center></td>
+            <td><center>1|49【高】</center></td>
+            <td><center>2.45|-1.16</center></td>
+            <td><center>52.17%</center></td>
+            <td><center>13|49【较高】</center></td>
+            <td><center>78.26%</center></td>
+            <td><center>0.35%</center></td>
+            <td><center>514.4|425.2</center></td>
+            <td><center>14|49【较高】</center></td>
+            <td><center>13.43|78.62</center></td>
+            <td><center>6|49【高】</center></td>
+            <td><center>1.36|3.73</center></td>
+            <td><center>14|49【较高】</center></td>
+            <td><center>589.0|699.6</center></td>
+            <td><center>17|49【较高】</center></td>
+            <td><center>7.5|5.1|5.8|8.2|5.6</center></td>
+            <td><center>6.4</center></td>
+            <td><center>增持</center></td>
+            <td><center>AAA</center></td>
+            <td><center>0.77</center></td>
+            <td><center>0.063</center></td>
+            <td><center>23</center></td>
+            <td><center>华宝</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz127026.html'>超声转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=574'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/127026'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz127026'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz000823.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/000823/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=574'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>0.94%</center></td>
+            <td><center>超声电子</center></td>
+            <td><center>电子</center></td>
+            <td><center>元器件制造</center></td>
+            <td><center>30.0</center></td>
+            <td><center>100.0 (10)</center></td>
+            <td><center>7.0</center></td>
+            <td><center>3.6%</center></td>
+            <td><center>-1.59%</center></td>
+            <td><center>103.0</center></td>
+            <td><center>25.8</center></td>
+            <td><center>1.74%</center></td>
+            <td><center>128.8</center></td>
+            <td><center>10.1</center></td>
+            <td><center>15.07</center></td>
+            <td><center>37.42%</center></td>
+            <td><center>20.73|13.84</center></td>
+            <td><center>196|303【较低】</center></td>
+            <td><center>0.75|1.08</center></td>
+            <td><center>100.33%</center></td>
+            <td><center>94|303【较高】</center></td>
+            <td><center>5.0|-98.19</center></td>
+            <td><center>45.77%</center></td>
+            <td><center>184|303【较低】</center></td>
+            <td><center>1.92|1.35</center></td>
+            <td><center>81.13%</center></td>
+            <td><center>163|303【较低】</center></td>
+            <td><center>37.41%</center></td>
+            <td><center>26.89%</center></td>
+            <td><center>44.3|49.65</center></td>
+            <td><center>72|303【高】</center></td>
+            <td><center>19.06|91.67</center></td>
+            <td><center>21|303【高】</center></td>
+            <td><center>1.47|6.0</center></td>
+            <td><center>11|303【高】</center></td>
+            <td><center>56.0|193.6</center></td>
+            <td><center>161|303【较低】</center></td>
+            <td><center>7.4|3.5|7.2|7.2|5.9</center></td>
+            <td><center>6.2</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA</center></td>
+            <td><center>0.37</center></td>
+            <td><center>0.012</center></td>
+            <td><center>10</center></td>
+            <td><center>None</center></td>
+            <td><center>财通(石):10</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113601.html'>塞力转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=521'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113601'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113601'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603716.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603716/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=521'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>0.8%</center></td>
+            <td><center>塞力医疗</center></td>
+            <td><center>医药</center></td>
+            <td><center>医药商业</center></td>
+            <td><center>-86.71</center></td>
+            <td><center>107.661 (10)</center></td>
+            <td><center>5.43</center></td>
+            <td><center>5.4%</center></td>
+            <td><center>-1.93%</center></td>
+            <td><center>98.99</center></td>
+            <td><center>32.0</center></td>
+            <td><center>4.06%</center></td>
+            <td><center>130.99</center></td>
+            <td><center>15.6</center></td>
+            <td><center>5.17</center></td>
+            <td><center>83.61%</center></td>
+            <td><center>22.05|50.03</center></td>
+            <td><center>93|106【低】</center></td>
+            <td><center>0.05|1.97</center></td>
+            <td><center>120.54%</center></td>
+            <td><center>94|106【低】</center></td>
+            <td><center>0.99|18.85</center></td>
+            <td><center>-111.14%</center></td>
+            <td><center>89|106【低】</center></td>
+            <td><center>0.34|4.75</center></td>
+            <td><center>120.0%</center></td>
+            <td><center>94|106【低】</center></td>
+            <td><center>54.81%</center></td>
+            <td><center>10.28%</center></td>
+            <td><center>18.2|34.15</center></td>
+            <td><center>57|106【较低】</center></td>
+            <td><center>129.4|89.06</center></td>
+            <td><center>80|106【低】</center></td>
+            <td><center>1.67|8.46</center></td>
+            <td><center>6|106【高】</center></td>
+            <td><center>26.0|315.6</center></td>
+            <td><center>100|106【低】</center></td>
+            <td><center>2.8|6.1|5.5|2.6|5.3</center></td>
+            <td><center>4.5</center></td>
+            <td><center>减持</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.7</center></td>
+            <td><center>-0.068</center></td>
+            <td><center>37</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123028.html'>清水转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=321'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123028'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123028'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300437.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300437/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=321'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>0.8%</center></td>
+            <td><center>清水源</center></td>
+            <td><center>城市公用设施</center></td>
+            <td><center>三废处理</center></td>
+            <td><center>408.87</center></td>
+            <td><center>87.179 (30)</center></td>
+            <td><center>4.55</center></td>
+            <td><center>8.9%</center></td>
+            <td><center>6.24%</center></td>
+            <td><center>100.808</center></td>
+            <td><center>29.9</center></td>
+            <td><center>4.92%</center></td>
+            <td><center>130.71</center></td>
+            <td><center>17.4</center></td>
+            <td><center>3.33</center></td>
+            <td><center>22.68%</center></td>
+            <td><center>15.33|26.56</center></td>
+            <td><center>175|216【低】</center></td>
+            <td><center>0.03|1.47</center></td>
+            <td><center>-83.03%</center></td>
+            <td><center>190|216【低】</center></td>
+            <td><center>1.03|-32.31</center></td>
+            <td><center>-86.21%</center></td>
+            <td><center>189|216【低】</center></td>
+            <td><center>0.29|2.72</center></td>
+            <td><center>-76.8%</center></td>
+            <td><center>190|216【低】</center></td>
+            <td><center>67.21%</center></td>
+            <td><center>14.28%</center></td>
+            <td><center>14.96|41.42</center></td>
+            <td><center>123|216【较低】</center></td>
+            <td><center>139.05|56.43</center></td>
+            <td><center>182|216【低】</center></td>
+            <td><center>1.83|4.64</center></td>
+            <td><center>41|216【高】</center></td>
+            <td><center>20.0|129.1</center></td>
+            <td><center>198|216【低】</center></td>
+            <td><center>5.4|3.1|4.8|3.3|5.5</center></td>
+            <td><center>4.7</center></td>
+            <td><center>减持</center></td>
+            <td><center>AA-</center></td>
+            <td><center>1.87</center></td>
+            <td><center>0.081</center></td>
+            <td><center>51</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128085.html'>鸿达转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=374'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/128085'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz128085'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz002002.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/002002/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=374'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>0.36%</center></td>
+            <td><center>鸿达兴业</center></td>
+            <td><center>化工</center></td>
+            <td><center>化工</center></td>
+            <td><center>774.3</center></td>
+            <td><center>94.411 (50)</center></td>
+            <td><center>9.12</center></td>
+            <td><center>33.7%</center></td>
+            <td><center>-1.38%</center></td>
+            <td><center>109.897</center></td>
+            <td><center>0.2</center></td>
+            <td><center>2.82%</center></td>
+            <td><center>110.1</center></td>
+            <td><center>8.0</center></td>
+            <td><center>16.42</center></td>
+            <td><center>13.83%</center></td>
+            <td><center>27.86|26.56</center></td>
+            <td><center>79|216【较高】</center></td>
+            <td><center>2.69|1.47</center></td>
+            <td><center>41.13%</center></td>
+            <td><center>28|216【高】</center></td>
+            <td><center>16.41|-32.31</center></td>
+            <td><center>23.94%</center></td>
+            <td><center>50|216【高】</center></td>
+            <td><center>3.49|2.72</center></td>
+            <td><center>34.75%</center></td>
+            <td><center>70|216【较高】</center></td>
+            <td><center>51.6%</center></td>
+            <td><center>-8.6%</center></td>
+            <td><center>87.09|41.42</center></td>
+            <td><center>24|216【高】</center></td>
+            <td><center>11.76|56.43</center></td>
+            <td><center>26|216【高】</center></td>
+            <td><center>1.48|4.64</center></td>
+            <td><center>26|216【高】</center></td>
+            <td><center>125.0|129.1</center></td>
+            <td><center>53|216【高】</center></td>
+            <td><center>7.4|4.8|7.1|6.5|7.1</center></td>
+            <td><center>6.7</center></td>
+            <td><center>增持</center></td>
+            <td><center>BB</center></td>
+            <td><center>1.39</center></td>
+            <td><center>0.091</center></td>
+            <td><center>100</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123076.html'>强力转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=560'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123076'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123076'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300429.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300429/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=560'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-1.03%</center></td>
+            <td><center>强力新材</center></td>
+            <td><center>化工</center></td>
+            <td><center>化工</center></td>
+            <td><center>-38.45</center></td>
+            <td><center>101.935 (10)</center></td>
+            <td><center>8.5</center></td>
+            <td><center>2.5%</center></td>
+            <td><center>-2.02%</center></td>
+            <td><center>98.09</center></td>
+            <td><center>60.1</center></td>
+            <td><center>3.58%</center></td>
+            <td><center>158.19</center></td>
+            <td><center>8.7</center></td>
+            <td><center>2.29</center></td>
+            <td><center>28.83%</center></td>
+            <td><center>35.84|26.56</center></td>
+            <td><center>42|216【高】</center></td>
+            <td><center>0.32|1.47</center></td>
+            <td><center>22.28%</center></td>
+            <td><center>119|216【较低】</center></td>
+            <td><center>13.89|-32.31</center></td>
+            <td><center>-5.12%</center></td>
+            <td><center>70|216【较高】</center></td>
+            <td><center>1.63|2.72</center></td>
+            <td><center>5.84%</center></td>
+            <td><center>147|216【较低】</center></td>
+            <td><center>32.85%</center></td>
+            <td><center>142.77%</center></td>
+            <td><center>20.23|41.42</center></td>
+            <td><center>100|216【较高】</center></td>
+            <td><center>47.99|56.43</center></td>
+            <td><center>140|216【较低】</center></td>
+            <td><center>3.39|4.64</center></td>
+            <td><center>129|216【较低】</center></td>
+            <td><center>60.0|129.1</center></td>
+            <td><center>93|216【较高】</center></td>
+            <td><center>7.3|4.9|5.9|3.3|4.4</center></td>
+            <td><center>5.5</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.48</center></td>
+            <td><center>0.077</center></td>
+            <td><center>14</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123080.html'>海波转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=569'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123080'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123080'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300517.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300517/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=569'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-1.06%</center></td>
+            <td><center>海波重科</center></td>
+            <td><center>建筑</center></td>
+            <td><center>建筑工程</center></td>
+            <td><center>14.08</center></td>
+            <td><center>110.806 (20)</center></td>
+            <td><center>2.45</center></td>
+            <td><center>2.3%</center></td>
+            <td><center>-1.03%</center></td>
+            <td><center>111.51</center></td>
+            <td><center>5.3</center></td>
+            <td><center>2.37%</center></td>
+            <td><center>116.81</center></td>
+            <td><center>11.0</center></td>
+            <td><center>4.16</center></td>
+            <td><center>529.84%</center></td>
+            <td><center>19.95|19.4</center></td>
+            <td><center>37|86【较高】</center></td>
+            <td><center>0.39|4.67</center></td>
+            <td><center>599.09%</center></td>
+            <td><center>51|86【较低】</center></td>
+            <td><center>9.37|6.42</center></td>
+            <td><center>11.02%</center></td>
+            <td><center>24|86【较高】</center></td>
+            <td><center>4.51|2.0</center></td>
+            <td><center>485.71%</center></td>
+            <td><center>10|86【高】</center></td>
+            <td><center>50.98%</center></td>
+            <td><center>-0.96%</center></td>
+            <td><center>8.83|293.1</center></td>
+            <td><center>73|86【低】</center></td>
+            <td><center>15.33|51.97</center></td>
+            <td><center>28|86【较高】</center></td>
+            <td><center>2.85|2.64</center></td>
+            <td><center>72|86【低】</center></td>
+            <td><center>24.0|142.2</center></td>
+            <td><center>72|86【低】</center></td>
+            <td><center>4.5|4.5|7.7|2.8|6.5</center></td>
+            <td><center>5.3</center></td>
+            <td><center>中性</center></td>
+            <td><center>A+</center></td>
+            <td><center>0.43</center></td>
+            <td><center>-0.028</center></td>
+            <td><center>17</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123108.html'>乐普转2</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=625'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123108'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123108'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300003.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300003/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=625'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-1.15%</center></td>
+            <td><center>乐普医疗</center></td>
+            <td><center>医药</center></td>
+            <td><center>医疗器械</center></td>
+            <td><center>295.0</center></td>
+            <td><center>100.0 (10)</center></td>
+            <td><center>16.4</center></td>
+            <td><center>2.9%</center></td>
+            <td><center>-2.55%</center></td>
+            <td><center>129.5</center></td>
+            <td><center>13.4</center></td>
+            <td><center>-3.15%</center></td>
+            <td><center>142.9</center></td>
+            <td><center>3.1</center></td>
+            <td><center>27.49</center></td>
+            <td><center>64.96%</center></td>
+            <td><center>64.89|50.03</center></td>
+            <td><center>32|106【较高】</center></td>
+            <td><center>7.26|1.97</center></td>
+            <td><center>89.17%</center></td>
+            <td><center>7|106【高】</center></td>
+            <td><center>26.41|18.85</center></td>
+            <td><center>14.68%</center></td>
+            <td><center>39|106【较高】</center></td>
+            <td><center>7.08|4.75</center></td>
+            <td><center>42.45%</center></td>
+            <td><center>19|106【高】</center></td>
+            <td><center>43.88%</center></td>
+            <td><center>-9.93%</center></td>
+            <td><center>113.2|34.15</center></td>
+            <td><center>6|106【高】</center></td>
+            <td><center>21.65|89.06</center></td>
+            <td><center>18|106【高】</center></td>
+            <td><center>5.76|8.46</center></td>
+            <td><center>55|106【较低】</center></td>
+            <td><center>613.0|315.6</center></td>
+            <td><center>10|106【高】</center></td>
+            <td><center>8.2|5.4|6.0|7.0|6.2</center></td>
+            <td><center>6.7</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA+</center></td>
+            <td><center>0.11</center></td>
+            <td><center>0.093</center></td>
+            <td><center>7</center></td>
+            <td><center>None</center></td>
+            <td><center>华宝(赵):10</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113570.html'>百达转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=417'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113570'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113570'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603331.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603331/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=417'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-1.24%</center></td>
+            <td><center>百达精工</center></td>
+            <td><center>机械装备制造</center></td>
+            <td><center>机械装备制造行业</center></td>
+            <td><center>11.19</center></td>
+            <td><center>103.191 (10)</center></td>
+            <td><center>2.8</center></td>
+            <td><center>0.7%</center></td>
+            <td><center>-1.09%</center></td>
+            <td><center>104.31</center></td>
+            <td><center>20.6</center></td>
+            <td><center>2.08%</center></td>
+            <td><center>124.91</center></td>
+            <td><center>13.6</center></td>
+            <td><center>2.98</center></td>
+            <td><center>72.6%</center></td>
+            <td><center>26.3|28.12</center></td>
+            <td><center>28|54【较低】</center></td>
+            <td><center>0.29|3.31</center></td>
+            <td><center>168.24%</center></td>
+            <td><center>37|54【较低】</center></td>
+            <td><center>9.76|9.73</center></td>
+            <td><center>55.41%</center></td>
+            <td><center>23|54【较高】</center></td>
+            <td><center>3.28|3.38</center></td>
+            <td><center>132.62%</center></td>
+            <td><center>25|54【较高】</center></td>
+            <td><center>48.96%</center></td>
+            <td><center>-1.49%</center></td>
+            <td><center>9.79|96.27</center></td>
+            <td><center>48|54【低】</center></td>
+            <td><center>15.49|48.63</center></td>
+            <td><center>4|54【高】</center></td>
+            <td><center>2.12|3.3</center></td>
+            <td><center>16|54【较高】</center></td>
+            <td><center>18.0|370.6</center></td>
+            <td><center>52|54【低】</center></td>
+            <td><center>5.3|6.8|5.8|3.0|6.5</center></td>
+            <td><center>5.7</center></td>
+            <td><center>中性</center></td>
+            <td><center>A+</center></td>
+            <td><center>1.14</center></td>
+            <td><center>0.01</center></td>
+            <td><center>34</center></td>
+            <td><center>银河</center></td>
+            <td><center>偏中性, 不好不还, 慢慢熬</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123053.html'>宝通转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=462'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123053'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123053'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300031.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300031/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=462'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-1.3%</center></td>
+            <td><center>宝通科技</center></td>
+            <td><center>通信互联网</center></td>
+            <td><center>互联网</center></td>
+            <td><center>192.39</center></td>
+            <td><center>102.397 (30)</center></td>
+            <td><center>5.0</center></td>
+            <td><center>1.6%</center></td>
+            <td><center>-2.84%</center></td>
+            <td><center>108.81</center></td>
+            <td><center>29.7</center></td>
+            <td><center>2.24%</center></td>
+            <td><center>138.51</center></td>
+            <td><center>6.1</center></td>
+            <td><center>7.33</center></td>
+            <td><center>14.53%</center></td>
+            <td><center>47.03|44.15</center></td>
+            <td><center>87|220【较高】</center></td>
+            <td><center>1.23|0.183</center></td>
+            <td><center>3.6%</center></td>
+            <td><center>15|220【高】</center></td>
+            <td><center>16.75|-87.86</center></td>
+            <td><center>-9.51%</center></td>
+            <td><center>37|220【高】</center></td>
+            <td><center>3.93|0.17</center></td>
+            <td><center>-10.48%</center></td>
+            <td><center>19|220【高】</center></td>
+            <td><center>32.0%</center></td>
+            <td><center>-10.22%</center></td>
+            <td><center>32.66|24.85</center></td>
+            <td><center>44|220【高】</center></td>
+            <td><center>14.52|79.81</center></td>
+            <td><center>4|220【高】</center></td>
+            <td><center>2.25|5.14</center></td>
+            <td><center>45|220【高】</center></td>
+            <td><center>69.0|116.6</center></td>
+            <td><center>75|220【较高】</center></td>
+            <td><center>7.8|3.6|5.9|6.2|6.4</center></td>
+            <td><center>6.2</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.91</center></td>
+            <td><center>0.044</center></td>
+            <td><center>9</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113610.html'>灵康转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=567'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113610'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113610'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603669.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603669/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=567'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-1.36%</center></td>
+            <td><center>灵康药业</center></td>
+            <td><center>医药</center></td>
+            <td><center>化学制药</center></td>
+            <td><center>85.2</center></td>
+            <td><center>100.0 (10)</center></td>
+            <td><center>5.25</center></td>
+            <td><center>1.7%</center></td>
+            <td><center>-0.99%</center></td>
+            <td><center>108.52</center></td>
+            <td><center>6.2</center></td>
+            <td><center>2.05%</center></td>
+            <td><center>114.72</center></td>
+            <td><center>8.4</center></td>
+            <td><center>2.74</center></td>
+            <td><center>5.5%</center></td>
+            <td><center>85.14|54.52</center></td>
+            <td><center>26|270【高】</center></td>
+            <td><center>0.35|1.3</center></td>
+            <td><center>-46.82%</center></td>
+            <td><center>162|270【较低】</center></td>
+            <td><center>12.81|9.37</center></td>
+            <td><center>-49.61%</center></td>
+            <td><center>125|270【较高】</center></td>
+            <td><center>2.34|0.94</center></td>
+            <td><center>-52.24%</center></td>
+            <td><center>135|270【较高】</center></td>
+            <td><center>44.92%</center></td>
+            <td><center>41.48%</center></td>
+            <td><center>15.15|47.15</center></td>
+            <td><center>190|270【较低】</center></td>
+            <td><center>46.18|67.87</center></td>
+            <td><center>148|270【较低】</center></td>
+            <td><center>4.56|3.18</center></td>
+            <td><center>180|270【较低】</center></td>
+            <td><center>64.0|212.7</center></td>
+            <td><center>160|270【较低】</center></td>
+            <td><center>2.8|7.2|5.7|2.9|5.4</center></td>
+            <td><center>4.8</center></td>
+            <td><center>减持</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.43</center></td>
+            <td><center>-0.018</center></td>
+            <td><center>23</center></td>
+            <td><center>None</center></td>
+            <td><center>财通(陈):10</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113610.html'>灵康转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=567'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113610'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113610'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603669.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603669/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=567'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-1.36%</center></td>
+            <td><center>灵康药业</center></td>
+            <td><center>医药</center></td>
+            <td><center>化学制药</center></td>
+            <td><center>153.08</center></td>
+            <td><center>100.866 (20)</center></td>
+            <td><center>5.25</center></td>
+            <td><center>1.7%</center></td>
+            <td><center>-0.99%</center></td>
+            <td><center>108.52</center></td>
+            <td><center>6.2</center></td>
+            <td><center>2.05%</center></td>
+            <td><center>114.72</center></td>
+            <td><center>8.4</center></td>
+            <td><center>2.74</center></td>
+            <td><center>5.5%</center></td>
+            <td><center>85.14|54.52</center></td>
+            <td><center>26|270【高】</center></td>
+            <td><center>0.35|1.3</center></td>
+            <td><center>-46.82%</center></td>
+            <td><center>162|270【较低】</center></td>
+            <td><center>12.81|9.37</center></td>
+            <td><center>-49.61%</center></td>
+            <td><center>125|270【较高】</center></td>
+            <td><center>2.34|0.94</center></td>
+            <td><center>-52.24%</center></td>
+            <td><center>135|270【较高】</center></td>
+            <td><center>44.92%</center></td>
+            <td><center>41.48%</center></td>
+            <td><center>15.15|47.15</center></td>
+            <td><center>190|270【较低】</center></td>
+            <td><center>46.18|67.87</center></td>
+            <td><center>148|270【较低】</center></td>
+            <td><center>4.56|3.18</center></td>
+            <td><center>180|270【较低】</center></td>
+            <td><center>64.0|212.7</center></td>
+            <td><center>160|270【较低】</center></td>
+            <td><center>2.8|7.2|5.7|2.9|5.4</center></td>
+            <td><center>4.8</center></td>
+            <td><center>减持</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.43</center></td>
+            <td><center>-0.018</center></td>
+            <td><center>23</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz127028.html'>英特转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=593'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/127028'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz127028'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz000411.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/000411/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=593'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-1.43%</center></td>
+            <td><center>英特集团</center></td>
+            <td><center>医药</center></td>
+            <td><center>医药商业</center></td>
+            <td><center>36.88</center></td>
+            <td><center>108.556 (20)</center></td>
+            <td><center>6.0</center></td>
+            <td><center>3.0%</center></td>
+            <td><center>-3.15%</center></td>
+            <td><center>110.4</center></td>
+            <td><center>4.5</center></td>
+            <td><center>0.44%</center></td>
+            <td><center>114.9</center></td>
+            <td><center>18.0</center></td>
+            <td><center>64.54</center></td>
+            <td><center>14.39%</center></td>
+            <td><center>6.49|54.52</center></td>
+            <td><center>266|270【低】</center></td>
+            <td><center>0.41|1.3</center></td>
+            <td><center>24.19%</center></td>
+            <td><center>153|270【较低】</center></td>
+            <td><center>0.64|9.37</center></td>
+            <td><center>8.47%</center></td>
+            <td><center>238|270【低】</center></td>
+            <td><center>2.3|0.94</center></td>
+            <td><center>6.48%</center></td>
+            <td><center>140|270【较低】</center></td>
+            <td><center>73.09%</center></td>
+            <td><center>-1.26%</center></td>
+            <td><center>34.07|47.15</center></td>
+            <td><center>117|270【较高】</center></td>
+            <td><center>22.06|67.87</center></td>
+            <td><center>58|270【高】</center></td>
+            <td><center>2.07|3.18</center></td>
+            <td><center>71|270【较高】</center></td>
+            <td><center>35.0|212.7</center></td>
+            <td><center>215|270【低】</center></td>
+            <td><center>5.3|4.8|5.7|6.1|6.0</center></td>
+            <td><center>5.5</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA+</center></td>
+            <td><center>0.22</center></td>
+            <td><center>-0.022</center></td>
+            <td><center>16</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123062.html'>三超转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=505'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123062'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123062'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300554.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300554/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=505'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-1.47%</center></td>
+            <td><center>三超新材</center></td>
+            <td><center>机械装备制造</center></td>
+            <td><center>通用设备</center></td>
+            <td><center>369.74</center></td>
+            <td><center>74.485 (10)</center></td>
+            <td><center>1.95</center></td>
+            <td><center>27.9%</center></td>
+            <td><center>-3.96%</center></td>
+            <td><center>111.459</center></td>
+            <td><center>14.5</center></td>
+            <td><center>1.43%</center></td>
+            <td><center>125.96</center></td>
+            <td><center>12.1</center></td>
+            <td><center>0.64</center></td>
+            <td><center>4.89%</center></td>
+            <td><center>33.84|23.87</center></td>
+            <td><center>42|244【高】</center></td>
+            <td><center>0.06|1.03</center></td>
+            <td><center>142.01%</center></td>
+            <td><center>184|244【低】</center></td>
+            <td><center>8.7|6.97</center></td>
+            <td><center>130.77%</center></td>
+            <td><center>97|244【较高】</center></td>
+            <td><center>0.97|1.59</center></td>
+            <td><center>110.87%</center></td>
+            <td><center>161|244【较低】</center></td>
+            <td><center>37.71%</center></td>
+            <td><center>-6.43%</center></td>
+            <td><center>5.8|37.33</center></td>
+            <td><center>227|244【低】</center></td>
+            <td><center>72.81|50.18</center></td>
+            <td><center>160|244【较低】</center></td>
+            <td><center>2.99|3.64</center></td>
+            <td><center>160|244【较低】</center></td>
+            <td><center>16.0|92.72</center></td>
+            <td><center>227|244【低】</center></td>
+            <td><center>8.3|2.8|8.4|3.0|5.0</center></td>
+            <td><center>5.9</center></td>
+            <td><center>中性</center></td>
+            <td><center>A</center></td>
+            <td><center>0.78</center></td>
+            <td><center>0.065</center></td>
+            <td><center>20</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113030.html'>东风转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=385'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113030'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113030'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh601515.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/601515/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=385'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-2.22%</center></td>
+            <td><center>东风股份</center></td>
+            <td><center>造纸包装印刷</center></td>
+            <td><center>包装材料</center></td>
+            <td><center>367.32</center></td>
+            <td><center>74.008 (10)</center></td>
+            <td><center>2.95</center></td>
+            <td><center>6.2%</center></td>
+            <td><center>-3.31%</center></td>
+            <td><center>110.74</center></td>
+            <td><center>16.5</center></td>
+            <td><center>1.21%</center></td>
+            <td><center>127.24</center></td>
+            <td><center>3.4</center></td>
+            <td><center>9.71</center></td>
+            <td><center>10.22%</center></td>
+            <td><center>33.85|22.89</center></td>
+            <td><center>4|29【高】</center></td>
+            <td><center>2.46|0.679</center></td>
+            <td><center>33.07%</center></td>
+            <td><center>4|29【高】</center></td>
+            <td><center>25.33|8.63</center></td>
+            <td><center>20.73%</center></td>
+            <td><center>3|29【高】</center></td>
+            <td><center>5.42|1.81</center></td>
+            <td><center>21.8%</center></td>
+            <td><center>1|29【高】</center></td>
+            <td><center>27.14%</center></td>
+            <td><center>-1.27%</center></td>
+            <td><center>48.8|30.51</center></td>
+            <td><center>7|29【高】</center></td>
+            <td><center>8.6|111.1</center></td>
+            <td><center>1|29【高】</center></td>
+            <td><center>1.77|3.1</center></td>
+            <td><center>8|29【较高】</center></td>
+            <td><center>82.0|98.96</center></td>
+            <td><center>6|29【高】</center></td>
+            <td><center>2.7|4.3|5.9|6.4|6.1</center></td>
+            <td><center>4.7</center></td>
+            <td><center>减持</center></td>
+            <td><center>AA</center></td>
+            <td><center>1.35</center></td>
+            <td><center>-0.075</center></td>
+            <td><center>17</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113577.html'>春秋转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=445'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113577'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113577'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603890.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603890/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=445'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-2.83%</center></td>
+            <td><center>春秋电子</center></td>
+            <td><center>电子</center></td>
+            <td><center>电子产品</center></td>
+            <td><center>-33.42</center></td>
+            <td><center>121.361 (20)</center></td>
+            <td><center>1.78</center></td>
+            <td><center>6.5%</center></td>
+            <td><center>-2.98%</center></td>
+            <td><center>119.69</center></td>
+            <td><center>6.9</center></td>
+            <td><center>-0.35%</center></td>
+            <td><center>126.59</center></td>
+            <td><center>4.1</center></td>
+            <td><center>9.19</center></td>
+            <td><center>92.34%</center></td>
+            <td><center>17.39|34.36</center></td>
+            <td><center>92|116【低】</center></td>
+            <td><center>0.79|0.383</center></td>
+            <td><center>89.46%</center></td>
+            <td><center>18|116【高】</center></td>
+            <td><center>8.64|1.53</center></td>
+            <td><center>-1.48%</center></td>
+            <td><center>44|116【较高】</center></td>
+            <td><center>4.31|0.69</center></td>
+            <td><center>59.63%</center></td>
+            <td><center>8|116【高】</center></td>
+            <td><center>58.02%</center></td>
+            <td><center>23.04%</center></td>
+            <td><center>19.22|36.5</center></td>
+            <td><center>49|116【较高】</center></td>
+            <td><center>15.69|25.53</center></td>
+            <td><center>5|116【高】</center></td>
+            <td><center>2.56|5.58</center></td>
+            <td><center>37|116【较高】</center></td>
+            <td><center>48.0|129.3</center></td>
+            <td><center>65|116【较低】</center></td>
+            <td><center>5.4|5.3|6.6|3.3|7.2</center></td>
+            <td><center>5.8</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA-</center></td>
+            <td><center>1.04</center></td>
+            <td><center>-0.031</center></td>
+            <td><center>14</center></td>
+            <td><center>银河</center></td>
+            <td><center>None</center></td>
+        </tr>
+    </tbody>
+</table><br/> <div id="7a3fc026b2024461a1ee7afb1b177780" class="chart-container" style="width:1424px; height:700px;"></div>
+    <script>
+        var chart_7a3fc026b2024461a1ee7afb1b177780 = echarts.init(
+            document.getElementById('7a3fc026b2024461a1ee7afb1b177780'), 'shine', {renderer: 'canvas'});
+        var option_7a3fc026b2024461a1ee7afb1b177780 = {
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "series": [
+        {
+            "type": "bar",
+            "name": "\u6da8",
+            "legendHoverLink": true,
+            "data": [
+                14.0,
+                9.65,
+                5.6,
+                5.52,
+                5.08,
+                4.6,
+                4.58,
+                4.08,
+                3.55,
+                3.36,
+                3.3,
+                3.01,
+                2.67,
+                2.42,
+                2.39,
+                2.29,
+                2.23,
+                2.2,
+                2.18,
+                1.94
+            ],
+            "showBackground": false,
+            "barWidth": 25,
+            "barMinHeight": 0,
+            "barCategoryGap": "1%",
+            "barGap": "1%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "top",
+                "margin": 8,
+                "formatter": function(x){return x.data +'%';}
+            },
+            "itemStyle": {
+                "color": function(x){return x.data>0?'#c23531':'#1d953f'}
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        },
+        {
+            "type": "bar",
+            "name": "\u8dcc",
+            "yAxisIndex": 1,
+            "legendHoverLink": true,
+            "data": [
+                -1.75,
+                -1.78,
+                -1.88,
+                -1.95,
+                -1.98,
+                -2.0,
+                -2.03,
+                -2.09,
+                -2.16,
+                -2.22,
+                -2.38,
+                -2.45,
+                -2.54,
+                -2.76,
+                -2.83,
+                -3.34,
+                -3.39,
+                -3.49,
+                -4.11,
+                -5.82
+            ],
+            "showBackground": false,
+            "barWidth": 25,
+            "barMinHeight": 0,
+            "barCategoryGap": "20%",
+            "barGap": "30%",
+            "large": false,
+            "largeThreshold": 400,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "clip": true,
+            "zlevel": 0,
+            "z": 2,
+            "label": {
+                "show": true,
+                "position": "bottom",
+                "margin": 8,
+                "formatter": function(x){return x.data +'%';}
+            },
+            "itemStyle": {
+                "color": function(x){return x.data>0?'#c23531':'#1d953f'}
+            },
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u6da8",
+                "\u8dcc"
+            ],
+            "selected": {
+                "\u6da8": true,
+                "\u8dcc": true
+            },
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14
+        }
+    ],
+    "tooltip": {
+        "show": false,
+        "trigger": "item",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "textStyle": {
+            "fontSize": 14
+        },
+        "borderWidth": 0,
+        "padding": 5
+    },
+    "xAxis": [
+        {
+            "show": true,
+            "scale": true,
+            "nameLocation": "middle",
+            "nameGap": 15,
+            "gridIndex": 0,
+            "axisLine": {
+                "show": true,
+                "onZero": true,
+                "onZeroAxisIndex": 0
+            },
+            "axisLabel": {
+                "show": true,
+                "position": "top",
+                "rotate": -60,
+                "margin": 8
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            },
+            "data": [
+                "\u7ef4\u683c",
+                "\u6069\u6377",
+                "\u661f\u6e90\u8f6c2",
+                "N\u7eff\u8335\u8f6c",
+                "\u76db\u5c6f",
+                "\u6b23\u65fa",
+                "\u6587\u707f",
+                "\u8363\u665f",
+                "\u8d77\u6b65",
+                "\u5609\u5143",
+                "\u9e4f\u8f89",
+                "\u7cbe\u8fbe",
+                "\u62d3\u5c14",
+                "\u534e\u81ea",
+                "\u6bd4\u97f3",
+                "\u4e2d\u77ff",
+                "\u4f0a\u529b",
+                "\u660c\u7ea2",
+                "\u6c38\u521b",
+                "\u98de\u9e7f"
+            ]
+        },
+        {
+            "type": "category",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "gridIndex": 0,
+            "axisLabel": {
+                "show": true,
+                "position": "top",
+                "rotate": -60,
+                "margin": 8
+            },
+            "inverse": false,
+            "position": "top",
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            },
+            "data": [
+                "\u540c\u5fb7",
+                "\u8054\u521b",
+                "\u6da6\u8fbe",
+                "\u5e7f\u7535",
+                "\u534e\u950b",
+                "\u5965\u4f73",
+                "\u706b\u70ac",
+                "\u76db\u8679",
+                "\u65b0\u5929",
+                "\u4e1c\u98ce",
+                "\u6b27\u6d3e",
+                "\u82f1\u79d1",
+                "\u9686\u5229",
+                "\u6ee8\u5316",
+                "\u6625\u79cb",
+                "\u592a\u9633",
+                "\u5c1a\u8363",
+                "\u91d1\u9675",
+                "\u6676\u745e",
+                "\u8fea\u9f99"
+            ]
+        }
+    ],
+    "yAxis": [
+        {
+            "type": "value",
+            "name": "\u6da8\u5e45(%)",
+            "show": true,
+            "scale": true,
+            "nameLocation": "middle",
+            "nameGap": 35,
+            "gridIndex": 0,
+            "axisLine": {
+                "show": true,
+                "onZero": false,
+                "onZeroAxisIndex": 0
+            },
+            "axisLabel": {
+                "show": true,
+                "position": "top",
+                "margin": 8,
+                "formatter": "{value}%"
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "max": 18.33,
+            "minInterval": 0,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            }
+        },
+        {
+            "type": "value",
+            "name": "\u8dcc\u5e45(%)",
+            "show": true,
+            "scale": false,
+            "nameLocation": "middle",
+            "nameGap": 45,
+            "gridIndex": 0,
+            "axisLine": {
+                "show": true,
+                "onZero": true,
+                "onZeroAxisIndex": 0,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            },
+            "axisLabel": {
+                "show": true,
+                "position": "top",
+                "margin": 8,
+                "formatter": "{value}%"
+            },
+            "inverse": false,
+            "position": "right",
+            "offset": 0,
+            "splitNumber": 5,
+            "min": -18.33,
+            "minInterval": 0,
+            "splitLine": {
+                "show": false,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            }
+        }
+    ],
+    "title": [
+        {
+            "text": "=========\u5168\u7f51\u53ef\u8f6c\u503a\u6da8\u8dccTOP20=========",
+            "left": "center",
+            "top": "-1px",
+            "padding": 5,
+            "itemGap": 10
+        }
+    ]
+};
+        chart_7a3fc026b2024461a1ee7afb1b177780.setOption(option_7a3fc026b2024461a1ee7afb1b177780);
+    </script><table>
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>可转债涨跌</th>
+            <th>转债价格</th>
+            <th>溢价率</th>
+            <th>双低值</th>
+            <th>税前收益率</th>
+            <th>换手率(%)</th>
+            <th>成交额(百万)</th>
+            <th>正股涨跌</th>
+            <th>正股名称</th>
+            <th>行业</th>
+            <th>子行业</th>
+            <th>营收(亿元)</th>
+            <th>营收同比</th>
+            <th>毛利率|行业均值</th>
+            <th>毛利率排名</th>
+            <th>净利润|均值(亿元)</th>
+            <th>净利润同比</th>
+            <th>净利润排名</th>
+            <th>利润率|行业均值</th>
+            <th>利润率同比</th>
+            <th>利润率排名</th>
+            <th>ROE|行业均值</th>
+            <th>ROE同比</th>
+            <th>ROE排名</th>
+            <th>负债率</th>
+            <th>负债率同比</th>
+            <th>PE(动)|均值</th>
+            <th>PE排名</th>
+            <th>PB|行业均值</th>
+            <th>PB排名</th>
+            <th>净资产|行业均值</th>
+            <th>净资产排名</th>
+            <th>市值|均值(亿元)</th>
+            <th>市值排名</th>
+            <th>余额(亿元)</th>
+            <th>余额/股本(%)</th>
+            <th>技术|资金|消息|行业|基本面</th>
+            <th>综合评分</th>
+            <th>操作建议</th>
+            <th>信用</th>
+            <th>续存期</th>
+            <th>ma20乖离</th>
+            <th>热门度</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113527.html'>维格转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=189'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113527'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113527'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603518.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603518/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=189'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>14.0</center></td>
+            <td><center>235.57</center></td>
+            <td><center>4.9%</center></td>
+            <td><center>240.47</center></td>
+            <td><center>-17.2%</center></td>
+            <td><center>531.0%</center></td>
+            <td><center>5,752</center></td>
+            <td><center>10.0%</center></td>
+            <td><center>锦泓集团</center></td>
+            <td><center>服装纺织</center></td>
+            <td><center>服装行业</center></td>
+            <td><center>10.72</center></td>
+            <td><center>78.05%</center></td>
+            <td><center>70.51|31.7</center></td>
+            <td><center>4|91【高】</center></td>
+            <td><center>0.95|0.648</center></td>
+            <td><center>15661.8%</center></td>
+            <td><center>18|91【高】</center></td>
+            <td><center>8.83|2.43</center></td>
+            <td><center>8730.0%</center></td>
+            <td><center>41|91【较高】</center></td>
+            <td><center>4.77|1.62</center></td>
+            <td><center>23750.0%</center></td>
+            <td><center>11|91【高】</center></td>
+            <td><center>62.7%</center></td>
+            <td><center>8.36%</center></td>
+            <td><center>14.77|302.8</center></td>
+            <td><center>17|91【高】</center></td>
+            <td><center>2.91|2.13</center></td>
+            <td><center>65|91【较低】</center></td>
+            <td><center>20.19|29.68</center></td>
+            <td><center>44|91【较高】</center></td>
+            <td><center>62.0|68.22</center></td>
+            <td><center>24|91【较高】</center></td>
+            <td><center>4.63</center></td>
+            <td><center>16.9%</center></td>
+            <td><center>8.6|5.1|5.3|2.8|7.3</center></td>
+            <td><center>6.5</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA</center></td>
+            <td><center>2.27</center></td>
+            <td><center>0.394</center></td>
+            <td><center>91</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128095.html'>恩捷转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=405'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/128095'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz128095'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz002812.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/002812/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=405'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>9.65</center></td>
+            <td><center>253.5</center></td>
+            <td><center>-0.2%</center></td>
+            <td><center>253.3</center></td>
+            <td><center>-15.7%</center></td>
+            <td><center>75.4%</center></td>
+            <td><center>1,236</center></td>
+            <td><center>10.0%</center></td>
+            <td><center>恩捷股份</center></td>
+            <td><center>电子</center></td>
+            <td><center>元器件制造</center></td>
+            <td><center>14.43</center></td>
+            <td><center>161.05%</center></td>
+            <td><center>48.51|22.89</center></td>
+            <td><center>1|29【高】</center></td>
+            <td><center>4.32|0.679</center></td>
+            <td><center>212.59%</center></td>
+            <td><center>1|29【高】</center></td>
+            <td><center>29.94|8.63</center></td>
+            <td><center>19.76%</center></td>
+            <td><center>1|29【高】</center></td>
+            <td><center>3.8|1.81</center></td>
+            <td><center>25.41%</center></td>
+            <td><center>4|29【高】</center></td>
+            <td><center>42.38%</center></td>
+            <td><center>-35.76%</center></td>
+            <td><center>77.01|111.1</center></td>
+            <td><center>19|29【较低】</center></td>
+            <td><center>12.7|3.1</center></td>
+            <td><center>29|29【低】</center></td>
+            <td><center>121.2|30.51</center></td>
+            <td><center>1|29【高】</center></td>
+            <td><center>1,464|98.96</center></td>
+            <td><center>1|29【高】</center></td>
+            <td><center>6.51</center></td>
+            <td><center>1.1%</center></td>
+            <td><center>8.3|6.6|5.8|3.3|6.7</center></td>
+            <td><center>6.7</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA</center></td>
+            <td><center>1.25</center></td>
+            <td><center>0.202</center></td>
+            <td><center>15</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123094.html'>星源转2</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=598'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123094'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123094'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300568.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300568/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=598'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>5.6</center></td>
+            <td><center>138.33</center></td>
+            <td><center>0.0%</center></td>
+            <td><center>138.33</center></td>
+            <td><center>-2.93%</center></td>
+            <td><center>37.7%</center></td>
+            <td><center>525.0</center></td>
+            <td><center>11.0%</center></td>
+            <td><center>星源材质</center></td>
+            <td><center>电子</center></td>
+            <td><center>电子行业</center></td>
+            <td><center>4.22</center></td>
+            <td><center>238.51%</center></td>
+            <td><center>34.05|28.07</center></td>
+            <td><center>33|104【较高】</center></td>
+            <td><center>0.62|0.862</center></td>
+            <td><center>287.93%</center></td>
+            <td><center>32|104【较高】</center></td>
+            <td><center>14.65|9.54</center></td>
+            <td><center>14.63%</center></td>
+            <td><center>38|104【较高】</center></td>
+            <td><center>2.47|0.76</center></td>
+            <td><center>357.41%</center></td>
+            <td><center>47|104【较高】</center></td>
+            <td><center>53.36%</center></td>
+            <td><center>11.24%</center></td>
+            <td><center>71.33|111.05</center></td>
+            <td><center>67|104【较低】</center></td>
+            <td><center>6.47|1.35</center></td>
+            <td><center>81|104【低】</center></td>
+            <td><center>31.37|35.68</center></td>
+            <td><center>34|104【较高】</center></td>
+            <td><center>196.0|158.7</center></td>
+            <td><center>19|104【高】</center></td>
+            <td><center>10.0</center></td>
+            <td><center>7.1%</center></td>
+            <td><center>9.0|5.7|6.8|3.3|6.9</center></td>
+            <td><center>6.9</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA</center></td>
+            <td><center>0.16</center></td>
+            <td><center>0.334</center></td>
+            <td><center>4</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz127034.html'>N绿茵转</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=638'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/127034'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz127034'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz002887.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/002887/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=638'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>5.52</center></td>
+            <td><center>105.52</center></td>
+            <td><center>9.7%</center></td>
+            <td><center>115.22</center></td>
+            <td><center>2.09%</center></td>
+            <td><center>114.0%</center></td>
+            <td><center>867.0</center></td>
+            <td><center>-2.06%</center></td>
+            <td><center>绿茵生态</center></td>
+            <td><center>城市公用设施</center></td>
+            <td><center>生态环境建设</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>7.12</center></td>
+            <td><center>18.4%</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>None</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.0</center></td>
+            <td><center>0.053</center></td>
+            <td><center>1</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh110066.html'>盛屯转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=411'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/110066'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh110066'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh600711.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/600711/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=411'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>5.08</center></td>
+            <td><center>171.32</center></td>
+            <td><center>6.5%</center></td>
+            <td><center>177.82</center></td>
+            <td><center>-8.18%</center></td>
+            <td><center>115.0%</center></td>
+            <td><center>1,031</center></td>
+            <td><center>2.88%</center></td>
+            <td><center>盛屯矿业</center></td>
+            <td><center>有色金属</center></td>
+            <td><center>有色行业</center></td>
+            <td><center>114.95</center></td>
+            <td><center>29.17%</center></td>
+            <td><center>9.65|16.13</center></td>
+            <td><center>52|77【较低】</center></td>
+            <td><center>4.17|1.81</center></td>
+            <td><center>1509.6%</center></td>
+            <td><center>12|77【高】</center></td>
+            <td><center>3.63|3.11</center></td>
+            <td><center>-1200.0%</center></td>
+            <td><center>30|77【较高】</center></td>
+            <td><center>3.809|2.64</center></td>
+            <td><center>1593.73%</center></td>
+            <td><center>19|77【高】</center></td>
+            <td><center>50.57%</center></td>
+            <td><center>-16.5%</center></td>
+            <td><center>12.24|64.57</center></td>
+            <td><center>7|77【高】</center></td>
+            <td><center>1.88|5.86</center></td>
+            <td><center>25|77【较高】</center></td>
+            <td><center>122.0|85.34</center></td>
+            <td><center>17|77【高】</center></td>
+            <td><center>210.0|193.6</center></td>
+            <td><center>19|77【高】</center></td>
+            <td><center>5.22</center></td>
+            <td><center>4.0%</center></td>
+            <td><center>3.9|3.0|5.7|6.4|7.1</center></td>
+            <td><center>5.0</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA</center></td>
+            <td><center>1.16</center></td>
+            <td><center>0.043</center></td>
+            <td><center>34</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123058.html'>欣旺转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=488'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123058'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123058'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300207.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300207/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=488'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>4.6</center></td>
+            <td><center>145.4</center></td>
+            <td><center>2.5%</center></td>
+            <td><center>147.9</center></td>
+            <td><center>-4.34%</center></td>
+            <td><center>48.5%</center></td>
+            <td><center>788.0</center></td>
+            <td><center>7.76%</center></td>
+            <td><center>欣旺达</center></td>
+            <td><center>电子</center></td>
+            <td><center>电子产品</center></td>
+            <td><center>78.61</center></td>
+            <td><center>51.21%</center></td>
+            <td><center>15.85|25.89</center></td>
+            <td><center>75|111【较低】</center></td>
+            <td><center>1.28|0.75</center></td>
+            <td><center>225.2%</center></td>
+            <td><center>11|111【高】</center></td>
+            <td><center>1.63|-37.27</center></td>
+            <td><center>-182.74%</center></td>
+            <td><center>59|111【较低】</center></td>
+            <td><center>1.86|0.24</center></td>
+            <td><center>204.49%</center></td>
+            <td><center>25|111【高】</center></td>
+            <td><center>76.74%</center></td>
+            <td><center>2.37%</center></td>
+            <td><center>85.58|35.09</center></td>
+            <td><center>41|111【较高】</center></td>
+            <td><center>6.78|6.15</center></td>
+            <td><center>92|111【低】</center></td>
+            <td><center>73.8|40.68</center></td>
+            <td><center>11|111【高】</center></td>
+            <td><center>474.0|133.8</center></td>
+            <td><center>7|111【高】</center></td>
+            <td><center>11.2</center></td>
+            <td><center>3.4%</center></td>
+            <td><center>8.6|6.5|5.6|6.8|7.0</center></td>
+            <td><center>7.1</center></td>
+            <td><center>买入</center></td>
+            <td><center>AA</center></td>
+            <td><center>0.81</center></td>
+            <td><center>0.302</center></td>
+            <td><center>6</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113537.html'>文灿转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=317'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113537'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113537'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603348.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603348/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=317'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>4.58</center></td>
+            <td><center>151.09</center></td>
+            <td><center>1.2%</center></td>
+            <td><center>152.29</center></td>
+            <td><center>-5.39%</center></td>
+            <td><center>566.0%</center></td>
+            <td><center>1,232</center></td>
+            <td><center>10.0%</center></td>
+            <td><center>文灿股份</center></td>
+            <td><center>汽车</center></td>
+            <td><center>零部件制造</center></td>
+            <td><center>10.51</center></td>
+            <td><center>307.41%</center></td>
+            <td><center>21.05|21.47</center></td>
+            <td><center>86|171【较低】</center></td>
+            <td><center>0.5|1.5</center></td>
+            <td><center>389.15%</center></td>
+            <td><center>67|171【较高】</center></td>
+            <td><center>4.77|6.91</center></td>
+            <td><center>19.85%</center></td>
+            <td><center>104|171【较低】</center></td>
+            <td><center>1.92|2.18</center></td>
+            <td><center>326.67%</center></td>
+            <td><center>92|171【较低】</center></td>
+            <td><center>53.34%</center></td>
+            <td><center>35.98%</center></td>
+            <td><center>34.14|62.46</center></td>
+            <td><center>87|171【较低】</center></td>
+            <td><center>2.92|3.38</center></td>
+            <td><center>104|171【较低】</center></td>
+            <td><center>26.24|78.71</center></td>
+            <td><center>74|171【较高】</center></td>
+            <td><center>75.0|216.3</center></td>
+            <td><center>55|171【较高】</center></td>
+            <td><center>1.44</center></td>
+            <td><center>2.9%</center></td>
+            <td><center>7.8|7.2|6.1|3.0|7.5</center></td>
+            <td><center>6.9</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA-</center></td>
+            <td><center>1.9</center></td>
+            <td><center>0.135</center></td>
+            <td><center>24</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113541.html'>荣晟转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=328'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113541'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113541'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603165.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603165/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=328'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>4.08</center></td>
+            <td><center>136.32</center></td>
+            <td><center>-0.8%</center></td>
+            <td><center>135.52</center></td>
+            <td><center>-4.1%</center></td>
+            <td><center>164.0%</center></td>
+            <td><center>478.0</center></td>
+            <td><center>4.05%</center></td>
+            <td><center>荣晟环保</center></td>
+            <td><center>造纸包装印刷</center></td>
+            <td><center>包装用纸</center></td>
+            <td><center>4.7</center></td>
+            <td><center>35.12%</center></td>
+            <td><center>17.98|23.8</center></td>
+            <td><center>28|38【较低】</center></td>
+            <td><center>0.72|1.56</center></td>
+            <td><center>39.05%</center></td>
+            <td><center>16|38【较高】</center></td>
+            <td><center>15.38|9.98</center></td>
+            <td><center>2.88%</center></td>
+            <td><center>6|38【高】</center></td>
+            <td><center>4.25|3.02</center></td>
+            <td><center>21.78%</center></td>
+            <td><center>12|38【较高】</center></td>
+            <td><center>18.93%</center></td>
+            <td><center>-15.83%</center></td>
+            <td><center>12.68|33.0</center></td>
+            <td><center>9|38【高】</center></td>
+            <td><center>2.23|3.05</center></td>
+            <td><center>16|38【较高】</center></td>
+            <td><center>17.46|40.87</center></td>
+            <td><center>21|38【较低】</center></td>
+            <td><center>38.0|93.6</center></td>
+            <td><center>23|38【较低】</center></td>
+            <td><center>2.14</center></td>
+            <td><center>7.7%</center></td>
+            <td><center>7.7|6.1|5.9|4.0|5.0</center></td>
+            <td><center>6.1</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA-</center></td>
+            <td><center>1.79</center></td>
+            <td><center>0.112</center></td>
+            <td><center>43</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113576.html'>起步转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=439'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113576'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113576'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603557.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603557/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=439'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>3.55</center></td>
+            <td><center>97.3</center></td>
+            <td><center>107.0%</center></td>
+            <td><center>204.3</center></td>
+            <td><center>4.74%</center></td>
+            <td><center>104.0%</center></td>
+            <td><center>267.0</center></td>
+            <td><center>5.07%</center></td>
+            <td><center>ST起步</center></td>
+            <td><center>服装纺织</center></td>
+            <td><center>鞋服行业</center></td>
+            <td><center>3.18</center></td>
+            <td><center>24.41%</center></td>
+            <td><center>31.59|31.7</center></td>
+            <td><center>37|91【较高】</center></td>
+            <td><center>0.17|0.648</center></td>
+            <td><center>-46.58%</center></td>
+            <td><center>55|91【较低】</center></td>
+            <td><center>5.24|2.43</center></td>
+            <td><center>-57.12%</center></td>
+            <td><center>57|91【较低】</center></td>
+            <td><center>1.03|1.62</center></td>
+            <td><center>-44.02%</center></td>
+            <td><center>54|91【较低】</center></td>
+            <td><center>44.7%</center></td>
+            <td><center>21.43%</center></td>
+            <td><center>35.22|302.8</center></td>
+            <td><center>47|91【较低】</center></td>
+            <td><center>1.57|2.13</center></td>
+            <td><center>25|91【较高】</center></td>
+            <td><center>16.31|29.68</center></td>
+            <td><center>51|91【较低】</center></td>
+            <td><center>25.0|68.22</center></td>
+            <td><center>67|91【较低】</center></td>
+            <td><center>2.66</center></td>
+            <td><center>5.1%</center></td>
+            <td><center>3.8|3.7|5.2|2.8|5.1</center></td>
+            <td><center>4.2</center></td>
+            <td><center>减持</center></td>
+            <td><center>A</center></td>
+            <td><center>1.06</center></td>
+            <td><center>-0.2</center></td>
+            <td><center>31</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh118000.html'>嘉元转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=607'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/118000'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh118000'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh688388.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/688388/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=607'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>3.36</center></td>
+            <td><center>123.22</center></td>
+            <td><center>25.4%</center></td>
+            <td><center>148.62</center></td>
+            <td><center>-0.32%</center></td>
+            <td><center>7.4%</center></td>
+            <td><center>113.0</center></td>
+            <td><center>10.7%</center></td>
+            <td><center>嘉元科技</center></td>
+            <td><center>电子</center></td>
+            <td><center>电子产品</center></td>
+            <td><center>5.31</center></td>
+            <td><center>259.3%</center></td>
+            <td><center>|</center></td>
+            <td><center>【】</center></td>
+            <td><center>1.11|</center></td>
+            <td><center>366.44%</center></td>
+            <td><center>【】</center></td>
+            <td><center>20.85|</center></td>
+            <td><center>29.83%</center></td>
+            <td><center>【】</center></td>
+            <td><center>4.15|</center></td>
+            <td><center>341.49%</center></td>
+            <td><center>【】</center></td>
+            <td><center>34.53%</center></td>
+            <td><center>854.68%</center></td>
+            <td><center>|</center></td>
+            <td><center>【】</center></td>
+            <td><center>6.56|</center></td>
+            <td><center>【】</center></td>
+            <td><center>|</center></td>
+            <td><center>【】</center></td>
+            <td><center>179.0|</center></td>
+            <td><center>【】</center></td>
+            <td><center>12.4</center></td>
+            <td><center>6.8%</center></td>
+            <td><center>6.2|4.6|5.6|2.9|6.2</center></td>
+            <td><center>5.5</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.2</center></td>
+            <td><center>0.043</center></td>
+            <td><center>3</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113543.html'>欧派转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=330'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113543'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113543'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603833.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603833/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=330'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-2.38</center></td>
+            <td><center>213.68</center></td>
+            <td><center>4.2%</center></td>
+            <td><center>217.88</center></td>
+            <td><center>-13.9%</center></td>
+            <td><center>7.9%</center></td>
+            <td><center>60.0</center></td>
+            <td><center>-5.51%</center></td>
+            <td><center>欧派家居</center></td>
+            <td><center>其他</center></td>
+            <td><center>家居用品</center></td>
+            <td><center>33.0</center></td>
+            <td><center>130.74%</center></td>
+            <td><center>30.19|29.89</center></td>
+            <td><center>16|33【较高】</center></td>
+            <td><center>2.44|0.596</center></td>
+            <td><center>340.02%</center></td>
+            <td><center>2|33【高】</center></td>
+            <td><center>7.39|-1.03</center></td>
+            <td><center>-204.08%</center></td>
+            <td><center>14|33【较高】</center></td>
+            <td><center>2.02|1.01</center></td>
+            <td><center>288.79%</center></td>
+            <td><center>12|33【较高】</center></td>
+            <td><center>39.46%</center></td>
+            <td><center>1.99%</center></td>
+            <td><center>96.15|50.62</center></td>
+            <td><center>28|33【低】</center></td>
+            <td><center>7.31|6.41</center></td>
+            <td><center>32|33【低】</center></td>
+            <td><center>122.2|29.0</center></td>
+            <td><center>1|33【高】</center></td>
+            <td><center>885.0|103.1</center></td>
+            <td><center>1|33【高】</center></td>
+            <td><center>3.46</center></td>
+            <td><center>0.8%</center></td>
+            <td><center>6.0|4.5|6.2|3.2|7.3</center></td>
+            <td><center>5.8</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA</center></td>
+            <td><center>1.73</center></td>
+            <td><center>-0.046</center></td>
+            <td><center>13</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123029.html'>英科转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=332'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123029'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123029'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300677.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300677/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=332'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-2.45</center></td>
+            <td><center>1673.06</center></td>
+            <td><center>-0.1%</center></td>
+            <td><center>1672.96</center></td>
+            <td><center>-41.6%</center></td>
+            <td><center>53.5%</center></td>
+            <td><center>336.0</center></td>
+            <td><center>-2.92%</center></td>
+            <td><center>英科医疗</center></td>
+            <td><center>医药</center></td>
+            <td><center>医疗器械</center></td>
+            <td><center>67.35</center></td>
+            <td><center>770.86%</center></td>
+            <td><center>70.48|50.03</center></td>
+            <td><center>23|106【高】</center></td>
+            <td><center>37.36|1.97</center></td>
+            <td><center>2791.66%</center></td>
+            <td><center>1|106【高】</center></td>
+            <td><center>55.47|18.85</center></td>
+            <td><center>231.96%</center></td>
+            <td><center>6|106【高】</center></td>
+            <td><center>33.29|4.75</center></td>
+            <td><center>298.21%</center></td>
+            <td><center>4|106【高】</center></td>
+            <td><center>22.33%</center></td>
+            <td><center>-47.66%</center></td>
+            <td><center>3.39|89.06</center></td>
+            <td><center>2|106【高】</center></td>
+            <td><center>3.75|8.46</center></td>
+            <td><center>36|106【较高】</center></td>
+            <td><center>132.8|34.15</center></td>
+            <td><center>4|106【高】</center></td>
+            <td><center>505.0|315.6</center></td>
+            <td><center>12|106【高】</center></td>
+            <td><center>0.37</center></td>
+            <td><center>1.2%</center></td>
+            <td><center>5.9|5.6|6.7|3.5|7.2</center></td>
+            <td><center>6.0</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA</center></td>
+            <td><center>1.72</center></td>
+            <td><center>-0.049</center></td>
+            <td><center>16</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123074.html'>隆利转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=548'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123074'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123074'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300752.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300752/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=548'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-2.54</center></td>
+            <td><center>107.4</center></td>
+            <td><center>23.4%</center></td>
+            <td><center>130.8</center></td>
+            <td><center>2.74%</center></td>
+            <td><center>20.8%</center></td>
+            <td><center>73.0</center></td>
+            <td><center>-2.85%</center></td>
+            <td><center>隆利科技</center></td>
+            <td><center>电子</center></td>
+            <td><center>液晶显示屏</center></td>
+            <td><center>4.67</center></td>
+            <td><center>-2.16%</center></td>
+            <td><center>5.16|13.84</center></td>
+            <td><center>299|303【低】</center></td>
+            <td><center>-0.35|1.08</center></td>
+            <td><center>-457.93%</center></td>
+            <td><center>288|303【低】</center></td>
+            <td><center>-7.42|-98.19</center></td>
+            <td><center>-465.52%</center></td>
+            <td><center>281|303【低】</center></td>
+            <td><center>-4.01|1.35</center></td>
+            <td><center>-436.97%</center></td>
+            <td><center>295|303【低】</center></td>
+            <td><center>65.4%</center></td>
+            <td><center>15.01%</center></td>
+            <td><center>负值|91.67</center></td>
+            <td><center>-|303【- -】</center></td>
+            <td><center>3.56|6.0</center></td>
+            <td><center>155|303【较低】</center></td>
+            <td><center>8.67|49.65</center></td>
+            <td><center>249|303【低】</center></td>
+            <td><center>31.0|193.6</center></td>
+            <td><center>247|303【低】</center></td>
+            <td><center>3.25</center></td>
+            <td><center>9.2%</center></td>
+            <td><center>6.4|5.7|5.5|3.2|5.2</center></td>
+            <td><center>5.5</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA-</center></td>
+            <td><center>0.53</center></td>
+            <td><center>0.073</center></td>
+            <td><center>15</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113034.html'>滨化转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=438'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113034'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113034'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh601678.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/601678/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=438'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-2.76</center></td>
+            <td><center>148.84</center></td>
+            <td><center>0.5%</center></td>
+            <td><center>149.34</center></td>
+            <td><center>-5.28%</center></td>
+            <td><center>8.9%</center></td>
+            <td><center>82.0</center></td>
+            <td><center>-1.88%</center></td>
+            <td><center>滨化股份</center></td>
+            <td><center>化工</center></td>
+            <td><center>化工</center></td>
+            <td><center>21.19</center></td>
+            <td><center>47.76%</center></td>
+            <td><center>38.03|26.56</center></td>
+            <td><center>32|216【高】</center></td>
+            <td><center>4.94|1.47</center></td>
+            <td><center>1251.29%</center></td>
+            <td><center>15|216【高】</center></td>
+            <td><center>23.32|-32.31</center></td>
+            <td><center>814.51%</center></td>
+            <td><center>22|216【高】</center></td>
+            <td><center>6.45|2.72</center></td>
+            <td><center>1012.07%</center></td>
+            <td><center>19|216【高】</center></td>
+            <td><center>43.56%</center></td>
+            <td><center>-5.06%</center></td>
+            <td><center>6.74|56.43</center></td>
+            <td><center>4|216【高】</center></td>
+            <td><center>1.48|4.64</center></td>
+            <td><center>38|216【高】</center></td>
+            <td><center>82.93|41.42</center></td>
+            <td><center>25|216【高】</center></td>
+            <td><center>131.0|129.1</center></td>
+            <td><center>50|216【高】</center></td>
+            <td><center>6.0</center></td>
+            <td><center>6.8%</center></td>
+            <td><center>5.2|3.1|6.2|6.5|6.8</center></td>
+            <td><center>5.5</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA</center></td>
+            <td><center>1.08</center></td>
+            <td><center>0.018</center></td>
+            <td><center>25</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sh113577.html'>春秋转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=445'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/113577'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sh113577'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sh603890.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/603890/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=445'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-2.83</center></td>
+            <td><center>119.69</center></td>
+            <td><center>6.9%</center></td>
+            <td><center>126.59</center></td>
+            <td><center>-0.35%</center></td>
+            <td><center>6.5%</center></td>
+            <td><center>14.0</center></td>
+            <td><center>-2.98%</center></td>
+            <td><center>春秋电子</center></td>
+            <td><center>电子</center></td>
+            <td><center>电子产品</center></td>
+            <td><center>9.19</center></td>
+            <td><center>92.34%</center></td>
+            <td><center>17.39|34.36</center></td>
+            <td><center>92|116【低】</center></td>
+            <td><center>0.79|0.383</center></td>
+            <td><center>89.46%</center></td>
+            <td><center>18|116【高】</center></td>
+            <td><center>8.64|1.53</center></td>
+            <td><center>-1.48%</center></td>
+            <td><center>44|116【较高】</center></td>
+            <td><center>4.31|0.69</center></td>
+            <td><center>59.63%</center></td>
+            <td><center>8|116【高】</center></td>
+            <td><center>58.02%</center></td>
+            <td><center>23.04%</center></td>
+            <td><center>15.69|25.53</center></td>
+            <td><center>5|116【高】</center></td>
+            <td><center>2.56|5.58</center></td>
+            <td><center>37|116【较高】</center></td>
+            <td><center>19.22|36.5</center></td>
+            <td><center>49|116【较高】</center></td>
+            <td><center>48.0|129.3</center></td>
+            <td><center>65|116【较低】</center></td>
+            <td><center>1.78</center></td>
+            <td><center>4.1%</center></td>
+            <td><center>5.4|5.3|6.6|3.3|7.2</center></td>
+            <td><center>5.8</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA-</center></td>
+            <td><center>1.04</center></td>
+            <td><center>-0.031</center></td>
+            <td><center>14</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128029.html'>太阳转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=99'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/128029'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz128029'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz002078.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/002078/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=99'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-3.34</center></td>
+            <td><center>189.549</center></td>
+            <td><center>14.1%</center></td>
+            <td><center>203.65</center></td>
+            <td><center>-30.7%</center></td>
+            <td><center>4.0%</center></td>
+            <td><center>70.0</center></td>
+            <td><center>-4.31%</center></td>
+            <td><center>太阳纸业</center></td>
+            <td><center>造纸包装印刷</center></td>
+            <td><center>造纸行业</center></td>
+            <td><center>76.43</center></td>
+            <td><center>37.66%</center></td>
+            <td><center>23.44|23.8</center></td>
+            <td><center>18|38【较高】</center></td>
+            <td><center>11.08|1.56</center></td>
+            <td><center>106.71%</center></td>
+            <td><center>2|38【高】</center></td>
+            <td><center>14.5|9.98</center></td>
+            <td><center>50.26%</center></td>
+            <td><center>10|38【较高】</center></td>
+            <td><center>6.49|3.02</center></td>
+            <td><center>80.28%</center></td>
+            <td><center>3|38【高】</center></td>
+            <td><center>55.16%</center></td>
+            <td><center>0.2%</center></td>
+            <td><center>8.79|33.0</center></td>
+            <td><center>4|38【高】</center></td>
+            <td><center>2.18|3.05</center></td>
+            <td><center>17|38【较高】</center></td>
+            <td><center>174.1|40.87</center></td>
+            <td><center>3|38【高】</center></td>
+            <td><center>373.0|93.6</center></td>
+            <td><center>2|38【高】</center></td>
+            <td><center>9.09</center></td>
+            <td><center>4.1%</center></td>
+            <td><center>3.2|3.5|7.2|7.4|7.2</center></td>
+            <td><center>5.3</center></td>
+            <td><center>中性</center></td>
+            <td><center>AA+</center></td>
+            <td><center>3.36</center></td>
+            <td><center>-0.076</center></td>
+            <td><center>7</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128053.html'>尚荣转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=253'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/128053'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz128053'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz002551.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/002551/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=253'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-3.39</center></td>
+            <td><center>136.7</center></td>
+            <td><center>15.3%</center></td>
+            <td><center>152.0</center></td>
+            <td><center>-4.78%</center></td>
+            <td><center>39.0%</center></td>
+            <td><center>104.0</center></td>
+            <td><center>-2.19%</center></td>
+            <td><center>尚荣医疗</center></td>
+            <td><center>医药</center></td>
+            <td><center>医疗器械</center></td>
+            <td><center>5.5</center></td>
+            <td><center>53.0%</center></td>
+            <td><center>34.16|50.03</center></td>
+            <td><center>84|106【低】</center></td>
+            <td><center>0.52|1.97</center></td>
+            <td><center>27.44%</center></td>
+            <td><center>49|106【较高】</center></td>
+            <td><center>9.45|18.85</center></td>
+            <td><center>-16.67%</center></td>
+            <td><center>62|106【较低】</center></td>
+            <td><center>1.73|4.75</center></td>
+            <td><center>5.49%</center></td>
+            <td><center>80|106【低】</center></td>
+            <td><center>27.57%</center></td>
+            <td><center>-5.34%</center></td>
+            <td><center>23.42|89.06</center></td>
+            <td><center>21|106【高】</center></td>
+            <td><center>1.56|8.46</center></td>
+            <td><center>5|106【高】</center></td>
+            <td><center>37.39|34.15</center></td>
+            <td><center>27|106【较高】</center></td>
+            <td><center>48.0|315.6</center></td>
+            <td><center>79|106【较低】</center></td>
+            <td><center>1.91</center></td>
+            <td><center>4.8%</center></td>
+            <td><center>5.2|2.5|5.5|7.0|4.9</center></td>
+            <td><center>4.8</center></td>
+            <td><center>减持</center></td>
+            <td><center>AA</center></td>
+            <td><center>2.23</center></td>
+            <td><center>-0.036</center></td>
+            <td><center>26</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123093.html'>金陵转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=596'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123093'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123093'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300651.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300651/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=596'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-3.49</center></td>
+            <td><center>130.286</center></td>
+            <td><center>47.5%</center></td>
+            <td><center>177.79</center></td>
+            <td><center>-0.14%</center></td>
+            <td><center>329.0%</center></td>
+            <td><center>1,119</center></td>
+            <td><center>2.18%</center></td>
+            <td><center>金陵体育</center></td>
+            <td><center>其他</center></td>
+            <td><center>文化教育</center></td>
+            <td><center>0.66</center></td>
+            <td><center>59.89%</center></td>
+            <td><center>37.28|34.03</center></td>
+            <td><center>16|40【较高】</center></td>
+            <td><center>0.03|0.316</center></td>
+            <td><center>21.64%</center></td>
+            <td><center>27|40【较低】</center></td>
+            <td><center>5.05|4.04</center></td>
+            <td><center>-23.95%</center></td>
+            <td><center>16|40【较高】</center></td>
+            <td><center>0.47|0.95</center></td>
+            <td><center>14.63%</center></td>
+            <td><center>23|40【较低】</center></td>
+            <td><center>40.28%</center></td>
+            <td><center>57.73%</center></td>
+            <td><center>412.86|64.05</center></td>
+            <td><center>30|40【较低】</center></td>
+            <td><center>8.13|8.69</center></td>
+            <td><center>34|40【低】</center></td>
+            <td><center>7.37|19.37</center></td>
+            <td><center>32|40【低】</center></td>
+            <td><center>56.0|111.7</center></td>
+            <td><center>14|40【较高】</center></td>
+            <td><center>2.5</center></td>
+            <td><center>3.9%</center></td>
+            <td><center>4.9|4.6|4.8|3.1|4.7</center></td>
+            <td><center>4.6</center></td>
+            <td><center>减持</center></td>
+            <td><center>A+</center></td>
+            <td><center>0.27</center></td>
+            <td><center>0.008</center></td>
+            <td><center>6</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz123031.html'>晶瑞转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=336'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/123031'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz123031'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz300655.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/300655/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=336'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-4.11</center></td>
+            <td><center>280.0</center></td>
+            <td><center>13.9%</center></td>
+            <td><center>293.9</center></td>
+            <td><center>-19.0%</center></td>
+            <td><center>898.0%</center></td>
+            <td><center>1,621</center></td>
+            <td><center>0.36%</center></td>
+            <td><center>晶瑞股份</center></td>
+            <td><center>化工</center></td>
+            <td><center>化工</center></td>
+            <td><center>4.03</center></td>
+            <td><center>135.06%</center></td>
+            <td><center>18.66|26.56</center></td>
+            <td><center>155|216【较低】</center></td>
+            <td><center>0.23|1.47</center></td>
+            <td><center>441.19%</center></td>
+            <td><center>143|216【较低】</center></td>
+            <td><center>5.72|-32.31</center></td>
+            <td><center>130.65%</center></td>
+            <td><center>149|216【较低】</center></td>
+            <td><center>1.73|2.72</center></td>
+            <td><center>130.67%</center></td>
+            <td><center>143|216【较低】</center></td>
+            <td><center>41.6%</center></td>
+            <td><center>-4.11%</center></td>
+            <td><center>91.52|56.43</center></td>
+            <td><center>173|216【低】</center></td>
+            <td><center>3.54|4.64</center></td>
+            <td><center>183|216【低】</center></td>
+            <td><center>14.16|41.42</center></td>
+            <td><center>130|216【较低】</center></td>
+            <td><center>85.0|129.1</center></td>
+            <td><center>74|216【较高】</center></td>
+            <td><center>0.63</center></td>
+            <td><center>1.8%</center></td>
+            <td><center>9.1|5.4|5.7|3.0|5.6</center></td>
+            <td><center>6.4</center></td>
+            <td><center>增持</center></td>
+            <td><center>A+</center></td>
+            <td><center>1.67</center></td>
+            <td><center>0.021</center></td>
+            <td><center>16</center></td>
+        </tr>
+        <tr>
+            <td><center><a target = '_blank' href = 'http://quote.eastmoney.com/bond/sz128033.html'>迪龙转债</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=105'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/128033'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a></center>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/sz128033'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://quote.eastmoney.com/sz002658.html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> <a target='_blank' href='http://doctor.10jqka.com.cn/002658/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=105'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a></td>
+            <td><center>-5.82</center></td>
+            <td><center>167.65</center></td>
+            <td><center>26.8%</center></td>
+            <td><center>194.45</center></td>
+            <td><center>-15.6%</center></td>
+            <td><center>482.0%</center></td>
+            <td><center>2,515</center></td>
+            <td><center>-2.95%</center></td>
+            <td><center>雪迪龙</center></td>
+            <td><center>城市公用设施</center></td>
+            <td><center>三废处理</center></td>
+            <td><center>2.26</center></td>
+            <td><center>92.61%</center></td>
+            <td><center>48.34|38.93</center></td>
+            <td><center>16|69【高】</center></td>
+            <td><center>0.27|0.354</center></td>
+            <td><center>213.27%</center></td>
+            <td><center>25|69【较高】</center></td>
+            <td><center>12.07|9.38</center></td>
+            <td><center>-158.82%</center></td>
+            <td><center>35|69【较低】</center></td>
+            <td><center>1.22|1.63</center></td>
+            <td><center>207.96%</center></td>
+            <td><center>41|69【较低】</center></td>
+            <td><center>23.66%</center></td>
+            <td><center>-19.34%</center></td>
+            <td><center>68.59|52.87</center></td>
+            <td><center>40|69【较低】</center></td>
+            <td><center>3.04|3.85</center></td>
+            <td><center>34|69【较高】</center></td>
+            <td><center>24.56|16.9</center></td>
+            <td><center>10|69【高】</center></td>
+            <td><center>73.0|72.77</center></td>
+            <td><center>12|69【高】</center></td>
+            <td><center>2.98</center></td>
+            <td><center>5.4%</center></td>
+            <td><center>8.8|2.6|8.5|6.8|6.1</center></td>
+            <td><center>6.6</center></td>
+            <td><center>增持</center></td>
+            <td><center>AA</center></td>
+            <td><center>3.33</center></td>
+            <td><center>0.186</center></td>
+            <td><center>36</center></td>
+        </tr>
+    </tbody>
+</table>
+    </body>
+    </html>
+        

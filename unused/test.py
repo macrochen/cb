@@ -307,13 +307,48 @@ from pyecharts.faker import Faker
 # )
 # scatter5.render('echarts-scatter.html')
 # filename = 'file:///' + os.getcwd() + '/' + 'echarts-scatter.html'
+from pyecharts import options as opts
+from pyecharts.charts import Bar
+from pyecharts.faker import Faker
 
-# webbrowser.open_new_tab(filename)
-import re
+c = (
+    Bar()
+    .add_xaxis(Faker.choose())
+    .add_yaxis("商家A", Faker.values())
+    .add_yaxis("商家B", Faker.values())
+    .extend_axis(
+        yaxis=opts.AxisOpts(
+            is_inverse=True,
 
-string = "当前指数：1622.084↓    -1.900    -0.120%    成交额 572.80亿元    " \
-         "平均价格 127.859    转股溢价率 31.22%    到期收益率 -0.88%    中位数价格 111.110    换手率 9.84%"
-# print(re.findall(r"\d+\.?\d*", string))
-print(re.findall(r"转股溢价率 (\d+\.?\d*)%", string))
-# re.findall(r"中位数价格 \d+\.?\d*", string)
-print(re.findall(r"到期收益率 (-?\d+\.?\d*)%", string))
+        ),
+        xaxis=opts.AxisOpts(
+            is_inverse=True
+        )
+    )
+    # .reversal_axis()
+    .set_series_opts(
+        label_opts=opts.LabelOpts(position="right"),
+
+    )
+    .set_global_opts(
+        title_opts=opts.TitleOpts(title="Bar-翻转 XY 轴"),
+        xaxis_opts=opts.AxisOpts(
+            position='top'
+        ),
+        yaxis_opts=opts.AxisOpts(
+            position='right'
+        )
+    )
+    .render("bar_reversal_axis.html")
+)
+
+filename = 'file:///' + os.getcwd() + '/' + 'bar_reversal_axis.html'
+webbrowser.open_new_tab(filename)
+# import re
+#
+# string = "当前指数：1622.084↓    -1.900    -0.120%    成交额 572.80亿元    " \
+#          "平均价格 127.859    转股溢价率 31.22%    到期收益率 -0.88%    中位数价格 111.110    换手率 9.84%"
+# # print(re.findall(r"\d+\.?\d*", string))
+# print(re.findall(r"转股溢价率 (\d+\.?\d*)%", string))
+# # re.findall(r"中位数价格 \d+\.?\d*", string)
+# print(re.findall(r"到期收益率 (-?\d+\.?\d*)%", string))
