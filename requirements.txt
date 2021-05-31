@@ -5,3 +5,5 @@ requests
 bs4
 html5lib
 lxml
+pyecharts
+selenium
