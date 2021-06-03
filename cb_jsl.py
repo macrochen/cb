@@ -136,8 +136,7 @@ def update_db(rows):
 def fetch_data():
     rows = get_content()
     update_db(rows)
+    print("可转债数据抓取更新完成")
 
 if __name__ == "__main__":
     fetch_data()
-
-    print("可转债数据抓取更新完成")

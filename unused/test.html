@@ -1,0 +1,447 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <meta http-equiv="X-UA-Compatible" content="ie=edge">-->
+<!--    <title>CSS实现Tab切换效果</title>-->
+<!--    <style>-->
+<!--        ul {-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+
+<!--        }-->
+<!--        .clearfloat {-->
+<!--            zoom: 1;-->
+<!--        }-->
+<!--        .clearfloat::after {-->
+<!--            display: block;-->
+<!--            clear: both;-->
+<!--            content: "";-->
+<!--            visibility: hidden;-->
+<!--            height: 0;-->
+<!--        }-->
+
+<!--        .tab-list {-->
+<!--            position: relative;-->
+<!--        }-->
+
+<!--        .tab-list .tab-itom {-->
+<!--            float: left;-->
+<!--            list-style: none;-->
+<!--            margin-right: 4px;-->
+<!--        }-->
+
+<!--        .tab-itom .test-label {-->
+<!--            position: relative;-->
+<!--            display: block;-->
+<!--            width: 85px;-->
+<!--            height: 27px;-->
+<!--            border: 1px solid transparent;-->
+<!--            border-top-left-radius: 5px;-->
+<!--            border-top-right-radius: 5px;-->
+<!--            line-height: 27px;-->
+<!--            text-align: center;-->
+<!--            background: #e7e8eb;-->
+<!--        }-->
+
+<!--        .tab-itom .tab-box {-->
+<!--            /* 设置绝对定位方便定位相对于tab-list栏的位置，同时为了可以使用z-index属性 */-->
+<!--            position: absolute;-->
+<!--            left: 0;-->
+<!--            top: 28px;-->
+<!--            width: 1488px;-->
+<!--            height: 1048px;-->
+<!--            border: 1px solid #cbcccc;-->
+<!--            border-radius: 5px;-->
+<!--            border-top-left-radius: 0px;-->
+<!--            background: #fff;-->
+<!--            /* 设置层级最低方便选中状态遮挡 */-->
+<!--            z-index: 0;-->
+<!--        }-->
+<!--        /* 用绝对定位使按钮脱离文档流，透明度设置为0将其隐藏 */-->
+<!--        input[type="radio"] {-->
+<!--            position: absolute;-->
+<!--            opacity: 0;-->
+<!--        }-->
+<!--        /* 利用选择器实现  tab切换 */-->
+
+<!--        /* 当radio为选中状态时设置它的test-label兄弟元素的属性 */-->
+<!--        input[type="radio"]:checked + .test-label {-->
+<!--            /* 为了修饰存在的边框背景属性 */-->
+<!--            border-color: #cbcccc;-->
+<!--            border-bottom-color: #fff;-->
+<!--            background: #fff;-->
+<!--            /* 为了修饰存在的层级使下边框遮挡下方div的上边框 */-->
+<!--            z-index: 10;-->
+<!--        }-->
+<!--        /* 当radio为选中状态时设置与它同级的tab-box元素的显示层级 */-->
+<!--        input[type="radio"]:checked ~ .tab-box {-->
+<!--            /* 选中时提升层级，遮挡其他tab页达到选中切换的效果 */-->
+<!--            z-index: 5;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+
+<!--<body class="clearfloat">-->
+<!--    <ul class="tab-list clearfloat">-->
+<!--        <li class="tab-itom">-->
+<!--            <input type="radio" id="testTabRadio1" class="test-radio" name="tab" checked="checked">-->
+<!--            <label class="test-label" for="testTabRadio1">选项卡一</label>-->
+<!--            <div class="tab-box">-->
+<!--                <table border="1">-->
+<!--                    <tr>-->
+<!--                        <td>ddd</td>-->
+<!--                    </tr>-->
+<!--                </table>-->
+<!--            </div>-->
+<!--        </li>-->
+<!--        <li class="tab-itom">-->
+<!--            <input type="radio" id="testTabRadio2" class="test-radio" name="tab">-->
+<!--            <label class="test-label" for="testTabRadio2">选项卡二</label>-->
+<!--            <div class="tab-box">-->
+<!--                2222222222222-->
+<!--            </div>-->
+<!--        </li>-->
+<!--        <li class="tab-itom">-->
+<!--            <input type="radio" id="testTabRadio3" class="test-radio" name="tab">-->
+<!--            <label class="test-label" for="testTabRadio3">选项卡三</label>-->
+<!--            <div class="tab-box">-->
+<!--                33333333333333-->
+<!--            </div>-->
+<!--        </li>-->
+<!--    </ul>-->
+<!--</body>-->
+
+<!--</html>-->
+
+<!--<html>-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <style>-->
+<!--        header{-->
+<!--            #background-color: #C50B10;-->
+<!--            color: #FFF;-->
+<!--            /*position: fixed;*/-->
+<!--/*margin:50px 500px;*/-->
+<!--        }-->
+<!--        li{-->
+<!--            line-height: 50px;-->
+<!--            #background-color: #C50B10;-->
+<!--            display: inline-block;-->
+<!--            padding: 0 20px;-->
+<!--        }-->
+<!--        li.active{-->
+<!--            background: rgba(0,0,0,.2);-->
+<!--        }-->
+
+<!--        #div1, #div2, #div3, #div4 {-->
+<!--        height: 800px;-->
+<!--        width: 400px;-->
+<!--        border: 2px solid black;-->
+<!--        }-->
+<!--</style>-->
+<!--<script>-->
+<!--    $(document).ready(function () {-->
+<!--        $(".navbar-nav>li a").each(function () {-->
+<!--            if ($($(this))[0].href == String(window.location))-->
+<!--                $(this).parent().addClass('active');-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div style="position: sticky;">-->
+<!--<header>-->
+<!--    <div class="navbar-nav">-->
+<!--        <li class="active"><a href="#div1">首页</a></li>-->
+<!--        <li><a href="#div2">新闻</a></li>-->
+<!--        <li><a href="#div3">活动</a></li>-->
+<!--        <li><a href="#div4">项目</a></li>-->
+<!--    </div>-->
+<!--</header>-->
+<!--</div>-->
+<!--<div style="border: 2px solid red">-->
+<!--<div id="div1">div1</div>-->
+<!--<div id="div2">div2</div>-->
+<!--<div id="div3">div3</div>-->
+<!--<div id="div4">div4</div>-->
+<!--    </div>-->
+<!--</body>-->
+<!--</html>-->
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="zh">-->
+<!--	<head>-->
+<!--		<meta charset="UTF-8">-->
+<!--		<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--		<meta http-equiv="X-UA-Compatible" content="ie=edge">-->
+<!--		<title>导航栏</title>-->
+<!--	</head>-->
+<!--	<body>-->
+<!--		<style>-->
+<!--			*{-->
+<!--				box-sizing: border-box;-->
+<!--			}-->
+<!--			li {-->
+<!--				list-style: none;-->
+<!--			}-->
+
+<!--            #nav a:link,-->
+
+<!--    #nav a:visited {-->
+
+<!--    color:#000;-->
+
+<!--    background:#b2b580;-->
+
+<!--    padding:20px 40px 4px 10px;-->
+
+<!--    float:left;-->
+
+<!--    width:auto;-->
+
+<!--    border-right:1px solid #42432d;-->
+
+<!--    text-decoration:none;-->
+
+<!--    font:bold 1em/1em Arial, Helvetica, sans-serif;-->
+
+<!--    text-transform:uppercase;-->
+
+<!--    text-shadow: 2px 2px 2px #555;-->
+
+<!--    }-->
+
+<!--    #nav li:first-child a {-->
+
+<!--    border-left:1px solid #42432d;-->
+
+<!--    }-->
+
+
+
+<!--			.nav {-->
+<!--				width: 500px;-->
+<!--				height: 60px;-->
+<!--				margin: 0 auto;-->
+<!--                position: fixed;-->
+
+<!--                margin:0;-->
+
+<!--    padding:0;-->
+
+<!--    background:#808259 url(nav_bg.jpg) 0 0 repeat-x;-->
+
+<!--    float:left;-->
+
+<!--    width:100%;-->
+
+<!--    border:1px solid #42432d;-->
+
+<!--    border-width:1px 0;-->
+
+<!--			}-->
+<!--			.nav ul {-->
+<!--				display: flex;-->
+<!--				justify-content: space-around;-->
+<!--				align-items: center;-->
+<!--			}-->
+<!--			.nav li{-->
+<!--				height: 60px;-->
+<!--				line-height: 60px;-->
+<!--                transition: all 0.3s ease;-->
+<!--			}-->
+<!--			.nav li:hover{-->
+<!--				cursor: pointer;-->
+<!--				border-bottom:2px solid #109dff;-->
+<!--			}-->
+<!--			.active{-->
+<!--				border-bottom:2px solid #109dff;-->
+<!--			}-->
+
+<!--              .content {-->
+<!--        height: 800px;-->
+<!--        width: 400px;-->
+<!--        border: 2px solid black;-->
+<!--        }-->
+
+<!--		</style>-->
+<!--		<div class="nav">-->
+<!--			<ul>-->
+<!--                <li class="active"><a href="#div1">首页</a></li>-->
+<!--                <li><a href="#div2">新闻</a></li>-->
+<!--                <li><a href="#div3">活动</a></li>-->
+<!--                <li><a href="#div4">项目</a></li>-->
+<!--			</ul>-->
+<!--		</div>-->
+<!--        <div id="div1">-->
+<!--            </br>-->
+<!--            </br>-->
+<!--            </br>-->
+<!--            </br>-->
+<!--        </div>-->
+<!--        <div class="content">div1</div>-->
+<!--            <div id="div2">-->
+<!--                </br>-->
+<!--                </br>-->
+<!--                </br>-->
+<!--                </br>-->
+<!--            </div>-->
+<!--            <div class="content">div2</div>-->
+<!--            <div id="div3">-->
+<!--                </br>-->
+<!--                </br>-->
+<!--                </br>-->
+<!--                </br>-->
+<!--            </div>-->
+<!--            <div class="content">div3</div>-->
+<!--            <div id="div4">-->
+<!--                </br>-->
+<!--                </br>-->
+<!--                </br>-->
+<!--                </br>-->
+<!--            </div>-->
+<!--            <div class="content">div4</div>-->
+<!--		<script>-->
+<!--			let lis = document.querySelectorAll('.nav>ul>li')-->
+<!--			console.log(lis)-->
+<!--			for (var i = 0; i < lis.length; i++) {-->
+<!--				lis[i].onclick = function(event) {-->
+<!--					let li = document.getElementsByClassName('active')[0]-->
+<!--					li.classList.remove('active')-->
+<!--					event.target.classList.add('active')-->
+<!--				}-->
+<!--			}-->
+<!--		</script>-->
+
+<!--	</body>-->
+<!--</html>-->
+
+<!-- <!DOCTYPE html>-->
+<!--<html>-->
+<!--<head>-->
+<!--  <meta charset="utf-8">-->
+<!--  <title>css-directory-animation</title>-->
+<!--  <style type="text/css">-->
+<!--    body {-->
+<!--      padding-top: 20px;-->
+<!--    }-->
+<!--    .nd-animation {-->
+<!--      display: block;-->
+<!--      position: relative;-->
+<!--      width: 22px;-->
+<!--      height: 2px;-->
+<!--      background-color: #25283D;-->
+<!--      transition: background-color .2s linear;-->
+<!--    }-->
+<!--    .nd-animation::before {-->
+<!--      position: absolute;-->
+<!--      content: '';-->
+<!--      width: 22px;-->
+<!--      height: 2px;-->
+<!--      background: #25283D;-->
+<!--      transform: translateY(-6px);-->
+<!--      transition: transform .2s linear;-->
+<!--    }-->
+<!--    .nd-animation::after {-->
+<!--      position: absolute;-->
+<!--      content: '';-->
+<!--      width: 22px;-->
+<!--      height: 2px;-->
+<!--      background: #25283D;-->
+<!--      transform: translateY(6px);-->
+<!--      transition: transform .2s linear;-->
+<!--    }-->
+<!--    .is-open {-->
+<!--      background-color: rgba(255, 255, 255, 0);-->
+<!--    }-->
+<!--    .is-open::before {-->
+<!--      transform: rotate(-45deg);-->
+<!--    }-->
+<!--    .is-open::after {-->
+<!--      transform: rotate(45deg);-->
+<!--    }-->
+<!--  </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--  <span class="nd-animation"></span>-->
+<!--  <script type="text/javascript">-->
+<!--    var node = document.getElementsByClassName('nd-animation')[0];-->
+<!--    window.addEventListener('click', function() {-->
+<!--      if (node.classList.contains('is-open')) {-->
+<!--        node.classList.remove('is-open');-->
+<!--      }-->
+<!--      else {-->
+<!--        node.classList.add('is-open');-->
+<!--      }-->
+<!--    }, false);-->
+<!--  </script>-->
+<!--</body>-->
+<!--</html>-->
+
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>laofan</title>
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.min.js"></script>
+  <style>
+  .detail_content{
+    display: none;
+}
+
+  </style>
+ </head>
+ <body>
+
+<div>
+	<table>
+		这是表格内容
+	</table>
+
+	<div class="detail_click">
+	    展开
+	</div>
+
+	<div class="detail_content">
+	 这是详情
+	</div>
+</div>
+
+
+
+<div>
+	<table>
+		这是表格内容
+	</table>
+
+	<div class="detail_click">
+	    展开
+	</div>
+
+	<div class="detail_content">
+	 这是详情
+	</div>
+</div>
+
+
+<script type="text/javascript">
+	  $('.detail_click').click(function(){
+        //$(this) 为 detail_click 实体
+        $(this).next().slideToggle('1000',function(){
+
+            //$(this) 为 detail_content 实体
+            // $(this).prev() 为 detail_click 实体
+            $(this).prev().text($(this).is(":visible") ? "收起" : "展开" );
+
+
+		});
+    })
+</script>
+
+ </body>
+</html>

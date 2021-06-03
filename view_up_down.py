@@ -10,6 +10,7 @@ import sqlite3
 
 from pyecharts.globals import ThemeType
 
+import cb_jsl
 import common
 
 import matplotlib.pyplot as plt
@@ -30,13 +31,14 @@ from jinja2 import Environment, FileSystemLoader
 plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
 
-def generate_table_html(type, cur, html, need_title = True, field_names = None, rows = None, color=None):
+def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
+                        color=None, remark_fields_color=[]):
     table = from_db(cur, field_names, rows)
 
     if len(table._rows) == 0:
         return html
 
-    return html  + common.get_html_string(table)
+    return html + common.get_html_string(table, remark_fields_color)
 
 def from_db(cursor, field_names, rows, **kwargs):
     if cursor.description:
@@ -77,10 +79,10 @@ order by 涨跌 desc
         # =========我的转债涨跌TOP20表格=========
 
         cur.execute("""
-    SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+    SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, h.strategy_type as 策略, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
         round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', remain_amount as '余额(亿元)', 
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
-        cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(bt_yield*100,2) || '%' as 税前收益率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, 
+        cb_price2_id as 转债价格, round(cb_premium_id*100,2) as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, 
         round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
         
         round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比',
@@ -98,16 +100,21 @@ order by 涨跌 desc
         stock_total as 综合评分, trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from (select * from (SELECT DISTINCT c. * from changed_bond c, hold_bond h where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_mov2_id DESC limit 10)     
+    from (select * from (SELECT DISTINCT c. * from changed_bond c, (select * 
+            from hold_bond where id in (select id from hold_bond where id 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+             ) h where  c.bond_code = h.bond_code  order by cb_mov2_id DESC limit 10)     
 UNION  
-select * from (SELECT DISTINCT c. * from changed_bond c, hold_bond h where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 10    )) c, 
-stock_report s, hold_bond h
+select * from (SELECT DISTINCT c. * from changed_bond c, hold_bond h where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 10)) c, 
+stock_report s, (select * 
+            from hold_bond where id in (select id from hold_bond where id 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+             ) h
     WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code 
-    and h.hold_owner = 'me' 
-    and h.hold_amount != -1 order  by cb_mov2_id desc
+    order  by cb_mov2_id desc
             """)
 
-        html = generate_table_html("涨跌TOP10", cur, html, need_title=False)
+        html = generate_table_html("涨跌TOP10", cur, html, need_title=False, remark_fields_color=['策略', '转债价格', '到期收益率', '溢价率'])
 
         # =========全网可转债涨跌TOP20柱状图=========
 
@@ -125,11 +132,11 @@ stock_report s, hold_bond h
         html += '<br/>' + generate_bar_html(rows, '全网可转债涨跌TOP20')
 
         cur.execute("""
-SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
+SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
-      SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称,round(cb_mov2_id * 100, 2) as 可转债涨跌, 
-        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 税前收益率,
-        round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', cb_trade_amount_id as '成交额(百万)', round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
+      SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称,cb_mov2_id, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, 
+        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
+        round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', remain_amount as '余额(亿元)', cb_trade_amount_id as '成交额(百万)', round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
         
         round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比',
@@ -156,82 +163,28 @@ SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  ''
         select *
          from (SELECT DISTINCT c. * from changed_bond c 
            order by cb_mov2_id ASC limit 10) ) c LEFT join stock_report s on c.stock_code = s.stock_code 
-    where c.enforce_get not in ('强赎中') or c.enforce_get is null) d left join 
-        (select id as hold_id, bond_code, hold_price, hold_amount from hold_bond where hold_owner = 'me' and hold_amount != -1) e 
+    where c.enforce_get not in ('强赎中') or c.enforce_get is null ) d left join 
+        (select id as hold_id, bond_code, hold_price, hold_amount, strategy_type 
+            from hold_bond where id in (select id from hold_bond where id 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+             ) e 
         on d.id = e.bond_code	
-        ORDER by 可转债涨跌 DESC
+        ORDER by cb_mov2_id DESC
                     """)
 
-        html = generate_table_html("全网涨跌TOP10", cur, html, need_title=False)
+        html = generate_table_html("全网涨跌TOP10", cur, html, need_title=False, remark_fields_color=['转债价格', '到期收益率', '溢价率'])
 
 
         f = open('view/view_up_down.html', 'w')
         s = ("""
-        <html>
+    <html>
         <head>
         <meta charset="UTF-8">
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.1.2-dev.20210512/dist/echarts.min.js"></script>
-        <title>我的策略</title>
-        
-        <style>
-
-        td, th {
-
-          border-right :1px solid gray;
-          border-bottom :1px solid gray;
-
-          width:100px;
-
-          height:30px;
-
-          box-sizing: border-box;
-
-          font-size:7;
-
-        }
-
-        th {
-
-          background-color:lightblue;
-
-        }
-
-
-        table {
-          border-collapse:separate;
-          table-layout: fixed;
-          width: 100%; /* 固定寬度 */
-
-        }
-
-        td:first-child, th:first-child {
-
-          position:sticky;
-
-          left:0; /* 首行在左 */
-
-          z-index:1;
-
-          background-color:lightpink;
-
-        }
-
-        thead tr th {
-
-          position:sticky;
-
-          top:0; /* 第一列最上 */
-
-        }
-
-        th:first-child{
-
-          z-index:2;
-
-          background-color:lightblue;
-
-        }
-      </style>
+        <title>可转债涨跌数据</title>
+            """ +
+             common.css_html
+             + """
       </head>
       <body>
         """
@@ -391,6 +344,8 @@ def generate_bar_html(rows, title):
 
 
 if __name__ == "__main__":
+    # 展示之前先更新一下数据
+    cb_jsl.fetch_data()
     # draw_my_view(True, True)
     draw_view(False, True)
     print("processing is successful")
