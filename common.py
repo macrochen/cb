@@ -7,6 +7,67 @@ from selenium import webdriver
 
 import re
 
+css_html = """
+<style>
+
+    td, th {
+      border-right :1px solid gray;
+      border-bottom :1px solid gray;
+      text-align:center;
+      width:100px;
+      height:50px;
+      box-sizing: border-box;
+      font-size:7;
+    }
+
+    th {
+      background-color:lightblue;
+    }
+
+
+    table {
+      border-collapse:separate;
+      table-layout: fixed;
+      width: 100%; /* 固定寬度 */
+    }
+
+    td:first-child, th:first-child {
+      position:sticky;
+      left:0; /* 首行在左 */
+      z-index:1;
+      background-color:lightpink;
+    }
+
+    thead tr th {
+      position:sticky;
+      top:0; /* 第一列最上 */
+    }
+
+    th:first-child{
+      z-index:2;
+      background-color:lightblue;
+    }
+    
+    .site-link{
+        margin-bottom:2px;
+        margin-right:3px
+    }
+    
+    .next-site-link{
+        margin-bottom:-1px;
+        margin-right:4px
+    }
+    
+    .remarked-up{
+        color:red
+    }
+    .remarked-down{
+        color:green
+    }
+    
+</style>
+"""
+
 env = Environment(
             keep_trailing_newline=True,
             trim_blocks=True,
@@ -58,8 +119,8 @@ def get_cb_sum_data():
 
     driver.close()
 
-def get_html_string(table):
-    ignore_fields = ['nid', 'id', 'stock_code', '持有', '持有成本', '持有数量']
+def get_html_string(table, remark_fields_color = []):
+    ignore_fields = ['nid', 'id', 'stock_code', '持有', '持有成本', '持有数量', 'cb_mov2_id']
 
     lines = []
     linebreak = "<br>"
@@ -107,26 +168,41 @@ def get_html_string(table):
                     market = 'sh'
                 prefix = "<a target = '_blank' href = 'http://quote.eastmoney.com/bond/" + market + bond_id + ".html'>"
 
-                prefix_append += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + nid + "'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>"
+                prefix_append += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + nid + "'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' width='14' height='14' class='site-link'/></a>"
 
-                prefix_append += "&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/" + bond_id + "'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' weight='14' height='14'style='margin-bottom:-2px;margin-right:3px'/></a>"
+                prefix_append += "&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/" + bond_id + "'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' width='14' height='14' class='site-link'/></a>"
 
                 # https://xueqiu.com/S/SH600998
-                suffix = "&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_id + "'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' weight='14' height='14' style='margin-bottom:-3px;margin-right:4px'/></a>"
-                suffix += "&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a> "
-                suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>"
+                suffix = "&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_id + "'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='next-site-link'/></a>"
+                suffix += "&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
+                suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
 
                 #http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157
-                suffix += "&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + nid + "'><img src='../img/trend.png' alt='走势图' title='集思录查看转债&正股走势(非会员20次/天)' weight='14' height='14'style='margin-bottom:-3px;margin-right:4px'/></a>"
+                suffix += "&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + nid + "'><img src='../img/trend.png' alt='走势图' title='宁稳网查看转债&正股走势(非会员20次/天)' width='14' height='14' class='next-site-link'/></a>"
+            remark_color = ''
+            if remark_fields_color.count(field) > 0:
+                if datum.startswith('-'):
+                    remark_color = 'class="remarked-down"'
+                else:
+                    remark_color = 'class="remarked-up"'
 
             lines.append(
-                ("            <td><center>" + prefix + "%s" + prefix_append + "</center>" + suffix + "</td>") % datum.replace("\n", linebreak)
+                ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % datum.replace("\n", linebreak)
             )
         lines.append("        </tr>")
     lines.append("    </tbody>")
     lines.append("</table>")
 
     return "\n".join(lines)
+
+def add_nav_html(htmls, type):
+    # 增加导航
+    active = ''
+    if len(htmls) == 0:
+        active = 'class="active"'
+    nav_html = htmls.get('nav', '')
+    nav_html += '<li ' + active + '><a href="#' + type + '">' + type + '</a></li>'
+    htmls['nav'] = nav_html
 
 def getRecord(table, row):
     return dict(zip(table._field_names, row))
