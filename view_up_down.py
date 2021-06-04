@@ -114,7 +114,7 @@ stock_report s, (select *
     order  by cb_mov2_id desc
             """)
 
-        html = generate_table_html("涨跌TOP10", cur, html, need_title=False, remark_fields_color=['策略', '转债价格', '到期收益率', '溢价率'])
+        html = generate_table_html("涨跌TOP10", cur, html, need_title=False, remark_fields_color=['策略', '转债价格', '到期收益率', '溢价率', '可转债涨跌'])
 
         # =========全网可转债涨跌TOP20柱状图=========
 
@@ -172,7 +172,7 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
         ORDER by cb_mov2_id DESC
                     """)
 
-        html = generate_table_html("全网涨跌TOP10", cur, html, need_title=False, remark_fields_color=['转债价格', '到期收益率', '溢价率'])
+        html = generate_table_html("全网涨跌TOP10", cur, html, need_title=False, remark_fields_color=['转债价格', '到期收益率', '溢价率', '可转债涨跌'])
 
 
         f = open('view/view_up_down.html', 'w')

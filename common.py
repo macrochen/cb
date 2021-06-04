@@ -195,6 +195,15 @@ def get_html_string(table, remark_fields_color = []):
 
     return "\n".join(lines)
 
+def add_nav_html(htmls, type):
+    # 增加导航
+    active = ''
+    if len(htmls) == 0:
+        active = 'class="active"'
+    nav_html = htmls.get('nav', '')
+    nav_html += '<li ' + active + '><a href="#' + type + '">' + type + '</a></li>'
+    htmls['nav'] = nav_html
+
 def getRecord(table, row):
     return dict(zip(table._field_names, row))
 

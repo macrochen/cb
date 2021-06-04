@@ -99,14 +99,7 @@ def generate_strategy_html(con_file,
 
     scatter_html = genrate_pei_html(field_name, labelY, midX, midY, sub_title, type, unselects, x, y)
 
-    # 增加导航
-    active = ''
-    if len(htmls) == 0:
-        active = 'class="active"'
-
-    nav_html = htmls.get('nav', '')
-    nav_html += '<li ' + active + '><a href="#' + type + '">' + type + '</a></li>'
-    htmls['nav'] = nav_html
+    common.add_nav_html(htmls, type)
 
     html += """
     <div id=\"""" + type + """\">
