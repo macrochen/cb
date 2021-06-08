@@ -235,10 +235,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when c.memo is not null then  c.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
-        where c.stock_code = s.stock_code
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
          and red_t not in('无权', '回售内')
          and red_t < 1
          and round(bt_red * 100,2) > 1
@@ -287,10 +290,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
-
-    from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
-    where c.stock_code = s.stock_code
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when c.memo is not null then  c.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
         --and cb_premium_id * 100 < 30 
         and remain_amount < 3 
         and cb_price2_id < 110
@@ -342,10 +348,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)'
-
-    from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
-    where c.stock_code = s.stock_code
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when c.memo is not null then  c.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
         ORDER by 双低值
         limit 20) d left join 
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
@@ -390,10 +399,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)'
-
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
-    where c.stock_code = s.stock_code
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when c.memo is not null then  c.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
         and c.rating in ('AA+', 'AA-', 'AA', 'AAA', 'A', 'A+')
         --and c.cb_name_id not in( '亚药转债' , '本钢转债','搜特转债','广汇转债')
         AND bt_yield > 0
@@ -444,10 +456,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)'
-      
-      from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
-      where c.stock_code = s.stock_code
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when c.memo is not null then  c.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
       and duration < 3 
       and cb_price2_id > 99 
       and cb_price2_id < 115 
@@ -505,10 +520,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)'
-      
-      from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
-      where c.stock_code = s.stock_code
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when c.memo is not null then  c.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
       and cb_premium_id < 0 
       -- and cb_price2_id > 99 
       -- and cb_price2_id < 115 
@@ -559,10 +577,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)'
-    
-    from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
-    where c.stock_code = s.stock_code
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when c.memo is not null then  c.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
     -- and duration < 3 
     -- and cb_price2_id > 99 
     -- and cb_price2_id < 115 
@@ -616,10 +637,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)'
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when c.memo is not null then  c.memo else  '' END as 备注
   
-      from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
-      where c.stock_code = s.stock_code
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
       and bt_yield > 0
       and bond_t1 < 2.5
       -- and duration < 3 
@@ -675,10 +699,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)'
-    
-      from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
-      where c.stock_code = s.stock_code
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when c.memo is not null then  c.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
       -- and duration < 3 
       -- and cb_price2_id > 99 
       and cb_price2_id < 105 
@@ -732,10 +759,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)'
-    
-      from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s
-      where c.stock_code = s.stock_code
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when c.memo is not null then  c.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
       -- and duration < 3 
       -- and cb_price2_id > 99 
       -- and cb_price2_id < 105 
@@ -793,10 +823,13 @@ def draw_market_view(need_show_figure, need_open_page):
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)'
-    
-      from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, hold_bond h
-      where c.stock_code = s.stock_code and c.bond_code = h.bond_code
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when h.memo is not null then  h.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e, hold_bond h
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code and c.bond_code = h.bond_code
       and hold_owner = 'me' and hold_amount != -1
       and h.strategy_type = '自选'"""
             html = generate_strategy_html(con_file, sql, "自选集", "收集近期大V们推荐", html, htmls=htmls,

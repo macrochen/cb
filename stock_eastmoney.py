@@ -135,11 +135,10 @@ def modify_data_unit_error():
 
         i = 0
 
-        stock_cursor = con_file.execute("""SELECT bond_code, avg_net_margin, stock_name from stock_report""")
+        stock_cursor = con_file.execute("""SELECT avg_net_margin, stock_name from stock_report""")
         stocks = list(stock_cursor)
 
         for stock in stocks:
-            bond_code = stock[0]
             avg_net_margin = stock[1]
             stock_name = stock[2]
 
@@ -148,8 +147,8 @@ def modify_data_unit_error():
 
             avg_net_margin = change_data_unit(avg_net_margin, no_clean_text)
 
-            con_file.execute("""update stock_report set avg_net_margin = ? where bond_code = ?""",
-                             (avg_net_margin, bond_code))
+            con_file.execute("""update stock_report set avg_net_margin = ? where stock_name = ?""",
+                             (avg_net_margin, stock_name))
 
             i += 1
             print("update " + stock_name + " is successful. count:" + str(i))

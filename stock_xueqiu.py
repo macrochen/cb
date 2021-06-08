@@ -88,27 +88,25 @@ def getContent():
 
         i = 0
         for bond_row in bond_cursor:
-
-            bond_code = bond_row[0]
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
-            stock_cursor = con_file.execute("SELECT bond_code, stock_code, last_date from stock_report where bond_code = " + bond_code)
+            stock_cursor = con_file.execute("SELECT last_date from stock_report where stock_code = " + stock_code)
 
             stocks = list(stock_cursor)
             # 还没添加正股财务指标信息
             if len(stocks) == 0:
                 earnings = getEarnings(stock_code)
                 # 新增
-                con_file.execute("""insert into stock_report(bond_code,cb_name_id,stock_code,stock_name,
+                con_file.execute("""insert into stock_report(stock_code,stock_name,
                             last_date,
                             revenue,qoq_revenue_rate,yoy_revenue_rate,
                             net,qoq_net_rate,yoy_net_rate,
                             margin,qoq_margin_rate,yoy_margin_rate,
                             roe,qoq_roe_rate,yoy_roe_rate,
                             al_ratio,qoq_rl_ratio_rate,yoy_al_ratio_rate)
-                         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                                 (bond_row[0], bond_row[1], bond_row[2], bond_row[3],
+                         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                                 (bond_row[2], bond_row[3],
                                   earnings.lastDate,
 
                                   earnings.revenue,
@@ -151,7 +149,7 @@ def getContent():
                                 margin = ?,qoq_margin_rate = ?,yoy_margin_rate = ?,
                                 roe = ?,qoq_roe_rate = ?,yoy_roe_rate = ?,
                                 al_ratio = ?,qoq_rl_ratio_rate = ?,yoy_al_ratio_rate = ?
-                             where bond_code = ?""",
+                             where stock_code = ?""",
                                      (earnings.lastDate,
 
                                       earnings.revenue,
@@ -174,7 +172,7 @@ def getContent():
                                       earnings.qoqAlRatioRate,
                                       earnings.yoyAlRatioRate,
 
-                                      bond_code
+                                      stock_code
                                       )
                                      )
                     print("update " + stock_name + " is successful. count:" + str(i+1))
