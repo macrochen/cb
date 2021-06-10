@@ -254,7 +254,7 @@ def draw_market_view(need_show_figure, need_open_page):
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
             where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
         on d.id = e.bond_code
             """
@@ -310,7 +310,7 @@ def draw_market_view(need_show_figure, need_open_page):
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
             where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
         on d.id = e.bond_code            
             """
@@ -364,7 +364,7 @@ def draw_market_view(need_show_figure, need_open_page):
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
                 where id in (select id from hold_bond where id 
-                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
             ) e 
         on d.id = e.bond_code
         
@@ -419,7 +419,7 @@ def draw_market_view(need_show_figure, need_open_page):
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
                 where id in (select id from hold_bond where id 
-                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
             ) e 
         on d.id = e.bond_code;
             """
@@ -480,7 +480,7 @@ def draw_market_view(need_show_figure, need_open_page):
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
                 where id in (select id from hold_bond where id 
-                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
             ) e 
           on d.id = e.bond_code
           """
@@ -544,7 +544,7 @@ def draw_market_view(need_show_figure, need_open_page):
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
                 where id in (select id from hold_bond where id 
-                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
             ) e 
           on d.id = e.bond_code
               """
@@ -601,7 +601,7 @@ def draw_market_view(need_show_figure, need_open_page):
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
                 where id in (select id from hold_bond where id 
-                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
             ) e 
       on d.id = e.bond_code
           """
@@ -663,7 +663,7 @@ def draw_market_view(need_show_figure, need_open_page):
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
                 where id in (select id from hold_bond where id 
-                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
             ) e 
           on d.id = e.bond_code
               """
@@ -723,7 +723,7 @@ def draw_market_view(need_show_figure, need_open_page):
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
             where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
         on d.id = e.bond_code
               """
@@ -789,7 +789,7 @@ def draw_market_view(need_show_figure, need_open_page):
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
             where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
         on d.id = e.bond_code
               """
@@ -844,7 +844,7 @@ def draw_market_view(need_show_figure, need_open_page):
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
             where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
         on d.id = e.bond_code
               """

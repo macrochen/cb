@@ -120,13 +120,13 @@ order by 涨跌 desc
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
     from (select * from (SELECT DISTINCT c. * from changed_bond c, (select * 
             from hold_bond where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) h where  c.bond_code = h.bond_code  order by cb_mov2_id DESC limit 10)     
 UNION  
 select * from (SELECT DISTINCT c. * from changed_bond c, hold_bond h where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 10)) c, 
 stock_report s, (select * 
             from hold_bond where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) h
     WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code 
     order  by cb_mov2_id desc
