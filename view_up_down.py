@@ -62,6 +62,16 @@ def draw_view(need_show_figure, need_open_page):
 
         html = ''
 
+        # =========我的转债价格TOP20柱状图=========
+        cur.execute("""
+select cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 100, 2) as 涨跌, round(cb_premium_id*100,2) || '%' as 溢价率
+ from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
+ where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_price2_id DESC limit 20)     
+                    """)
+
+        rows = cur.fetchall()
+        html += '<br/>' + generate_top_bar_html(rows, '我的可转债价格TOP20')
+
         # =========我的转债涨跌TOP20柱状图=========
         cur.execute("""
 select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
@@ -345,6 +355,78 @@ def generate_bar_html(rows, title):
             max_=max_value,
             is_scale=True,
             axislabel_opts=opts.LabelOpts(formatter='{value}%'),
+            splitline_opts=opts.SplitLineOpts(is_show=False),
+            axisline_opts=opts.AxisLineOpts(
+                is_on_zero=False,
+                # symbol=['none', 'arrow']
+            )
+        ),
+    )
+
+    bar_html = bar.render_embed('template.html', common.env)
+    return bar_html
+
+def generate_top_bar_html(rows, title):
+    xx1 = []
+    yy1 = []
+
+    for row in rows:
+        xx1.append(row[0].replace('转债', ''))
+        yy1.append(row[1])
+
+    bar = Bar(init_opts=opts.InitOpts(height='700px', width='1424px', theme=ThemeType.SHINE))
+    # 底部x轴
+    bar.add_xaxis(xx1)
+    bar.add_yaxis('价格(元)', yy1,
+                  bar_width=25,
+                  category_gap='1%',
+                  gap='1%',
+                  label_opts=opts.LabelOpts(
+                      position="top",
+                  ),
+                  )
+    bar.set_series_opts(
+        itemstyle_opts=opts.ItemStyleOpts(
+            color=JsCode(
+                "function(x){return x.data>0?'#c23531':'#1d953f'}"
+            )
+        )
+    )
+    bar.set_global_opts(
+        title_opts=opts.TitleOpts(
+            title="=========" + title + "=========",
+            pos_left='center',
+            pos_top='-1px',
+        ),
+        tooltip_opts=opts.TooltipOpts(
+            is_show=False
+        ),
+        legend_opts=opts.LegendOpts(is_show=False),
+        xaxis_opts=opts.AxisOpts(
+            # data=None,
+            # type_='category',
+            # name_gap=0,
+            # name_rotate=90,
+            axislabel_opts=opts.LabelOpts(
+                rotate=-60,
+            ),
+            is_scale=True,
+            name_location='middle',
+            splitline_opts=opts.SplitLineOpts(is_show=False),
+            axisline_opts=opts.AxisLineOpts(
+                is_on_zero=True,
+                # symbol=['none', 'arrow']
+            )
+        ),
+        yaxis_opts=opts.AxisOpts(
+            type_='value',
+            name='价格(元)',
+            # name_rotate=90,
+            name_gap=40,
+            name_location='middle',
+            # min_=0,
+            is_scale=True,
+            # axislabel_opts=opts.LabelOpts(formatter='{value}%'),
             splitline_opts=opts.SplitLineOpts(is_show=False),
             axisline_opts=opts.AxisLineOpts(
                 is_on_zero=False,

@@ -173,7 +173,7 @@ def get_html_string(table, remark_fields_color = []):
                 prefix_append += "&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/" + bond_id + "'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' width='14' height='14' class='site-link'/></a>"
 
                 # https://xueqiu.com/S/SH600998
-                suffix = "&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_id + "'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='next-site-link'/></a>"
+                suffix = "<br/>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_id + "'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='next-site-link'/></a>"
                 suffix += "&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
                 suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
 
