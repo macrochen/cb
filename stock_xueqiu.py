@@ -15,7 +15,7 @@ header = {
     "origin": "https://xueqiu.com",
     "Referer": "https://xueqiu.com",
     'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36",
-    'Cookie': "aliyungf_tc=AQAAAEiUhlwL1gcAfkp4KtSXEQtnlZoE; __utmc=1; __utmz=1.1598963525.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); device_id=24700f9f1986800ab4fcc880530dd0ed; s=df1gw1c0ee; bid=1ed9409e593e78e912960284cfcd25ac_kmpw61pm; Hm_lvt_1db88642e346389874251b5a1eded6e3=1619750392; __utma=1.479761015.1598963525.1617020762.1619750392.7; acw_tc=2760820416202904715137216e07c8ffbb213964918733cc1d4bb3af58de55; remember=1; xq_a_token=3c59ab655f8b90a05ffac42f26934b9a22ad0844; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjIzOTM1NDMwMjAsImlzcyI6InVjIiwiZXhwIjoxNjIyMzQyMzg5LCJjdG0iOjE2MjAyOTA5Mjk4MjAsImNpZCI6ImQ5ZDBuNEFadXAifQ.M2jpA5t9HzUZs1KXVT202Hu1xvWHbpBJqPHlYatDQzUfcOzBfCiscfaAUVB58EQiMEzDPDEWAj51Kgmfsj4YnwflOKIAbT0UTvdP2RXs3w-Nf3jJ1eRjZfNiZ8dwlJmrCLL8kekdc01PGfauMtJ_rncgOGANlzJj4MZHcMGM_jWVdHlD-yQdRvbp6yVir6D_pkYq41VrXJ40nv_B3x73i9JspRfyFTfSWgwIytyzRPk1TRWyEJKi41ITWIE8GPALLVQSGCYYpAnfdGd83nENI-7HMmZSOoleESQS2vQcZrGyk9RzVw2pqPUbCGJmN_82d4qsOc-60w0wNRqy2CdyfA; xqat=3c59ab655f8b90a05ffac42f26934b9a22ad0844; xq_r_token=d4d67031d59d9d635ece80e39d3ba96005e492d1; xq_is_login=1; u=2393543020; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1620290932"
+    'Cookie': "device_id=24700f9f1986800ab4fcc880530dd0ed; s=df1gw1c0ee; bid=1ed9409e593e78e912960284cfcd25ac_kmpw61pm; snbim_minify=true; xq_is_login=1; u=2393543020; xq_a_token=67f40b5c15603afd623c5a5a69ce696290a54b0e; xqat=67f40b5c15603afd623c5a5a69ce696290a54b0e; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjIzOTM1NDMwMjAsImlzcyI6InVjIiwiZXhwIjoxNjI4MDU3MDE5LCJjdG0iOjE2MjU0NjUwMTkwNDAsImNpZCI6ImQ5ZDBuNEFadXAifQ.LMCpGBVwItUwF30yfbpeFTcPvEJoQ2b83tpFS1R-OH8xOcs3ogdo2PwY15BkUwuuQ8cwkcgglVVMBjZMRkkWbw6laJ_zhN-d73HX5eMQsluStTQNAicONI_BEEiPgVyZvYGeAhF9sjHkRxKhmvrV6yP4IRFfSt2PXkpB3zZNqEFnKv9JXNBYSRaBq8tw5sCx2qtgpOWA-KeneayilCNArFJjPXJ3zqQXYEunTNIvE9ucwPrWaOqNkb7-oqPhtThVcKdoqaHIFUyfNd3QXx-lD0h6FHbJNTljum1VLDzgm1IXwQt2E5nfEHoGURuFvH4wYtgxHejvjeag4qR4xNIELw; xq_r_token=db54f7c5cd1b1378ab7845f28426d89ac4428933; is_overseas=0; Hm_lvt_1db88642e346389874251b5a1eded6e3=1625465114; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1625465114"
 }
 
 def createDb():
@@ -75,6 +75,9 @@ def getContent():
     # 打开文件数据库
     con_file = sqlite3.connect('db/cb.db3')
 
+    stock_name = ''
+    earnings = None
+
     try:
 
         # 当前报告期
@@ -92,6 +95,9 @@ def getContent():
             stock_name = bond_row[3]
 
             stock_cursor = con_file.execute("SELECT last_date from stock_report where stock_code = " + stock_code)
+
+            # if stock_name == '起帆电缆':
+            #     break
 
             stocks = list(stock_cursor)
             # 还没添加正股财务指标信息
@@ -137,8 +143,8 @@ def getContent():
             else:
                 # todo 补充前面几年/季度的财务数据
                 # fixme 为了解决中途被中断， 继续执行时， 简化处理不更新
-                # continue
-                last_date = stocks[0][2]
+                continue
+                last_date = stocks[0][0]
 
                 if last_date != report_date:
                     earnings = getEarnings(stock_code)
@@ -184,7 +190,7 @@ def getContent():
 
     except Exception as e:
         con_file.close()
-        print("db操作出现异常" + str(e), e)
+        print("db操作出现异常" + str(e) + ', stock_name:' + stock_name + ', earnings:' + str(earnings), e)
     finally:
         con_file.commit()
         con_file.close()
@@ -242,12 +248,12 @@ def getEarnings(stock_code):
     # 营收
     earnings.revenue = round(row['total_revenue'][0]/100000000, 2)
     # 同比增长率
-    earnings.yoyRevenueRate = round(row['total_revenue'][1]*100, 2)
+    earnings.yoyRevenueRate = None if row['total_revenue'][1] is None else round(row['total_revenue'][1]*100, 2)
 
     # 净利润
     earnings.net = round(row['net_profit_atsopc'][0]/100000000, 2)
     # 同比增长率
-    earnings.yoyNetRate = round(row['net_profit_atsopc'][1]*100, 2)
+    earnings.yoyNetRate = None if row['net_profit_atsopc'][1] is None else round(row['net_profit_atsopc'][1]*100, 2)
 
     # 利润率
     earnings.margin = round(row['net_profit_atsopc'][0]/row['total_revenue'][0]*100, 2)
@@ -258,12 +264,12 @@ def getEarnings(stock_code):
     # 资产负债率
     earnings.alRatio = round(row['asset_liab_ratio'][0], 2)
     # 同比增长率
-    earnings.yoyAlRatioRate = round(row['asset_liab_ratio'][1]*100, 2)
+    earnings.yoyAlRatioRate = None if row['asset_liab_ratio'][1] is None else round(row['asset_liab_ratio'][1]*100, 2)
 
     # roe
     earnings.roe = row['avg_roe'][0]
     # 同比增长率
-    earnings.yoyRoeRate = round(row['avg_roe'][1]*100, 2)
+    earnings.yoyRoeRate = None if row['avg_roe'][1] is None else round(row['avg_roe'][1] * 100, 2)
 
     # print(earnings)
     return earnings
@@ -397,7 +403,8 @@ class Earnings:
     # 环比
     qoqRoeRate = 0
     # 同比
-    yoyRoeRate = 0
+    yoyRoeRate = None
+
 
     def calcRoe(self, tds):
         record = Record()
@@ -412,6 +419,33 @@ class Earnings:
     qoqAlRatioRate = 0
     # 同比
     yoyAlRatioRate = 0
+
+    def __str__(self):
+        return 'lastDate:' + self.lastDate + \
+        ', revenue:' + str(self.revenue) + \
+        ', curQoqRevenue:' + str(self.curQoqRevenue) + \
+        ', preQoqRevenue:' + str(self.preQoqRevenue) + \
+        ', yoyRevenue:' + str(self.yoyRevenue) + \
+        ', qoqRevenueRate:' + str(self.qoqRevenueRate) + \
+        ', yoyRevenueRate:' + str(self.yoyRevenueRate) + \
+        ', net:' + str(self.net) + \
+        ', curQoqNet:' + str(self.curQoqNet) + \
+        ', preQoqNet:' + str(self.preQoqNet) + \
+        ', yoyNet:' + str(self.yoyNet) + \
+        ', qoqNetRate:' + str(self.qoqNetRate) + \
+        ', yoyNetRate:' + str(self.yoyNetRate) + \
+        ', margin:' + str(self.margin) + \
+        ', curQoqMargin:' + str(self.curQoqMargin) + \
+        ', preQoqMargin:' + str(self.preQoqMargin) + \
+        ', yoyMargin:' + str(self.yoyMargin) + \
+        ', qoqMarginRate:' + str(self.qoqMarginRate) + \
+        ', yoyMarginRate:' + str(self.yoyMarginRate) + \
+        ', roe:' + str(self.roe) + \
+        ', qoqRoeRate:' + str(self.qoqRoeRate) + \
+        ', yoyRoeRate:' + str(self.yoyRoeRate) + \
+        ', alRatio:' + str(self.alRatio) + \
+        ', qoqAlRatioRate:' + str(self.qoqAlRatioRate) + \
+        ', yoyAlRatioRate:' + str(self.yoyAlRatioRate)
 
     def calcAlRatio(self, assetsTds, debtTds):
         # 总资产

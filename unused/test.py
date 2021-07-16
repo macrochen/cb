@@ -457,10 +457,90 @@ import re
 # 担保：无
 #
 # """
-# print(re.findall(r"各期利息：(\d+\.?\d*，\d+\.?\d*，\d+\.?\d*，\d+\.?\d*，\d+\.?\d*，\d+\.?\d*)\n", s))
+# s = """
+# 要点一:所属板块 机械行业 独角兽 新能源车 工业4.0 特斯拉 智能机器 铁路基建 机构重仓 QFII重仓 转债标的 创投 浙江板块
+#
+# """
+# print(re.findall(r"要点一:所属板块 (.*)", s)[0].split(' '))
+s = '1 CAR-T细胞疗法 大单详情  股吧 4.22% 19.68万 3.34% 18.20亿 3.09% 1.48亿 0.25% -11.78亿 -2.00% -7.90亿 -1.34% 药明康德'
+print(re.findall(r"(\d+) (.*) 大单详情  股吧 (\d+.?\d*%) (\d+.?\d*)(亿|万)", s))
 # print(re.findall(r"下修条件：连续(\d+)个交易日中至少(\d+)个交易日收盘价格低于当期转股价格的(\d+)%\n", s))
 # print(re.findall(r"强赎条件：连续(\d+)个交易日中至少(\d+)个交易日收盘价格不低于当期转股价格的(\d+)%，或者余额小于(\d+)万元\n", s))
 # print(re.findall(r"回售条件：最后(\d+)年，连续(\d+)个交易日收盘价格低于当期转股价格的(\d+)%\n", s))
 # print(re.findall(r"(担保：.*)\n", s))
 
-print('担,保,：,未,提,供,担,保,。'.replace(',', ''))
+# print('要点一:所属板块 机械行业 独角兽 新能源车 工业4.0 特斯拉 智能机器 铁路基建 机构重仓 QFII重仓 转债标的 创投 浙江板块'.replace(',', ''))
+
+# from http.server import HTTPServer, BaseHTTPRequestHandler
+# import json
+#
+# data = {'result': 'this is a test'}
+# host = ('localhost', 8888)
+#
+# class Resquest(BaseHTTPRequestHandler):
+#     def do_GET(self):
+#         self.send_response(200)
+#         self.send_header('Content-type', 'text/html')
+#         self.end_headers()
+#         # self.wfile.write(json.dumps(data).encode())
+#         # self.wfile.write("""
+#         # <html>
+#         #     <body>
+#         #         <b><font color='red'>hello world</font></b>
+#         #     </body>
+#         # </html>
+#         # """)
+#
+#         self.wfile.write("""
+#                 <b><font color='red'>hello world</font></b>
+#                 """)
+#
+# if __name__ == '__main__':
+#     server = HTTPServer(host, Resquest)
+#     print("Starting server, listen at: %s:%s" % host)
+#     server.serve_forever()
+
+# s = """
+# 碳交易 工程建设 雄安新区 PPP模式 转债标的 天津板块
+# 医疗行业 医疗器械 机构重仓 成渝特区 转债标的 重庆板块
+# 电力行业 富时罗素 沪股通 中证500 上证180_ 太阳能 转债标的 江西板块
+# 食品饮料 创业板综 深股通 高送转 健康中国 婴童概念 养老概念 预盈预增 股权激励 转债标的 广东板块
+# 光伏建筑一体化 装修装饰 装配建筑 数据中心 华为概念 区块链 PPP模式 风能 太阳能 云计算 深圳特区 转债标的 广东板块
+# REITs概念 工程建设 湖北自贸 雄安新区 PPP模式 新三板 融资融券 预盈预增 转债标的 参股银行 创投 节能环保 湖北板块
+# 银行 富时罗素 MSCI中国 深股通 中证500 互联金融 长江三角 深成500 转债标的 江苏板块
+# """
+# s = s.replace('转债标的 ', '')\
+#     .replace('标准普尔 ', '')\
+#     .replace('富时罗素 ', '')\
+#     .replace('上证380 ', '')\
+#     .replace('央视50_ ', '')\
+#     .replace('中证500 ', '')\
+#     .replace('深成500 ', '')\
+#     .replace('融资融券 ', '')\
+#     .replace('上证180_ ', '')\
+#     .replace('HS300_ ', '')\
+#     .replace('MSCI中国 ', '')\
+#     .replace('深股通 ', '')\
+#     .replace('创业板综 ', '')\
+#     .replace('沪股通 ', '')\
+#     .replace('\n', ' ')
+#
+# ss = s.split(" ")
+#
+# my_dict = {}
+# for s1 in ss:
+#     count = 0
+#     for s2 in ss:
+#         if s1 == s2:
+#             count += 1
+#
+#     my_dict[s1] = count
+#
+# # print(my_dict)
+#
+# print(sorted(my_dict.items(), key = lambda kv:(kv[1], kv[0])))
+
+# my_set = set(ss)
+# print(len(my_set))
+# print(my_set)
+

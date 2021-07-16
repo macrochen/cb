@@ -188,7 +188,22 @@ def get_html_string(table, remark_fields_color = []):
 
             lines.append(
                 ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % datum.replace("\n", linebreak)
-            )
+                # fixme 重构成函数变量
+                .replace('转债标的 ', '')
+                .replace('标准普尔 ', '')
+                .replace('富时罗素 ', '')
+                .replace('上证380 ', '')
+                .replace('央视50_ ', '')
+                .replace('中证500 ', '')
+                .replace('深成500 ', '')
+                .replace('融资融券 ', '')
+                .replace('上证180_ ', '')
+                .replace('HS300_ ', '')
+                .replace('MSCI中国 ', '')
+                .replace('深股通 ', '')
+                .replace('创业板综 ', '')
+                .replace('沪股通 ', '')
+                )
         lines.append("        </tr>")
     lines.append("    </tbody>")
     lines.append("</table>")
@@ -217,8 +232,8 @@ def getDictRow(cursor, row):
 def rebuild_stock_code(stock_code):
     # 沪市A股票买卖的代码是以600、601或603打头, 688创业板
     # 深市A股票买卖的代码是以000打头, 中小板股票代码以002打头, 创业板股票代码以300打头
-    if stock_code.startswith('600') or stock_code.startswith('601') or stock_code.startswith(
-            '603') or stock_code.startswith('688'):
+    if stock_code.startswith('600') or stock_code.startswith('601') or \
+            stock_code.startswith('605') or stock_code.startswith('603') or stock_code.startswith('688'):
         stock_code = 'SH' + stock_code
     elif stock_code.startswith('000') or stock_code.startswith('001') or stock_code.startswith(
             '002') or stock_code.startswith('300'):

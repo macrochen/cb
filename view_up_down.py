@@ -239,8 +239,10 @@ def generate_bar_html(rows, title):
     yy1 = []
     yy2 = []
 
+    count = 0
     for row in rows:
-        if row[1] > 0:
+        count += 1
+        if count <= 20:
             xx1.append(row[0].replace('转债', ''))
             yy1.append(row[1])
         else:
@@ -249,6 +251,7 @@ def generate_bar_html(rows, title):
 
     max_value = 0
     size = len(yy1)
+
     for i in range(size):
         if yy1[i] + abs(yy2[i]) > max_value:
             max_value = yy1[i] + abs(yy2[i])
@@ -443,5 +446,6 @@ if __name__ == "__main__":
     # 展示之前先更新一下数据
     cb_jsl.fetch_data()
     # draw_my_view(True, True)
+    print("fetch data is successful")
     draw_view(False, True)
-    print("processing is successful")
+    print("draw view is successful")

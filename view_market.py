@@ -38,6 +38,10 @@ config = {'type': [
     # '快到期保本策略',
     '正股优秀策略',
     '高成长策略',
+    '股性策略',
+    '换手率排行榜',
+    '正股涨幅榜',
+    '妖债策略',
     '自选集',
 ],
 }
@@ -216,7 +220,7 @@ def draw_market_view(need_show_figure, need_open_page):
       SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as 转债价格, round(bt_red * 100,2) || '%' as 回售收益率, red_t as '回售年限(年)', round((bt_red * 100) + (2-bond_t1),2) as 性价比,round(bt_yield*100,2) || '%' as 到期收益率,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',e.theme as 题材概念,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
         rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
@@ -270,7 +274,7 @@ def draw_market_view(need_show_figure, need_open_page):
       SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, remain_amount as '余额(亿元)', 
         cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念,
         round(bt_yield*100,2) || '%' as 到期收益率, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
@@ -329,7 +333,7 @@ def draw_market_view(need_show_figure, need_open_page):
       SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念,
          
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
         rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
@@ -380,7 +384,7 @@ def draw_market_view(need_show_figure, need_open_page):
       SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as '转债价格', round(bt_yield*100,2) || '%' as 到期收益率, round(100- cb_price2_id + BT_yield * 100, 2) as 性价比,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念,
          
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
         rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
@@ -430,63 +434,17 @@ def draw_market_view(need_show_figure, need_open_page):
 
         # =========活性债策略=========
         if "活性债策略" in config['type']:
-            sql = """
-      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
-    FROM (
-        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        
-        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
-        
-        round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
-        
-        rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
-        rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
-        rank_pe ||'【' || level_pe || '】' as PE排名, rank_pb ||'【' || level_pb || '】' as PB排名,
-        rank_net_asset ||'【' || level_net_asset || '】' as 净资产排名, rank_market_cap ||'【' || level_market_cap || '】' as 市值排名,
-        stock_total as 综合评分, 
-        
-        round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比',
-        gross_rate||'|' || avg_gross_rate as '毛利率|行业均值',  
-        round(s.net,2)||'|' || avg_net_margin as '净利润|均值(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
-        s.margin ||'|' || avg_net_profit_ratio as '利润率|行业均值', s.yoy_margin_rate || '%' as '利润率同比', 
-        s.roe ||'|' || avg_roe as 'ROE|行业均值', s.yoy_roe_rate || '%' as 'ROE同比', 
-        round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', 
-        s.pe||'|' || avg_pe as 'PE(动)|均值',  
-        c.stock_pb||'|' || avg_pb as 'PB|行业均值', 
-        net_asset||'|' || avg_net_asset as '净资产|行业均值', 
-        market_cap||'|' || avg_market_cap as '市值|均值(亿元)', 
-        remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
-                
-        fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
-        trade_suggest as 操作建议,
-        
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
-        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
-        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
-        case when e.memo is not null then  e.memo else  '' END as 备注
-  
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-      and duration < 3 
-      and cb_price2_id > 99 
-      and cb_price2_id < 115 
-      and roe > 1 
-      and s.net > 0
-      -- and s.margin > 10
-      and cb_t_id = '转股中' 
-      -- and 溢价率 < 20 
-      and 双低值 < 120
-      order by 双低值 ASC) d left join 
-            (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
-                from hold_bond 
-                where id in (select id from hold_bond where id 
-                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
-            ) e 
-          on d.id = e.bond_code
-          """
-            html = generate_strategy_html(con_file, sql, "活性债策略", "价格在99~115, 净利润为正, ROE>1, 双低值<120, 存续期<3年",
-                                          html, htmls=htmls,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '双低值'])
+            # 当日概念题材
+            gn_c, gn_s = generate_gn_slice(con_file, 'gn_1')
+            html = generate_active_strategy_html(con_file, gn_c, gn_s, '当日概念题材', html, htmls)
+
+            # 5日概念题材
+            gn_c, gn_s = generate_gn_slice(con_file, 'gn_5')
+            html = generate_active_strategy_html(con_file, gn_c, gn_s, '最近5日概念题材', html, htmls)
+
+            # 10日概念题材
+            gn_c, gn_s = generate_gn_slice(con_file, 'gn_10')
+            html = generate_active_strategy_html(con_file, gn_c, gn_s, '最近10日概念题材', html, htmls)
 
         # =========低溢价率策略=========
         if "溢价率折价策略" in config['type']:
@@ -496,11 +454,10 @@ def draw_market_view(need_show_figure, need_open_page):
         SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         round(cb_premium_id*100,2) || '%' as 溢价率, cb_price2_id as '转债价格', cb_t_id as 距离转股日,
          
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
         round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
@@ -557,7 +514,7 @@ def draw_market_view(need_show_figure, need_open_page):
     SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
     SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, round(bt_yield*100,2) || '%' as 到期收益率, cb_price2_id as '转债价格', 
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', round(cb_premium_id*100,2) || '%' as 溢价率, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_premium_id*100,2) || '%' as 溢价率, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
@@ -616,7 +573,7 @@ def draw_market_view(need_show_figure, need_open_page):
         SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         round(bt_yield*100,2) || '%' as 到期收益率, bond_t1 as 剩余年限,
         
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, 
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, c.stock_pb as 市净率, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
@@ -679,7 +636,7 @@ def draw_market_view(need_show_figure, need_open_page):
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
          
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
@@ -739,7 +696,7 @@ def draw_market_view(need_show_figure, need_open_page):
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
          
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
@@ -805,7 +762,7 @@ def draw_market_view(need_show_figure, need_open_page):
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
          
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
@@ -851,14 +808,245 @@ def draw_market_view(need_show_figure, need_open_page):
             html = generate_strategy_html(con_file, sql, "高成长策略", "利润率增长top20, 转债价格<115, 利润率>0", html, htmls=htmls,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '利润率|行业均值', '利润率同比'])
 
+        # =========股性策略=========
+        if "股性策略" in config['type']:
+            sql = """
+     SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
+    FROM (
+        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        
+        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
+         
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        remain_amount as '余额(亿元)', round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
+        
+        rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
+        rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
+        rank_pe ||'【' || level_pe || '】' as PE排名, rank_pb ||'【' || level_pb || '】' as PB排名,
+        rank_net_asset ||'【' || level_net_asset || '】' as 净资产排名, rank_market_cap ||'【' || level_market_cap || '】' as 市值排名,
+        stock_total as 综合评分, 
+        
+        round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比',
+        gross_rate||'|' || avg_gross_rate as '毛利率|行业均值',  
+        round(s.net,2)||'|' || avg_net_margin as '净利润|均值(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
+        s.margin ||'|' || avg_net_profit_ratio as '利润率|行业均值', s.yoy_margin_rate || '%' as '利润率同比', 
+        s.roe ||'|' || avg_roe as 'ROE|行业均值', s.yoy_roe_rate || '%' as 'ROE同比', 
+        round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', 
+        s.pe||'|' || avg_pe as 'PE(动)|均值',  
+        c.stock_pb||'|' || avg_pb as 'PB|行业均值', 
+        net_asset||'|' || avg_net_asset as '净资产|行业均值', 
+        market_cap||'|' || avg_market_cap as '市值|均值(亿元)', 
+        round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
+                
+        fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
+        trade_suggest as 操作建议,
+        
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when e.memo is not null then  e.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+     -- and yoy_margin_rate > 0 
+      --and margin > 0 
+      and cb_price2_id < 115
+	  and cb_premium_id < 0.1
+      ORDER by  cb_premium_id asc
+      ) d left join 
+        (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
+            from hold_bond 
+            where id in (select id from hold_bond where id 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+             ) e 
+        on d.id = e.bond_code
+              """
+            html = generate_strategy_html(con_file, sql, "股性策略", "转债价格<115, 溢价率<10%, 用来筛选网格对象", html, htmls=htmls,
+                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'])
+
+        # =========妖债策略=========
+        if "妖债策略" in config['type']:
+            sql = """
+     SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
+    FROM (
+        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        
+        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, 
+         
+        remain_amount as '余额(亿元)', round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
+        
+        round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
+        
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念,
+        
+        rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
+        rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
+        rank_pe ||'【' || level_pe || '】' as PE排名, rank_pb ||'【' || level_pb || '】' as PB排名,
+        rank_net_asset ||'【' || level_net_asset || '】' as 净资产排名, rank_market_cap ||'【' || level_market_cap || '】' as 市值排名,
+        stock_total as 综合评分, 
+        
+        round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比',
+        gross_rate||'|' || avg_gross_rate as '毛利率|行业均值',  
+        round(s.net,2)||'|' || avg_net_margin as '净利润|均值(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
+        s.margin ||'|' || avg_net_profit_ratio as '利润率|行业均值', s.yoy_margin_rate || '%' as '利润率同比', 
+        s.roe ||'|' || avg_roe as 'ROE|行业均值', s.yoy_roe_rate || '%' as 'ROE同比', 
+        round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', 
+        s.pe||'|' || avg_pe as 'PE(动)|均值',  
+        c.stock_pb||'|' || avg_pb as 'PB|行业均值', 
+        net_asset||'|' || avg_net_asset as '净资产|行业均值', 
+        market_cap||'|' || avg_market_cap as '市值|均值(亿元)', 
+        round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
+                
+        fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
+        trade_suggest as 操作建议,
+        
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when e.memo is not null then  e.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+     -- and yoy_margin_rate > 0 
+      and remain_amount < 3 
+      and cb_trade_amount2_id > 0.5
+      ORDER by  remain_amount asc
+      ) d left join 
+        (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
+            from hold_bond 
+            where id in (select id from hold_bond where id 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+             ) e 
+        on d.id = e.bond_code
+              """
+            html = generate_strategy_html(con_file, sql, "妖债策略", "余额<3亿, 换手率>50%, 找底部长时间横盘, 刚刚放量上涨, 当大盘跌, 柚子没有攒钱的地方, 就会来短炒妖债", html, htmls=htmls,
+                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'])
+
+        # =========换手率排行榜=========
+        if "换手率排行榜" in config['type']:
+            sql = """
+     SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
+    FROM (
+        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        
+        round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',
+        
+        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
+        remain_amount as '余额(亿元)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
+         
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        
+        rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
+        rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
+        rank_pe ||'【' || level_pe || '】' as PE排名, rank_pb ||'【' || level_pb || '】' as PB排名,
+        rank_net_asset ||'【' || level_net_asset || '】' as 净资产排名, rank_market_cap ||'【' || level_market_cap || '】' as 市值排名,
+        stock_total as 综合评分, 
+        
+        round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比',
+        gross_rate||'|' || avg_gross_rate as '毛利率|行业均值',  
+        round(s.net,2)||'|' || avg_net_margin as '净利润|均值(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
+        s.margin ||'|' || avg_net_profit_ratio as '利润率|行业均值', s.yoy_margin_rate || '%' as '利润率同比', 
+        s.roe ||'|' || avg_roe as 'ROE|行业均值', s.yoy_roe_rate || '%' as 'ROE同比', 
+        round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', 
+        s.pe||'|' || avg_pe as 'PE(动)|均值',  
+        c.stock_pb||'|' || avg_pb as 'PB|行业均值', 
+        net_asset||'|' || avg_net_asset as '净资产|行业均值', 
+        market_cap||'|' || avg_market_cap as '市值|均值(亿元)', 
+        round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
+                
+        fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
+        trade_suggest as 操作建议,
+        
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when e.memo is not null then  e.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+     -- and yoy_margin_rate > 0 
+      --and margin > 0 
+      -- and cb_price2_id < 115
+	  and cb_trade_amount2_id > 1
+      ORDER by  cb_trade_amount2_id desc 
+      ) d left join 
+        (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
+            from hold_bond 
+            where id in (select id from hold_bond where id 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+             ) e 
+        on d.id = e.bond_code
+              """
+            html = generate_strategy_html(con_file, sql, "换手率排行榜", "换手率大于100%", html, htmls=htmls,
+                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'])
+
+        # =========正股涨幅榜=========
+        if "正股涨幅榜" in config['type']:
+            sql = """
+     SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
+    FROM (
+        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        
+        cb_price2_id as '转债价格', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
+        round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
+         
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        remain_amount as '余额(亿元)', round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',
+        
+        rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
+        rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
+        rank_pe ||'【' || level_pe || '】' as PE排名, rank_pb ||'【' || level_pb || '】' as PB排名,
+        rank_net_asset ||'【' || level_net_asset || '】' as 净资产排名, rank_market_cap ||'【' || level_market_cap || '】' as 市值排名,
+        stock_total as 综合评分, 
+        
+        round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比',
+        gross_rate||'|' || avg_gross_rate as '毛利率|行业均值',  
+        round(s.net,2)||'|' || avg_net_margin as '净利润|均值(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
+        s.margin ||'|' || avg_net_profit_ratio as '利润率|行业均值', s.yoy_margin_rate || '%' as '利润率同比', 
+        s.roe ||'|' || avg_roe as 'ROE|行业均值', s.yoy_roe_rate || '%' as 'ROE同比', 
+        round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', 
+        s.pe||'|' || avg_pe as 'PE(动)|均值',  
+        c.stock_pb||'|' || avg_pb as 'PB|行业均值', 
+        net_asset||'|' || avg_net_asset as '净资产|行业均值', 
+        market_cap||'|' || avg_market_cap as '市值|均值(亿元)', 
+        round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
+                
+        fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
+        trade_suggest as 操作建议,
+        
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        case when e.memo is not null then  e.memo else  '' END as 备注
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+     -- and yoy_margin_rate > 0 
+      --and margin > 0 
+      -- and cb_price2_id < 115
+	  -- and cb_mov_id > 1
+      ORDER by  cb_mov_id desc limit 20
+      ) d left join 
+        (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
+            from hold_bond 
+            where id in (select id from hold_bond where id 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+             ) e 
+        on d.id = e.bond_code
+              """
+            html = generate_strategy_html(con_file, sql, "正股涨幅榜", "正股涨幅top20", html, htmls=htmls,
+                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'])
+
         # =========自选集=========
         if "自选集" in config['type']:
             sql = """
+     SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
+    FROM (
       SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
          
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
@@ -885,12 +1073,18 @@ def draw_market_view(need_show_figure, need_open_page):
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
         e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
-        case when h.memo is not null then  h.memo else  '' END as 备注
+        case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e, hold_bond h
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code and c.bond_code = h.bond_code
-      and hold_owner = 'me' and hold_amount != -1
-      and h.strategy_type = '自选'"""
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+      and e.optional = 1
+      ) d left join 
+        (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
+            from hold_bond 
+            where id in (select id from hold_bond where id 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+             ) e 
+        on d.id = e.bond_code"""
             html = generate_strategy_html(con_file, sql, "自选集", "收集近期大V们推荐", html, htmls=htmls,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'])
 
@@ -955,6 +1149,93 @@ def draw_market_view(need_show_figure, need_open_page):
         print("processing is failure. " + str(e), e)
         raise e
 
+
+def generate_gn_slice(con_file, key):
+    gn_sql = """
+            select value from config where field_name='theme' and key='""" + key + """' order by order_index
+            """
+    cur = con_file.cursor()
+    cur.execute(gn_sql)
+    gn_s = ''
+    gn_c = 'and ('
+    i = 0
+    for row in cur.fetchall():
+        if i == 0:
+            i += 1
+        else:
+            gn_s += ','
+            gn_c += ' or '
+
+        gn_s += row[0]
+        gn_c += "theme like '%" + row[0] + "%'"
+    gn_c += ")"
+    return gn_c, gn_s
+
+
+def generate_active_strategy_html(con_file, gn_c, gn_s, suffix, html, htmls):
+    sql = """
+      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
+    FROM (
+        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        e.theme as 题材概念,
+        
+        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
+        
+        round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌, remain_amount as '余额(亿元)', 
+        
+        rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
+        rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
+        rank_pe ||'【' || level_pe || '】' as PE排名, rank_pb ||'【' || level_pb || '】' as PB排名,
+        rank_net_asset ||'【' || level_net_asset || '】' as 净资产排名, rank_market_cap ||'【' || level_market_cap || '】' as 市值排名,
+        stock_total as 综合评分, 
+        
+        round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比',
+        gross_rate||'|' || avg_gross_rate as '毛利率|行业均值',  
+        round(s.net,2)||'|' || avg_net_margin as '净利润|均值(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
+        s.margin ||'|' || avg_net_profit_ratio as '利润率|行业均值', s.yoy_margin_rate || '%' as '利润率同比', 
+        s.roe ||'|' || avg_roe as 'ROE|行业均值', s.yoy_roe_rate || '%' as 'ROE同比', 
+        round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', 
+        s.pe||'|' || avg_pe as 'PE(动)|均值',  
+        c.stock_pb||'|' || avg_pb as 'PB|行业均值', 
+        net_asset||'|' || avg_net_asset as '净资产|行业均值', 
+        market_cap||'|' || avg_market_cap as '市值|均值(亿元)', 
+        round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
+                
+        fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
+        trade_suggest as 操作建议,
+        
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
+        e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
+        case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
+        
+        case when e.memo is not null then  e.memo else  '' END as 备注
+
+  
+        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
+        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+      --and duration < 3 
+      --and remain_amount < 5
+      --and cb_price2_id > 110
+      and cb_price2_id < 130
+      --and cb_trade_amount2_id > 0.5
+	  --and cb_premium_id < 0.3
+""" + gn_c + """
+      order by cb_price2_id ASC) d left join 
+            (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
+                from hold_bond 
+                where id in (select id from hold_bond where id 
+                    in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            ) e 
+          on d.id = e.bond_code
+          """
+    html = generate_strategy_html(con_file, sql, "活性债策略(" + suffix + ')',
+                                  "按照主题>风格>行业方向, 最近五日概念题材(" + gn_s + ")\n\n结合价格<130, 溢价率<30%, 余额<3亿, 换手率>50%选出最具性价比和爆发力标的",
+                                  html, htmls=htmls,
+                                  remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '双低值'])
+    return html
+
+
 if __name__ == "__main__":
+    # common.get_cb_sum_data()
     draw_market_view(False, True)
     print("processing is successful")

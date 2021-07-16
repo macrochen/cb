@@ -29,6 +29,8 @@ def get_content():
 
     data = json.loads(response.text)
 
+    print("load data is successful")
+
     # 所有数据行
     rows = data['rows']
 
@@ -135,6 +137,8 @@ def update_db(rows):
 
 def fetch_data():
     rows = get_content()
+
+    print("begin to update database.")
     update_db(rows)
     print("可转债数据抓取更新完成")
 
