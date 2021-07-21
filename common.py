@@ -1,5 +1,6 @@
 #一些公共方法
 import os
+import sqlite3
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -78,15 +79,42 @@ env = Environment(
                 )
             )
         )
-
+#https://www.jisilu.cn/data/cbnew/cb_index/
 #转股价格中位数
-MID_X = 111.110
+MID_X = 115.375
 #转股溢价率中位数
-MID_Y = 31.22
+MID_Y = 30.48
 #到期收益率中位数
-MID_YIELD = -0.88
+MID_YIELD = -1.99
+
+# MID_Y, MID_X, MID_YIELD = get_cb_sum_data()
 
 def get_cb_sum_data():
+
+    # 打开文件数据库
+    con_file = sqlite3.connect('db/cb.db3')
+    cur = con_file.cursor()
+    cur.execute("""select key, value from config where field_name='cb_sum_data'""")
+    rows = cur.fetchall()
+    for row in rows:
+        key = row[0]
+        value = row[1]
+        if key == 'mid_premium_rate':
+            mid_y = value
+        elif key == 'mid_price':
+            mid_x = value
+        elif key == 'mid_yield_rate':
+            mid_yield = value
+        else:
+            raise Exception('unknow key:' + key)
+
+    return mid_y, mid_x, mid_yield
+
+
+def update_cb_sum_data():
+
+    # 打开文件数据库
+    con_file = sqlite3.connect('db/cb.db3')
 
     driver = webdriver.Chrome()
 
@@ -103,19 +131,43 @@ def get_cb_sum_data():
     ss = re.findall(r"转股溢价率 (\d+\.?\d*)%", s)
     if len(ss) != 1:
         raise Exception("没有找到转股溢价率中位数:" + s)
-    MID_Y = ss[0]
+    # MID_Y = ss[0]
+    result = con_file.execute("""insert into config(key,value,field_name)values
+                                    ('mid_premium_rate', ?, 'cb_sum_data')""",
+                              (ss[0])
+                              )
+    if result.rowcount == 0:
+        print("not insert mid_premium_rate config:" + ss[0])
+    else:
+        print("insert mid_premium_rate is successful. count:" + str(result.rowcount))
 
     ss = re.findall(r"中位数价格 (\d+\.?\d*)", s)
     if len(ss) != 1:
         raise Exception("没有找到转股价格中位数:" + s)
-    MID_X = ss[0]
+    # MID_X = ss[0]
+    result = con_file.execute("""insert into config(key,value,field_name)values
+                                    ('mid_price', ?, 'cb_sum_data')""",
+                              (ss[0])
+                              )
+    if result.rowcount == 0:
+        print("not insert mid_price config:" + ss[0])
+    else:
+        print("insert mid_price is successful. count:" + str(result.rowcount))
 
     ss = re.findall(r"到期收益率 (-?\d+\.?\d*)%", s)
     if len(ss) != 1:
         raise Exception("没有找到到期收益率中位数:" + s)
-    MID_YIELD = ss[0]
+    # MID_YIELD = ss[0]
+    result = con_file.execute("""insert into config(key,value,field_name)values
+                                    ('mid_yield_rate', ?, 'cb_sum_data')""",
+                              (ss[0])
+                              )
+    if result.rowcount == 0:
+        print("not insert mid_yield_rate config:" + ss[0])
+    else:
+        print("insert mid_yield_rate is successful. count:" + str(result.rowcount))
 
-    print("MID_Y = " + MID_Y + ' \nMID_X = ' + MID_X + '\nMID_YIELD = ' + MID_YIELD)
+    # print("MID_Y = " + MID_Y + ' \nMID_X = ' + MID_X + '\nMID_YIELD = ' + MID_YIELD)
 
     driver.close()
 
@@ -249,4 +301,4 @@ def rebuild_bond_code(bond_code):
     return market + bond_code
 
 if __name__ == "__main__":
-    get_cb_sum_data()
+    update_cb_sum_data()

@@ -302,18 +302,46 @@ def fetch_theme_data(count, days):
 
     driver.get(url)
 
-    divs = driver.find_elements_by_class_name("dataview-body")
+    # div = driver.find_elements_by_class_name("dataview-body")[0]
 
-
+    # trs = driver.find_elements_by_xpath("//div[@class='dataview-body']/table/tbody/tr")
     # 所有的概念行数据
-    trs = divs[0].find_elements_by_xpath('./table/tbody/tr')
-    # 只取前5的数据
+    # trs = div.find_elements_by_xpath('./table/tbody/tr')
+    # print('trs len:' + str(len(trs)))
+    # # 只取前n的数据
+    #
+    # counts_a = len(driver.find_elements_by_class('class_name'))
+    # for i in range(counts_a):
+    #     driver.find_elements_by_xpath('//a[@class="class_name"][i+1]')
+
+    keys = ['转债标的','标准普尔','富时罗素','上证380','央视50_','中证500','深成500','融资融券','上证180_','HS300_','MSCI中国','深股通','创业板综','沪股通']
+
     for i in range(count):
-        s = trs[i].text
+
+        # div = driver.find_elements_by_class_name("dataview-body")[0]
+        # trs = driver.find_elements_by_xpath("//div[@class='dataview-body']/table/tbody/tr")
+        # print('tr len:' + str(len(div.find_elements_by_xpath('./table/tbody/tr'))))
+        # s = div.find_elements_by_xpath('./table/tbody/tr[' + str(i+1) + ']')[0].text
+        # s = trs[i].text
+        s = driver.find_element_by_xpath("//div[@class='dataview-body']/table/tbody/tr[" + str(i+1) + "]").text
         # 排序 题材名 涨幅 净额(亿|万)
         # [('1', 'CAR-T细胞疗法', '4.22%', '19.68')]
-        ss = re.findall(r"(\d+) (.*) 大单详情  股吧 (\d+.?\d*%) (\d+.?\d*)(亿|万)", s)
-        rows.append(ss[0])
+        try:
+            ss = re.findall(r"(\d+) (.*) 大单详情  股吧 (\d+.?\d*%) (\d+.?\d*)(亿|万)", s)
+            ignore = False
+            for key in keys:
+                if key in ss[0]:
+                    ignore = True
+
+            if ignore:
+                continue
+
+            rows.append(ss[0])
+        except Exception as e:
+            # 有时候出现跌幅的数据, 直接忽略掉
+            print('count:' + str(count) + ', i:' + str(i) + 's:' + s + ', e:' + str(e))
+            # raise e
+
 
     return rows
 
