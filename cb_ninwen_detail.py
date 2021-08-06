@@ -325,12 +325,13 @@ def fetch_data():
         # 遍历整个可转债列表, 拿到bond_num
         bond_cursor = con_file.execute("""SELECT data_id, bond_code, cb_name_id from changed_bond""")
         i = 0
+        j = 0
         for bond_row in bond_cursor:
             num_id = bond_row[0]
             bond_code = bond_row[1]
             bond_name = bond_row[2]
 
-            bond_ex_cursor = con_file.execute("""SELECT id from changed_bond_extend where bond_num = ?""", (num_id,))
+            bond_ex_cursor = con_file.execute("""SELECT id, bond_name from changed_bond_extend where bond_num = ?""", (num_id,))
             ex_list = list(bond_ex_cursor)
             if len(ex_list) == 0:
                 # 检查是否存在extend信息, 没有则去抓数据
@@ -351,6 +352,12 @@ def fetch_data():
                 i += 1
                 # 暂停5s再执行， 避免被网站屏蔽掉
                 time.sleep(5)
+            elif ex_list[0][1] is None:
+                con_file.execute("""update changed_bond_extend set bond_name = ? where bond_num = ?""",
+                                 (bond_name, num_id)
+                                 )
+                print("update " + bond_name + " is successful. count:" + str(j + 1))
+                j += 1
     except Exception as e:
         # con_file.close()
         print("db操作出现异常" + str(e), e)

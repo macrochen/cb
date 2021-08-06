@@ -74,7 +74,7 @@ def update_stock_sum():
                 print("update " + stock_name + " is successful. count:" + str(i + 1))
 
             # 暂停5s再执行， 避免被网站屏蔽掉
-            time.sleep(5)
+            time.sleep(3)
             i += 1
 
         print("共处理" + str(i) + "条记录")
