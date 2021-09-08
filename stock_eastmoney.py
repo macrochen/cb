@@ -108,7 +108,7 @@ def update_stock_sum():
                               s, stock_code)
                              )
             if result.rowcount == 0:
-                print("not update stock:" + stock_name)
+                print("not update stock:" + stock_name + ' in stock_report')
             else:
                 print("update " + stock_name + " is successful. count:" + str(i + 1))
 
@@ -234,7 +234,7 @@ def update_stock_theme():
                              (theme, bond_code)
                              )
             if result.rowcount == 0:
-                print("not update stock:" + stock_name)
+                print("not update stock:" + stock_name + ' in changed_bond_extend')
             else:
                 print("update " + stock_name + " is successful. count:" + str(i + 1))
 
@@ -549,10 +549,13 @@ if __name__ == "__main__":
 
     driver.implicitly_wait(10)
 
+    # print('更新股票的关键指标信息')
     # update_stock_sum()
-    # 更新概念题材信息
+
+    # print('更新概念题材信息')
     # update_stock_theme()
-    # 更新题材概念信息
+
+    print('更新题材概念配置信息')
     update_theme_config()
 
     driver.close()

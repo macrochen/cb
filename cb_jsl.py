@@ -37,6 +37,10 @@ def get_content():
     if len(rows) == 0:
         print("未获取到数据。")
 
+    if len(rows) == 30:
+        # print("目前是游客身份，只能获取30条记录，请先登录")
+        raise Exception("目前是游客身份，只能获取30条记录，请先登录")
+
     return build_rows(rows)
 
 

@@ -81,11 +81,11 @@ env = Environment(
         )
 #https://www.jisilu.cn/data/cbnew/cb_index/
 #转股价格中位数
-MID_X = 115.375
+MID_X = 122.349
 #转股溢价率中位数
-MID_Y = 30.48
+MID_Y = 34.90
 #到期收益率中位数
-MID_YIELD = -1.99
+MID_YIELD = -3.92
 
 # MID_Y, MID_X, MID_YIELD = get_cb_sum_data()
 

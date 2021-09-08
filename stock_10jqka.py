@@ -42,7 +42,7 @@ def update_stock_sum():
                 continue
 
             # 已经更新了
-            if stocks[0][0] is not None and stocks[0][0] >= s:
+            if stocks[0][0] is not None and stocks[0][0] > s:
                 continue
 
             row = get_stock_sum(stock_code)

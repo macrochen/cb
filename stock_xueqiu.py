@@ -15,7 +15,7 @@ header = {
     "origin": "https://xueqiu.com",
     "Referer": "https://xueqiu.com",
     'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36",
-    'Cookie': "device_id=24700f9f1986800ab4fcc880530dd0ed; s=df1gw1c0ee; bid=1ed9409e593e78e912960284cfcd25ac_kmpw61pm; snbim_minify=true; xq_is_login=1; u=2393543020; xq_a_token=67f40b5c15603afd623c5a5a69ce696290a54b0e; xqat=67f40b5c15603afd623c5a5a69ce696290a54b0e; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjIzOTM1NDMwMjAsImlzcyI6InVjIiwiZXhwIjoxNjI4MDU3MDE5LCJjdG0iOjE2MjU0NjUwMTkwNDAsImNpZCI6ImQ5ZDBuNEFadXAifQ.LMCpGBVwItUwF30yfbpeFTcPvEJoQ2b83tpFS1R-OH8xOcs3ogdo2PwY15BkUwuuQ8cwkcgglVVMBjZMRkkWbw6laJ_zhN-d73HX5eMQsluStTQNAicONI_BEEiPgVyZvYGeAhF9sjHkRxKhmvrV6yP4IRFfSt2PXkpB3zZNqEFnKv9JXNBYSRaBq8tw5sCx2qtgpOWA-KeneayilCNArFJjPXJ3zqQXYEunTNIvE9ucwPrWaOqNkb7-oqPhtThVcKdoqaHIFUyfNd3QXx-lD0h6FHbJNTljum1VLDzgm1IXwQt2E5nfEHoGURuFvH4wYtgxHejvjeag4qR4xNIELw; xq_r_token=db54f7c5cd1b1378ab7845f28426d89ac4428933; is_overseas=0; Hm_lvt_1db88642e346389874251b5a1eded6e3=1625465114; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1625465114"
+    'Cookie': "aliyungf_tc=AQAAAEiUhlwL1gcAfkp4KtSXEQtnlZoE; __utmc=1; s=df1gw1c0ee; bid=1ed9409e593e78e912960284cfcd25ac_kmpw61pm; snbim_minify=true; __utmz=1.1620726333.9.2.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); xq_is_login=1; device_id=c34b51214fd6837799a41c7d130ffa00; xq_a_token=98959876b8a7bc87c917e0469a57a17032fc212b; xqat=98959876b8a7bc87c917e0469a57a17032fc212b; xq_r_token=884a2266c0a0ce407a5509dd83822cb7059d9d2e; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjIzOTM1NDMwMjAsImlzcyI6InVjIiwiZXhwIjoxNjMzMDY3ODQzLCJjdG0iOjE2MzA0NzU4NDM0NjksImNpZCI6ImQ5ZDBuNEFadXAifQ.LuWVIU8vO2B9xXdls_-x-IR6Dp-Ke6BhRYDYhbRfLnRa9qxWRoscbxBpWG8fGe5Dd0_AaKik05raZTVwRBsBhPbzE6equQCMc7g7UoSXDHw3Vgd7eXH9HGAMHNQ7zegr2jeF7KZREsnu9Bgq--QEaAd6q06lsulCt5ptY3308-pYGm7mKfrshWUC9oA42Q3nVVtmQPG1QjJFjrLdYMNRpvjlltM0j9Ag-AxCbhc9TbUJBSd_6h8TVdQ6-rsH3OwwO978a3eCEtse6McN4P16l2ejk2XUe7BFICymS5d3ZmzOT4vUIMM8qIdhuCKLLNji5kb-lgLxnFDFXkVOdxBtqQ; u=781630475902961; __utma=1.479761015.1598963525.1630475903.1630636568.18; acw_tc=2760829a16309752947582096eba6d8cca1d8c7ce0a18aee9f0a743c249c88; is_overseas=0; Hm_lvt_1db88642e346389874251b5a1eded6e3=1630975388; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1630975388"
 }
 
 def createDb():
@@ -98,6 +98,9 @@ def getContent():
 
             # if stock_name == '起帆电缆':
             #     break
+
+            # fixme 会出现一些重复记录, 暂时没找到原因, 手工清理一下
+            # delete from stock_report where stock_code in (SELECT stock_code from stock_report where last_date = '2021-06-30') and last_date != '2021-06-30'
 
             stocks = list(stock_cursor)
             # 还没添加正股财务指标信息
@@ -190,7 +193,7 @@ def getContent():
 
     except Exception as e:
         con_file.close()
-        print("db操作出现异常" + str(e) + ', stock_name:' + stock_name + ', earnings:' + str(earnings), e)
+        print("db操作出现异常" + str(e) + ', stock_code: ' + stock_code + ', stock_name:' + stock_name + ', earnings:' + str(earnings), e)
     finally:
         con_file.commit()
         con_file.close()
@@ -222,7 +225,7 @@ def getData(url):
             response = requests.get(url=url, headers=header, timeout=5)
             code = response.status_code
             if code != 200:
-                print("获取数据失败， 状态码：" + str(code))
+                print("获取数据失败， 状态码：" + str(code) + ', url:' + url)
 
             return json.loads(response.text)
         except requests.exceptions.RequestException as e:
@@ -474,6 +477,7 @@ class Earnings:
 
 if __name__ == "__main__":
     # createDb()
+    print('更新正股财报信息')
     getContent()
 
     # getEarnings('600061')
