@@ -33,6 +33,7 @@ select = [
     "回售",
     "双低",
     "双低轮动",
+    "多因子",
     "低余额",
     # "每周精选",
     "网格",
@@ -292,6 +293,44 @@ def draw_my_view(need_open_page):
 
         html = generate_table_html("双低轮动", cur, html,
                                    remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'], htmls=htmls)
+
+        # =========我的多因子策略=========
+        cur.execute("""
+        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
+            round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
+            round(bt_yield*100,2) || '%' as 到期收益率,
+            round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
+            round(cb_price2_id + cb_premium_id * 100,2) as 双低值,  
+
+            rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
+            rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
+            rank_pe ||'【' || level_pe || '】' as PE排名, rank_pb ||'【' || level_pb || '】' as PB排名,
+            rank_net_asset ||'【' || level_net_asset || '】' as 净资产排名, rank_market_cap ||'【' || level_market_cap || '】' as 市值排名,
+            stock_total as 综合评分, 
+
+            round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比',
+            gross_rate||'|' || avg_gross_rate as '毛利率|行业均值',  
+            round(s.net,2)||'|' || avg_net_margin as '净利润|均值(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
+            s.margin ||'|' || avg_net_profit_ratio as '利润率|行业均值', s.yoy_margin_rate || '%' as '利润率同比', 
+            s.roe ||'|' || avg_roe as 'ROE|行业均值', s.yoy_roe_rate || '%' as 'ROE同比', 
+            round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', 
+            s.pe||'|' || avg_pe as 'PE(动)|均值',  
+            c.stock_pb||'|' || avg_pb as 'PB|行业均值', 
+            net_asset||'|' || avg_net_asset as '净资产|行业均值', 
+            market_cap||'|' || avg_market_cap as '市值|均值(亿元)', 
+            remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)', cb_trade_amount_id as '成交额(百万)',
+
+            fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
+            trade_suggest as 操作建议,
+
+            rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
+        from changed_bond c, stock_report s, hold_bond h
+        WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '多因子' and h.hold_owner = 'me' and h.hold_amount != -1
+        order by 双低值
+                """)
+
+        html = generate_table_html("多因子", cur, html,
+                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率'], htmls=htmls)
 
         # =========我的打新策略=========
         cur.execute("""
@@ -687,19 +726,23 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
 
 def generate_scatter_html():
     # 用散点图展示
-    scatter = Scatter(opts.InitOpts(height='700px', width='1424px', theme=ThemeType.LIGHT))
+    scatter = Scatter(opts.InitOpts(height='700px', width='1624px', theme=ThemeType.LIGHT))
+
+    # x = []
+    # y = []
+
     for label, table in myCb.items():
         if label not in select:
             continue
 
         x = []
         y = []
+
         rows = table._rows
         for row in rows:
             record = common.getRecord(table, row)
             x.append(record['转债价格'])
             y.append([record['溢价率'].replace('%', '')*1, record['名称'].replace('转债', '')])
-            # y.append(record['溢价率'].replace('%', ''))
 
         scatter.add_xaxis(x)
 
@@ -712,34 +755,34 @@ def generate_scatter_html():
                     "function(params){return params.value[2];}"
                 )
             ),
-            markarea_opts=opts.MarkAreaOpts(
-                is_silent=True,
-                itemstyle_opts=opts.ItemStyleOpts(
-                    color='transparent',
-                    border_type='dashed',
-                    border_width=1,
-                ),
-                data=[
-                    [
-                        {
-                            'name': label,
-                            'xAxis': 'min',
-                            'yAxis': 'min',
-                        },
-                        {
-                            'xAxis': 'max',
-                            'yAxis': 'max'
-                        }
-                    ]
-
-                ]
-            ),
-            markpoint_opts=opts.MarkPointOpts(
-                data=[
-                    {'type': 'max', 'name': 'Max'},
-                    {'type': 'min', 'name': 'Min'}
-                ]
-            ),
+            # markarea_opts=opts.MarkAreaOpts(
+            #     is_silent=True,
+            #     itemstyle_opts=opts.ItemStyleOpts(
+            #         color='transparent',
+            #         border_type='dashed',
+            #         border_width=1,
+            #     ),
+            #     data=[
+            #         [
+            #             {
+            #                 'name': label,
+            #                 'xAxis': 'min',
+            #                 'yAxis': 'min',
+            #             },
+            #             {
+            #                 'xAxis': 'max',
+            #                 'yAxis': 'max'
+            #             }
+            #         ]
+            #
+            #     ]
+            # ),
+            # markpoint_opts=opts.MarkPointOpts(
+            #     data=[
+            #         {'type': 'max', 'name': 'Max'},
+            #         {'type': 'min', 'name': 'Min'}
+            #     ]
+            # ),
             markline_opts=opts.MarkLineOpts(
                 linestyle_opts=opts.LineStyleOpts(type_='dashed'),
                 is_silent=True,
@@ -749,7 +792,9 @@ def generate_scatter_html():
                 ]
             )
         )
-    # scatter.add_xaxis(x_data)
+
+    # scatter.add_xaxis(x)
+
     scatter.set_global_opts(
         title_opts=opts.TitleOpts(title="不同策略可转债分布情况", pos_left='center'),
         tooltip_opts=opts.TooltipOpts(
@@ -759,7 +804,7 @@ def generate_scatter_html():
         ),
         legend_opts=opts.LegendOpts(
             pos_bottom=5,
-            selected_mode='single'
+            # selected_mode='single'
         ),
         toolbox_opts=opts.ToolboxOpts(feature={
             'dataZoom': {},
@@ -797,9 +842,9 @@ def generate_scatter_html():
             )
         )
     )
-    scatter.set_series_opts(emphasis={
-        'focus': 'series'
-    })
+    # scatter.set_series_opts(emphasis={
+    #     'focus': 'series'
+    # })
     scatter_html = scatter.render_embed('template.html', common.env)
     return scatter_html
 

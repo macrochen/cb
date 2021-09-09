@@ -9,18 +9,23 @@ import html5lib
 from lxml import etree
 import sqlite3
 
-userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
     "Referer": "http://www.ninwin.cn/index.php?m=profile",
-    'User-Agent': userAgent,
-    'Cookie': "csrf_token=4d924a8e39c98eee; __51cke__=; P0s_Pw_verify_code=lNwst736TYc%3D; P0s_winduser=RaqSRnBfFwDoLZv5tGFqXXLD4fXwVZQynHEOTJOsq1fzXIiXiCJW%2FWYIGis%3D; P0s_visitor=Cmse9dUtYW7cclzpENrqCj4gRIGuNSePKoJ%2Bng6EdKzPslngncrLoDtmlqg%3D; __tins__4771153=%7B%22sid%22%3A%201615874339009%2C%20%22vd%22%3A%204%2C%20%22expires%22%3A%201615876387793%7D; __51laig__=98; P0s_lastvisit=269%091615874605%09%2Findex.php%3Fm%3DmyAdmin%26c%3Dlog"
+    'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
+    # 'Cookie': "csrf_token=8919ea04925831e8; __51cke__=; P0s_winduser=RaqSRnBfFwDoLZv5tGFqXXLD4fXwVZQynHEOTJOsq1fzXIiXiCJW%2FWYIGis%3D; P0s_cbQuestion=1; __tins__4771153=%7B%22sid%22%3A%201631088120422%2C%20%22vd%22%3A%207%2C%20%22expires%22%3A%201631089976917%7D; __51laig__=234; PHPSESSID=jpl3tag9rff4l4mtdndsm36n44; P0s_visitor=Ncd58ncEEFs83Y9d2knG3OnEWpLyZm3YRPK8yFD6ja5fvV52; P0s_lastvisit=242%091631159109%09%2Findex.php%3Fm%3DmyAdmin%26c%3Dlog"
 }
 
 
 def getContent():
     url = "http://www.ninwin.cn/index.php?m=cb&a=cb_all&show_cb_only=Y&show_listed_only=Y"
 
-    response = requests.get(url, headers=header)
+    cookies = {}
+    s = "csrf_token=8919ea04925831e8; __51cke__=; P0s_winduser=RaqSRnBfFwDoLZv5tGFqXXLD4fXwVZQynHEOTJOsq1fzXIiXiCJW%2FWYIGis%3D; P0s_cbQuestion=1; __tins__4771153=%7B%22sid%22%3A%201631088120422%2C%20%22vd%22%3A%207%2C%20%22expires%22%3A%201631089976917%7D; __51laig__=234; PHPSESSID=jpl3tag9rff4l4mtdndsm36n44; P0s_visitor=Ncd58ncEEFs83Y9d2knG3OnEWpLyZm3YRPK8yFD6ja5fvV52; P0s_lastvisit=242%091631159109%09%2Findex.php%3Fm%3DmyAdmin%26c%3Dlog"
+    for ss in s.split(";"):
+        name, value = ss.strip().split("=", 1)
+        cookies[name] = value
+
+    response = requests.get(url, headers=header, cookies=cookies)
     code = response.status_code
     if code != 200:
         print("获取数据失败， 状态码：" + code)
@@ -155,9 +160,9 @@ def buildRow(row, td):
     elif 'cb_mov2_id' in cls:
         # fixme 涨跌幅和日内套利无法区分
         if 'cb_mov2_id' in row:
-            row['cb_mov3_id'] = percentage2float('cb_mov3_id', text)
+            row['cb_mov3_id'] = percentage2float(row['cb_name_id'], 'cb_mov3_id', text)
         else:
-            row['cb_mov2_id'] = percentage2float('cb_mov2_id', text)
+            row['cb_mov2_id'] = percentage2float(row['cb_name_id'], 'cb_mov2_id', text)
     # stock_price_id
     elif 'stock_price_id' in cls:
         # remain_amount
@@ -167,13 +172,13 @@ def buildRow(row, td):
             row['stock_price_id'] = text
     # cb_mov_id
     elif 'cb_mov_id' in cls:
-        row['cb_mov_id'] = percentage2float('cb_mov_id', text)
+        row['cb_mov_id'] = percentage2float(row['cb_name_id'], 'cb_mov_id', text)
     # cb_strike_id
     elif 'cb_strike_id' in cls:
         row['cb_strike_id'] = text
     # cb_premium_id
     elif 'cb_premium_id' in cls:
-        row['cb_premium_id'] = percentage2float('cb_premium_id', text)
+        row['cb_premium_id'] = percentage2float(row['cb_name_id'], 'cb_premium_id', text)
     # cb_value_id
     elif 'cb_value_id' in cls:
         # fixme 依赖字段顺序（转股价值，ma20乖离率）
@@ -186,7 +191,7 @@ def buildRow(row, td):
         elif not 'cb_value_id' in row:
             row['cb_value_id'] = text
         else:
-            row['cb_ma20_deviate'] = percentage2float('cb_ma20_deviate', text)
+            row['cb_ma20_deviate'] = percentage2float(row['cb_name_id'], 'cb_ma20_deviate', text)
     # cb_t_id
     elif 'cb_t_id' in cls:
         # bond_t1
@@ -204,15 +209,15 @@ def buildRow(row, td):
     elif 'cb_trade_amount_id' in cls:
         # fixme 转债成交额和换手率无法区分
         if 'cb_trade_amount_id' in row:
-            row['cb_trade_amount2_id'] = percentage2float('cb_trade_amount2_id', text)
+            row['cb_trade_amount2_id'] = percentage2float(row['cb_name_id'], 'cb_trade_amount2_id', text)
         else:
             row['cb_trade_amount_id'] = text
     # cb_to_share
     elif 'cb_to_share' in cls:
-        row['cb_to_share'] = percentage2float('cb_to_share', text)
+        row['cb_to_share'] = percentage2float(row['cb_name_id'], 'cb_to_share', text)
     # cb_to_share_shares
     elif 'cb_to_share_shares' in cls:
-        row['cb_to_share_shares'] = percentage2float('cb_to_share_shares', text)
+        row['cb_to_share_shares'] = percentage2float(row['cb_name_id'], 'cb_to_share_shares', text)
     # market_cap
     elif 'market_cap' in cls:
         row['market_cap'] = text
@@ -233,22 +238,22 @@ def buildRow(row, td):
             print("存在未知的class为cb_elasticity_id的td， 内容为：" + td)
     # BT_yield
     elif 'BT_yield' in cls:
-        row['BT_yield'] = percentage2float('BT_yield', text)
+        row['BT_yield'] = percentage2float(row['cb_name_id'], 'BT_yield', text)
     # AT_yield
     elif 'AT_yield' in cls:
-        row['AT_yield'] = percentage2float('AT_yield', text)
+        row['AT_yield'] = percentage2float(row['cb_name_id'], 'AT_yield', text)
     # BT_red
     elif 'BT_red' in cls:
-        row['BT_red'] = percentage2float('BT_red', text)
+        row['BT_red'] = percentage2float(row['cb_name_id'], 'BT_red', text)
     # AT_red
     elif 'AT_red' in cls:
-        row['AT_red'] = percentage2float('AT_red', text)
+        row['AT_red'] = percentage2float(row['cb_name_id'], 'AT_red', text)
     # rating
     elif 'rating' in cls:
         row['rating'] = text
     # discount_rate
     elif 'discount_rate' in cls:
-        row['discount_rate'] = percentage2float('discount_rate', text)
+        row['discount_rate'] = percentage2float(row['cb_name_id'], 'discount_rate', text)
     # cb_wa_id
     elif 'cb_wa_id' in cls:
         # fixme 新式双低， 老式双低
@@ -263,14 +268,14 @@ def buildRow(row, td):
 
 
 # 百分比转换成小数
-def percentage2float(name, text):
+def percentage2float(bond_name, name, text):
     if text.endswith("%"):
         # 去掉千分位
         if text.find(","):
             text = text.replace(",", "")
         return round(float(text.strip("%")) / 100, 5)
     else:
-        print("没有找到对应的值。 name：" + name)
+        print("没有找到对应的值。 name：" + name + ' in bond: ' + bond_name)
         return None
 
 

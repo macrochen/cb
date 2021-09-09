@@ -86,9 +86,10 @@ def build_row(row, cell):
     else:
         print(cell['bond_nm'] + "可转债换手率为空")
     # 税前收益率  需要将百分数转换成小数
-    row['bt_yield'] = percentage2float(cell, 'ytm_rt')
-    if row['bt_yield'] is None:
-        print(cell['bond_nm'] + "税前收益率为空:" + cell['ytm_rt'])
+    # fixme 目前看到的数据不正确, 舍弃
+    # row['bt_yield'] = percentage2float(cell, 'ytm_rt')
+    # if row['bt_yield'] is None or row['bt_yield'] == '-':
+    #     print(cell['bond_nm'] + "税前收益率为空:" + cell['ytm_rt'])
 
     return row
 
@@ -122,12 +123,14 @@ def update_db(rows):
                 cb_premium_id = ?,
                 remain_amount = ?,
                 cb_trade_amount_id = ?,
-                cb_trade_amount2_id = ?,
-                bt_yield = ?
+                cb_trade_amount2_id = ?
+                --,
+                --bt_yield = ?
                 where bond_code = ?""",
                 (row["cb_price2_id"], row["cb_mov2_id"], row["cb_mov_id"], row["stock_price_id"], row["cb_value_id"],
               row["cb_premium_id"], row["remain_amount"], row["cb_trade_amount_id"], row.get('cb_trade_amount2_id'),
-              row["bt_yield"], row["bond_code"]))
+              #row["bt_yield"],
+                 row["bond_code"]))
            if result.rowcount == 0:
                 print("not update cb:" + row['cb_name_id'])
 

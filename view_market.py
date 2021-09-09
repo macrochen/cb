@@ -208,6 +208,7 @@ def draw_market_view(need_show_figure, need_open_page):
     <br/><br/><br/><br/><br/><br/><br/><br/>
     <center>
     =========<font size=4><b>常访问网址列表</b></font>=========</br></br>
+    <a href = 'https://ww2.ezhai.net.cn/#/basedata_v1_1' target = '_blank'>pxling多因子策略数据</a></br></br>
     <a href = 'https://xueqiu.com/P/ZH1332574' target = '_blank'>yyb凌波可转债轮动策略</a></br></br>
     <a href = 'https://www.jisilu.cn/data/cbnew/cb_index/' target = '_blank'>集思录可转债等权指数统计信息</a></br></br>
     <a href = 'http://www.ninwin.cn/index.php?m=cb&c=idx' target = '_blank'>宁稳网可转债等权指数统计信息</a></br></br>
