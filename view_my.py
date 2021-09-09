@@ -851,5 +851,8 @@ def generate_scatter_html():
 
 if __name__ == "__main__":
     # draw_my_view(True, True)
+
+    common.init_cb_sum_data()
+
     draw_my_view(True)
     print("processing is successful")

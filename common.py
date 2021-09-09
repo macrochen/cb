@@ -81,34 +81,57 @@ env = Environment(
         )
 #https://www.jisilu.cn/data/cbnew/cb_index/
 #转股价格中位数
-MID_X = 122.349
+MID_X = 124.08
 #转股溢价率中位数
-MID_Y = 34.90
+MID_Y = 33.4
 #到期收益率中位数
 MID_YIELD = -3.92
 
 # MID_Y, MID_X, MID_YIELD = get_cb_sum_data()
 
-def get_cb_sum_data():
+def init_cb_sum_data():
 
     # 打开文件数据库
     con_file = sqlite3.connect('db/cb.db3')
     cur = con_file.cursor()
-    cur.execute("""select key, value from config where field_name='cb_sum_data'""")
-    rows = cur.fetchall()
-    for row in rows:
-        key = row[0]
-        value = row[1]
-        if key == 'mid_premium_rate':
-            mid_y = value
-        elif key == 'mid_price':
-            mid_x = value
-        elif key == 'mid_yield_rate':
-            mid_yield = value
-        else:
-            raise Exception('unknow key:' + key)
+    cur.execute("""
+SELECT mid_price, mid_premium from (
+    SELECT  AVG(cb_price2_id) as mid_price, row_number() OVER () as rn
+    FROM (SELECT cb_price2_id
+          FROM changed_bond
+          ORDER BY cb_price2_id
+          LIMIT 2 - (SELECT COUNT(*) FROM changed_bond) % 2    -- odd 1, even 2
+          OFFSET (SELECT (COUNT(*) - 1) / 2
+                  FROM changed_bond))) a
+left join(
+    SELECT AVG(cb_premium_id) as mid_premium, row_number() OVER () as rn
+    FROM (SELECT cb_premium_id
+          FROM changed_bond
+          ORDER BY cb_premium_id
+          LIMIT 2 - (SELECT COUNT(*) FROM changed_bond) % 2    -- odd 1, even 2
+          OFFSET (SELECT (COUNT(*) - 1) / 2
+                  FROM changed_bond)) ) b			 
+on a.rn = b.rn
+    
+    """)
 
-    return mid_y, mid_x, mid_yield
+    row = cur.fetchone()
+    MID_X = row[0]
+    MID_Y = row[1]
+    print('init mid data is successful.MID_X:' + str(MID_X) + ', MID_Y:' + str(MID_Y))
+
+    # for row in rows:
+
+        # if key == 'mid_premium':
+        #     MID_Y = value
+        # elif key == 'mid_price':
+        #     MID_X = value
+        # elif key == 'mid_yield':
+        #     mid_yield = value
+        # else:
+        #     raise Exception('unknow key:' + key)
+
+    # return mid_y, mid_x #, mid_yield
 
 
 def update_cb_sum_data():

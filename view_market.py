@@ -1477,6 +1477,7 @@ def generate_active_strategy_html(con_file, gn_c, gn_s, suffix, html, htmls):
 
 
 if __name__ == "__main__":
-    # common.get_cb_sum_data()
+    common.init_cb_sum_data()
+
     draw_market_view(False, True)
     print("processing is successful")
