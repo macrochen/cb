@@ -94,13 +94,7 @@ def getContent():
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
-            stock_cursor = con_file.execute("SELECT last_date from stock_report where stock_code = " + stock_code)
-
-            # if stock_name == '起帆电缆':
-            #     break
-
-            # fixme 会出现一些重复记录, 暂时没找到原因, 手工清理一下
-            # delete from stock_report where stock_code in (SELECT stock_code from stock_report where last_date = '2021-06-30') and last_date != '2021-06-30'
+            stock_cursor = con_file.execute("SELECT last_date from stock_report where stock_code = '" + stock_code + "'")
 
             stocks = list(stock_cursor)
             # 还没添加正股财务指标信息

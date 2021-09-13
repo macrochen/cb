@@ -549,14 +549,14 @@ if __name__ == "__main__":
 
     driver.implicitly_wait(10)
 
-    # print('更新股票的关键指标信息')
-    # update_stock_sum()
+    print('更新股票的关键指标信息')
+    update_stock_sum()
 
     # print('更新概念题材信息')
     # update_stock_theme()
 
-    print('更新题材概念配置信息')
-    update_theme_config()
+    # print('更新题材概念配置信息')
+    # update_theme_config()
 
     driver.close()
     # modify_data_unit_error()
