@@ -1,14 +1,8 @@
 #抓取集思录的数据(实时, 仅部分实时数据)
 
-import datetime
 import json
 import time
-from io import StringIO
-
 import requests
-import bs4
-import html5lib
-from lxml import etree
 import sqlite3
 
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
@@ -138,6 +132,7 @@ def update_db(rows):
         # cur_file.close()
         # con_file.close()
         print("db操作出现异常", e)
+        raise e
     finally:
         con_file.commit()
         con_file.close()
@@ -148,6 +143,7 @@ def fetch_data():
     print("begin to update database.")
     update_db(rows)
     print("可转债数据抓取更新完成")
+    return 'OK'
 
 if __name__ == "__main__":
     fetch_data()

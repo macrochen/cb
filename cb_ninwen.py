@@ -1,12 +1,9 @@
 #抓取宁稳网的数据(每天中午, 下午收盘更新, 非实时, 但是最全)
 
 import datetime
-from io import StringIO
 
 import requests
 import bs4
-import html5lib
-from lxml import etree
 import sqlite3
 
 header = {
@@ -374,11 +371,13 @@ def insertDb(rows):
         # cur_file.close()
         con_file.close()
         print("db操作出现异常", e)
+        raise e
 
 def fetch_data():
     createDb()
     rows = getContent()
     insertDb(rows)
+    return 'OK'
 
 if __name__ == "__main__":
     fetch_data()

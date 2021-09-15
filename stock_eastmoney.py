@@ -1,13 +1,8 @@
 # 从东方财富抓正股的相关数据
 import datetime
-import json
 import re
 import time
 
-import requests
-import bs4
-import html5lib
-from lxml import etree
 import sqlite3
 
 import common
@@ -17,7 +12,7 @@ driver = None
 
 
 
-def update_stock_sum():
+def do_update_stock_sum():
     # 遍历可转债列表
     # 打开文件数据库
     con_file = sqlite3.connect('db/cb.db3')
@@ -543,14 +538,13 @@ def get_stock_sum(stock_code):
 
     return get_sum_data(driver)
 
-
-if __name__ == "__main__":
+def fetch_data():
     driver = webdriver.Chrome()
 
     driver.implicitly_wait(10)
 
     print('更新股票的关键指标信息')
-    update_stock_sum()
+    do_update_stock_sum()
 
     # print('更新概念题材信息')
     # update_stock_theme()
@@ -560,3 +554,7 @@ if __name__ == "__main__":
 
     driver.close()
     # modify_data_unit_error()
+    return 'OK'
+
+if __name__ == "__main__":
+    fetch_data()

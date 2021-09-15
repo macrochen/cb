@@ -2,12 +2,7 @@
 
 import datetime
 import time
-from io import StringIO
-
-import requests
 import bs4
-import html5lib
-from lxml import etree
 import sqlite3
 
 from selenium import webdriver
@@ -318,7 +313,7 @@ def insertDb(rows):
         con_file.close()
         print("db操作出现异常", e)
 
-def fetch_data():
+def do_fetch_data():
     # 打开文件数据库
     con_file = sqlite3.connect('db/cb.db3')
     try:
@@ -361,14 +356,15 @@ def fetch_data():
     except Exception as e:
         # con_file.close()
         print("db操作出现异常" + str(e), e)
+        raise e
     except TimeoutError as e:
         print("网络超时, 请手工重试")
+        raise e
     finally:
         con_file.commit()
         con_file.close()
 
-if __name__ == "__main__":
-
+def fetch_data():
     options = webdriver.ChromeOptions()
     options.add_argument('user-agent="' + userAgent + '"')
     options.add_argument('Referer="http://www.ninwin.cn/index.php?m=profile"')
@@ -376,8 +372,14 @@ if __name__ == "__main__":
     driver = webdriver.Chrome(options=options)
 
     driver.implicitly_wait(10)
-    fetch_data()
+    do_fetch_data()
 
     driver.close()
 
     print("可转债数据抓取更新完成")
+
+    return 'OK'
+
+if __name__ == "__main__":
+
+    fetch_data()

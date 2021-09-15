@@ -2,22 +2,16 @@
 
 
 # 需导入要用到的库文件
-import numpy as np  # 数组相关的库
-import matplotlib.pyplot as plt  # 绘图库
 import sqlite3
 
 from pyecharts.charts import Scatter
 from pyecharts import options as opts
 from pyecharts.commons.utils import JsCode
-from pyecharts.globals import ThemeType
 
 import common
 
-import random
 from random import choice
 
-import numpy as np
-from prettytable import PrettyTable
 from prettytable import from_db_cursor
 
 import webbrowser
@@ -205,7 +199,7 @@ def draw_market_view(need_show_figure, need_open_page):
     con_file = sqlite3.connect('db/cb.db3')
 
     html = """
-    <br/><br/><br/><br/><br/><br/><br/><br/>
+    <br/><br/><br/><br/><br/><br/><br/>
     <center>
     =========<font size=4><b>常访问网址列表</b></font>=========</br></br>
     <a href = 'https://ww2.ezhai.net.cn/#/basedata_v1_1' target = '_blank'>pxling多因子策略数据</a></br></br>
@@ -220,7 +214,7 @@ def draw_market_view(need_show_figure, need_open_page):
     </br>
     """
 
-    htmls = {}
+    htmls = {'nav': '<li><a href="/">Home</a></li>'}
     try:
 
         # =========强赎=========
@@ -231,7 +225,8 @@ def draw_market_view(need_show_figure, need_open_page):
     order by 转债价格 desc 
             """
         # 加几个换行避免顶部的菜单遮住title
-        html = "" + generate_strategy_html(con_file, sql, "强赎转债", "", html, htmls=htmls, draw_figure=False)
+        html += "<center>=========<font size=4><b>强赎可转债</b></font>=========</br></br></center>"
+        html = generate_strategy_html(con_file, sql, "强赎转债", "", html, htmls=htmls, draw_figure=False)
 
         # =========回售策略=========
         if "回售策略" in config['type']:
@@ -1285,7 +1280,7 @@ def draw_market_view(need_show_figure, need_open_page):
         <meta charset="UTF-8">
         
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.1.2-dev.20210512/dist/echarts.min.js"></script>
-        
+        <link rel="icon" href="/img/favicon.ico">
         <link rel="stylesheet" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
         <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
         
@@ -1325,12 +1320,15 @@ def draw_market_view(need_show_figure, need_open_page):
         </body>
         </html>
             """)
-        f.write(s)
-        f.close()
-        filename = 'file:///' + os.getcwd() + '/view/' + 'view_market.html'
 
         if need_open_page:
+            f.write(s)
+            f.close()
+            filename = 'file:///' + os.getcwd() + '/view/' + 'view_market.html'
             webbrowser.open_new_tab(filename)
+        else:
+            return s
+
 
     except Exception as e:
         con_file.close()

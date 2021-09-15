@@ -4,9 +4,6 @@ import json
 import time
 
 import requests
-import bs4
-import html5lib
-from lxml import etree
 import sqlite3
 
 import common
@@ -63,13 +60,7 @@ def createDb():
     print("create db is successful")
 
 
-def getContent():
-    # test data
-
-    # soup = bs4.BeautifulSoup(s, "html5lib")
-    # ss = soup.text
-
-    # print(ss)
+def fetch_data():
 
     # 遍历可转债列表
     # 打开文件数据库
@@ -188,9 +179,11 @@ def getContent():
     except Exception as e:
         con_file.close()
         print("db操作出现异常" + str(e) + ', stock_code: ' + stock_code + ', stock_name:' + stock_name + ', earnings:' + str(earnings), e)
+        raise e
     finally:
         con_file.commit()
         con_file.close()
+    return 'OK'
 
 
 def get_report_date():
@@ -472,6 +465,6 @@ class Earnings:
 if __name__ == "__main__":
     # createDb()
     print('更新正股财报信息')
-    getContent()
+    fetch_data()
 
     # getEarnings('600061')

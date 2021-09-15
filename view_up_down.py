@@ -4,8 +4,6 @@
 
 # https://blog.csdn.net/idomyway/article/details/82390040
 
-import numpy as np  # 数组相关的库
-import matplotlib.pyplot as plt  # 绘图库
 import sqlite3
 
 from pyecharts.globals import ThemeType
@@ -15,7 +13,6 @@ import common
 
 import matplotlib.pyplot as plt
 from prettytable import PrettyTable
-from prettytable import from_db_cursor
 
 import webbrowser
 import os
@@ -91,11 +88,12 @@ order by 涨跌 desc
         cur.execute("""
     SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
         cb_price2_id as 转债价格, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)',round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏,   
-        round(cb_premium_id*100,2) as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
+        round(cb_premium_id*100,2) as 溢价率, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
+        remain_amount as '余额(亿元)',round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
         h.strategy_type as 策略, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        remain_amount as '余额(亿元)',round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
         round(cb_price2_id + cb_premium_id * 100,2) as 双低值, 
         round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
+        round(bt_yield*100,2) || '%' as 到期收益率,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
         rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
@@ -153,9 +151,9 @@ stock_report s, (select *
 SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
       SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称,cb_mov2_id, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, 
-        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,round(bt_yield*100,2) || '%' as 到期收益率,
+        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', remain_amount as '余额(亿元)', cb_trade_amount_id as '成交额(百万)', round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
-        round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, 
+        round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
@@ -205,26 +203,43 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
         <head>
         <meta charset="UTF-8">
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.1.2-dev.20210512/dist/echarts.min.js"></script>
+        <link rel="icon" href="/img/favicon.ico">
+        <link rel="stylesheet" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
+        <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
+        
+        <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
+        <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
         <title>可转债涨跌数据</title>
             """ +
              common.css_html
              + """
       </head>
       <body>
-        """
-             + html
-             + """
+            <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+                <div class="container">
+                    <ul class="nav navbar-nav">
+                        <li><a href="/">Home</a></li>
+                    </ul>
+                </div>
+            </div>
+            <br/>
+            <br/>
+            <div class="container">
+        """ + html + """
+             </div>
     </body>
     </html>
         """)
-        f.write(s)
-        f.close()
-        filename = 'file:///' + os.getcwd() + '/view/' + 'view_up_down.html'
-
-        if need_open_page:
-            webbrowser.open_new_tab(filename)
 
         con_file.close()
+
+        if need_open_page:
+            f.write(s)
+            f.close()
+            filename = 'file:///' + os.getcwd() + '/view/' + 'view_up_down.html'
+            webbrowser.open_new_tab(filename)
+        else:
+            return s
 
 
     except Exception as e:
