@@ -21,7 +21,13 @@ def get_content():
     if code != 200:
         print("获取数据失败， 状态码：" + code)
 
-    data = json.loads(response.text)
+    content = response.text
+
+    return parse_content(content)
+
+
+def parse_content(content):
+    data = json.loads(content)
 
     print("load data is successful")
 
@@ -36,7 +42,6 @@ def get_content():
         raise Exception("目前是游客身份，只能获取30条记录，请先登录")
 
     return build_rows(rows)
-
 
 def build_rows(rows):
     new_rows = []
@@ -139,6 +144,14 @@ def update_db(rows):
 
 def fetch_data():
     rows = get_content()
+
+    print("begin to update database.")
+    update_db(rows)
+    print("可转债数据抓取更新完成")
+    return 'OK'
+
+def fetch_data_from_source_code(source_code):
+    rows = parse_content(source_code)
 
     print("begin to update database.")
     update_db(rows)

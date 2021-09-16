@@ -3,9 +3,8 @@
 from flask import render_template, request, url_for, redirect, flash
 from flask_login import login_user, login_required, logout_user, current_user
 
-from config import app
-from models import User
-
+from config import app, db
+from models import User, ChangedBond, HoldBond
 
 import cb_jsl
 import cb_ninwen
@@ -47,6 +46,81 @@ def login():
 
     return render_template('index.html')
 
+
+@app.route('/update_hold_bond.html')
+@login_required
+def update_hold_bond():
+    return render_template("update_hold_bond.html")
+
+@app.route('/find_bond_by/<string:bond_code>', methods=['GET'])
+@login_required
+def find_bond_by_code(bond_code):
+    bond = ChangedBond.query.filter_by(bond_code=bond_code).first()
+    if bond is not None:
+        return bond.cb_name_id
+    raise Exception('not find bond by code: ' + bond_code)
+
+@app.route('/save_hold_bond.html', methods=['POST'])
+@login_required
+def save_hold_bond():
+    hold_bond = HoldBond()
+
+    bond_code = request.form['bond_code']
+    if bond_code is None or bond_code.strip(' ') == '':
+        raise Exception('转债代码不能为空')
+
+    hold_bond.bond_code = bond_code
+
+    cb_name_id = request.form['bond_name']
+    if cb_name_id is None or cb_name_id.strip(' ') == '':
+        raise Exception('转债名称不能为空')
+
+    hold_bond.cb_name_id = cb_name_id
+
+    hold_amount = request.form['hold_amount']
+    if hold_amount is None or hold_amount.strip(' ') == '' or int(hold_amount.strip(' ')) <= 0:
+        raise Exception('持有数量不能为空且大于零')
+
+    hold_bond.hold_amount = int(hold_amount)
+
+    hold_price = request.form['hold_price']
+    if hold_price is None or hold_price.strip(' ') == '':
+        raise Exception('持有价格不能为空')
+
+    hold_bond.hold_price = float(hold_price)
+
+    account = request.form['account']
+    if account is not None and account.strip(' ') != '':
+        hold_bond.account = account
+
+    strategy_type = request.form['strategy_type']
+    if strategy_type is None or strategy_type.strip(' ') == '':
+        raise Exception('必须指定策略类型')
+
+    hold_bond.strategy_type = strategy_type
+
+    memo = request.form['memo']
+    if memo is not None and memo.strip(' ') != '':
+        hold_bond.memo = memo
+
+    db.session.add(hold_bond)
+    db.session.commit()
+
+    return my_view()
+
+@app.route('/save_jsl_bond_data.html', methods=['POST'])
+@login_required
+def save_jsl_bond_data():
+    source_code = request.form['source_code']
+    if source_code is None or source_code.strip(' ') == '':
+        raise Exception('网页源码不能为空')
+
+    return cb_jsl.fetch_data_from_source_code(source_code)
+
+@app.route('/sync_jsl_bond_data.html')
+@login_required
+def sync_jsl_bond_data():
+    return render_template("sync_jsl_bond_data.html")
 
 @app.route('/view_up_down.html')
 @login_required

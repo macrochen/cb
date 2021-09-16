@@ -15,3 +15,18 @@ class User(db.Model, UserMixin):
 
     def validate_password(self, password):
         return check_password_hash(self.password, password)
+
+class ChangedBond(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    bond_code = db.Column(db.String(20))
+    cb_name_id = db.Column(db.String(20))
+
+class HoldBond(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    bond_code = db.Column(db.String(20))
+    cb_name_id = db.Column(db.String(20))
+    hold_price = db.Column(db.Float())
+    hold_amount = db.Column(db.Integer)
+    account = db.Column(db.String(20))
+    strategy_type = db.Column(db.String(20))
+    memo = db.Column(db.String(1024))
