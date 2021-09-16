@@ -664,7 +664,7 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
                     </ul>
                 </div>
             </div>
-            <div class="container">
+            <div class="container" style="width:1500px">
         """ + html + """
              </div>
              <script>

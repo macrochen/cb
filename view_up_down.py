@@ -224,7 +224,7 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
             </div>
             <br/>
             <br/>
-            <div class="container">
+            <div class="container" style="width:1500px">
         """ + html + """
              </div>
     </body>
