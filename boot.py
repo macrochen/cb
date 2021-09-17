@@ -125,18 +125,21 @@ def sync_jsl_bond_data():
 @app.route('/view_up_down.html')
 @login_required
 def up_down_view():
-    return view_up_down.draw_view(False, False)
+    title, navbar, content = view_up_down.draw_view(False, False)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @app.route('/view_my.html')
 @login_required
 def my_view():
     common.init_cb_sum_data()
-    return view_my.draw_my_view(False)
+    title, navbar, content = view_my.draw_my_view(False)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @app.route('/view_market.html')
 def market_view():
     common.init_cb_sum_data()
-    return view_market.draw_market_view(False, False)
+    title, navbar, content = view_market.draw_market_view(False, False)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @app.route('/jsl_update_data.html')
 @login_required

@@ -1,149 +1,224 @@
 <html>
-<head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/img/favicon.ico">
-    <link rel="stylesheet" href="https://code.z01.com/v4/dist/css/bootstrap.min.css" >
-    <link rel="stylesheet" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
-<!--    <link rel="stylesheet" href="https://code.z01.com/boot/dist/css/font-awesome.min.css" >-->
-    <script src="https://code.z01.com/v4/dist/js/popper.min.js"></script>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="icon" href="/img/favicon.ico">
+        <script src="https://code.z01.com/v4/dist/js/popper.min.js"></script>
+        <link rel="stylesheet" href="https://code.z01.com/v4/dist/css/bootstrap.min.css" >
 
-    <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
-    <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
-    <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
-    <title>更新可转债持仓</title>
-    <style>
-        .container {max-width: 700px;}
-        .border-top { border-top: 1px solid #e5e5e5; }
-        .border-bottom { border-bottom: 1px solid #e5e5e5; }
-        .border-top-gray { border-top-color: #adb5bd; }
-        .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
-        .lh-condensed { line-height: 1.25; }
-    </style>
-</head>
-<body>
-<div class="navbar navbar-default navbar-fixed-top" role="navigation" style="text-align: left;">
-    <div class="container" style="text-align: left">
-        <ul class="nav navbar-nav">
+        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
+        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/bootsnav.css">
+
+
+        <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
+        <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
+        <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
+
+        <script type="text/javascript" src="/static/js/bootsnav.js"></script>
+        <title>更新可转债持仓</title>
+        <style>
+            html,body {height: 100%;}
+
+            .navbar-brand{
+                padding: 29px 15px;
+                height: auto;
+            }
+            div.navbar.bootsnav{
+                background-color: #f8f8f8;
+                border-color: #e7e7e7;
+                margin-bottom: 10px;
+            }
+            .navbar-nav{
+                float: left;
+            }
+            div.navbar.bootsnav ul.nav > li > a{
+                color: #474747;
+                text-transform: uppercase;
+                padding: 20px;
+            }
+            div.navbar.bootsnav ul.nav > li:hover{
+                background: #f4f4f4;
+            }
+            .nav > li:after{
+                content: "";
+                width: 0;
+                height: 5px;
+                background: #34c9dd;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                transition: all 0.5s ease 0s;
+            }
+            .nav > li:hover:after{
+                width: 100%;
+            }
+            div.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after{
+                content: "+";
+                font-family: 'FontAwesome';
+                font-size: 16px;
+                font-weight: 500;
+                position: absolute;
+                top: 35%;
+                right: 10%;
+                transition: all 0.4s ease 0s;
+            }
+            div.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{
+                content: "\f105";
+                transform: rotate(90deg);
+            }
+            .dropdown-menu.multi-dropdown{
+                position: absolute;
+                left: -100% !important;
+            }
+            div.navbar.bootsnav li.dropdown ul.dropdown-menu{
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+                border: none;
+            }
+            @media only screen and (max-width:990px){
+                div.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after,
+                div.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{ content: " "; }
+                .dropdown-menu.multi-dropdown{ left: 0 !important; }
+                div.navbar.bootsnav ul.nav > li:hover{ background: transparent; }
+                div.navbar.bootsnav ul.nav > li > a{ margin: 0; }
+            }
+
+            .container {max-width: 700px;}
+            .border-top { border-top: 1px solid #e5e5e5; }
+            .border-bottom { border-bottom: 1px solid #e5e5e5; }
+            .border-top-gray { border-top-color: #adb5bd; }
+            .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+            .lh-condensed { line-height: 1.25; }
+        </style>
+    </head>
+    <body>
+      <div class="navbar navbar-default navbar-fixed-top navbar-mobile bootsnav" id="top_navbar">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <ul class="nav navbar-nav" data-in="fadeInDown" data-out="fadeOutUp">
                 <li><a href="/">Home</a></li>
-        </ul>
+            </ul>
+        </div>
+      </div>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <div class="container">
+        <form class="needs-validation" novalidate action="/save_hold_bond.html" method="post">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="bond_code" style="display: block">转债代码</label>
+                    <input type="text" class="form-control" id="bond_code" name="bond_code" placeholder="" value="" required style="width: 220px;display: inline">&nbsp;&nbsp;&nbsp;
+                    <input type="button" id="btn_query_bond" class="btn btn-primary btn-lg btn-block" style="margin-bottom:2px;width: 70px;height: 32px;font-size: 12px;display: inline" value="查&nbsp;&nbsp;询">
+                    <div class="invalid-feedback">
+                        必须指定转债代码
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="bond_name">转债名称</label>
+                    <input type="text" class="form-control" id="bond_name" name="bond_name" value="" readonly="readonly">
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="hold_amount">数&nbsp;&nbsp;&nbsp;量</label>
+                    <input type="number" class="form-control" id="hold_amount" name="hold_amount" placeholder="" required>
+                    <div class="invalid-feedback" style="width: 100%;">
+                       必须指定数量
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="hold_price">价&nbsp;&nbsp;&nbsp;格</label>
+                    <input type="text" class="form-control" id="hold_price" name="hold_price" placeholder="" required>
+                    <div class="invalid-feedback">
+                        必须指定价格
+                    </div>
+                </div>
+            </div>
+            <br/>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="account">账&nbsp;&nbsp;&nbsp;户</label>
+                    <select class="custom-select d-block w-100" id="account" name="account" style="height: 35px">
+                        <option value="">Choose...</option>
+                        <option value="华宝">华宝证券</option>
+                        <option value="银河">银河证券</option>
+                    </select>
+
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="strategy_type">策&nbsp;&nbsp;&nbsp;略</label>
+                    <select class="custom-select d-block w-100" id="strategy_type" name="strategy_type" required style="height: 35px">
+                        <option value="">Choose...</option>
+                        <option value="回售">回售</option>
+                        <option value="双低">双低</option>
+                        <option value="低余额">低余额</option>
+                        <option value="高收益">高收益</option>
+                        <option value="网格">网格</option>
+                        <option value="打新">打新</option>
+                        <option value="基本面">基本面</option>
+                        <option value="多因子">多因子</option>
+                        <option value="双低轮动">双低轮动</option>
+                        <option value="其他">其他</option>
+                    </select>
+                    <div class="invalid-feedback">
+                        必须指定策略类型
+                    </div>
+                </div>
+            </div>
+            <br/>
+
+
+            <div class="mb-3">
+                <label for="memo">备注</label>
+                <textarea class="form-control" rows="5" cols="10" name="memo" id="memo" style="width: 500px"></textarea>
+            </div>
+            <br/>
+            <center>
+                <button class="btn btn-primary btn-lg btn-block" type="submit" style="width: 120px">提&nbsp;&nbsp;交</button>
+            </center>
+        </form>
     </div>
-</div>
-<br/>
-<br/>
-<br/>
-<br/>
-<div class="container">
-    <form class="needs-validation" novalidate action="/save_hold_bond.html" method="post">
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="bond_code" style="display: block">转债代码</label>
-                <input type="text" class="form-control" id="bond_code" name="bond_code" placeholder="" value="" required style="width: 220px;display: inline">&nbsp;&nbsp;&nbsp;
-                <input type="button" id="btn_query_bond" class="btn btn-primary btn-lg btn-block" style="margin-bottom:2px;width: 70px;height: 32px;font-size: 12px;display: inline" value="查&nbsp;&nbsp;询">
-                <div class="invalid-feedback">
-                    必须指定转债代码
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label for="bond_name">转债名称</label>
-                <input type="text" class="form-control" id="bond_name" name="bond_name" value="" readonly="readonly">
-            </div>
-        </div>
-        <br/>
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="hold_amount">数&nbsp;&nbsp;&nbsp;量</label>
-                <input type="number" class="form-control" id="hold_amount" name="hold_amount" placeholder="" required>
-                <div class="invalid-feedback" style="width: 100%;">
-                   必须指定数量
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label for="hold_price">价&nbsp;&nbsp;&nbsp;格</label>
-                <input type="text" class="form-control" id="hold_price" name="hold_price" placeholder="" required>
-                <div class="invalid-feedback">
-                    必须指定价格
-                </div>
-            </div>
-        </div>
-        <br/>
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="account">账&nbsp;&nbsp;&nbsp;户</label>
-                <select class="custom-select d-block w-100" id="account" name="account" style="height: 35px">
-                    <option value="">Choose...</option>
-                    <option value="华宝">华宝证券</option>
-                    <option value="银河">银河证券</option>
-                </select>
-
-            </div>
-            <div class="col-md-6 mb-3">
-                <label for="strategy_type">策&nbsp;&nbsp;&nbsp;略</label>
-                <select class="custom-select d-block w-100" id="strategy_type" name="strategy_type" required style="height: 35px">
-                    <option value="">Choose...</option>
-                    <option value="回售">回售</option>
-                    <option value="双低">双低</option>
-                    <option value="低余额">低余额</option>
-                    <option value="高收益">高收益</option>
-                    <option value="网格">网格</option>
-                    <option value="打新">打新</option>
-                    <option value="基本面">基本面</option>
-                    <option value="多因子">多因子</option>
-                    <option value="双低轮动">双低轮动</option>
-                    <option value="其他">其他</option>
-                </select>
-                <div class="invalid-feedback">
-                    必须指定策略类型
-                </div>
-            </div>
-        </div>
-        <br/>
+    <script>
+          (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+              var forms = document.getElementsByClassName('needs-validation');
+              var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                  if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }
+                  form.classList.add('was-validated');
+                }, false);
+              });
 
 
-        <div class="mb-3">
-            <label for="memo">备注</label>
-            <textarea class="form-control" rows="5" cols="10" name="memo" id="memo" style="width: 500px"></textarea>
-        </div>
-        <br/>
-        <center>
-            <button class="btn btn-primary btn-lg btn-block" type="submit" style="width: 120px">提&nbsp;&nbsp;交</button>
-        </center>
-    </form>
-</div>
-<script>
-      (function() {
-        'use strict';
-        window.addEventListener('load', function() {
-          var forms = document.getElementsByClassName('needs-validation');
-          var validation = Array.prototype.filter.call(forms, function(form) {
-            form.addEventListener('submit', function(event) {
-              if (form.checkValidity() === false) {
-                event.preventDefault();
-                event.stopPropagation();
-              }
-              form.classList.add('was-validated');
-            }, false);
-          });
-
-
-          document.getElementById('btn_query_bond').addEventListener('click', function (event){
-                $.get("/find_bond_by/" + $("#bond_code").val(), function (data, status) {
-                    if (status == 'success') {
-                        document.getElementById('bond_name').setAttribute('value', data);
-                    } else {
+              document.getElementById('btn_query_bond').addEventListener('click', function (event){
+                    $.get("/find_bond_by/" + $("#bond_code").val(), function (data, status) {
+                        if (status == 'success') {
+                            document.getElementById('bond_name').setAttribute('value', data);
+                        } else {
+                            alert("not find bond by code:" + $("#bond_code").val())
+                        }
+                    }).error(function (XMLHttpRequest, status, error){
                         alert("not find bond by code:" + $("#bond_code").val())
-                    }
-                }).error(function (XMLHttpRequest, status, error){
-                    alert("not find bond by code:" + $("#bond_code").val())
+                    })
+
                 })
 
-            })
+            }, false);
 
-        }, false);
+          })();
 
-      })();
-
-    </script>
-</body>
+        </script>
+    </body>
 </html>
         

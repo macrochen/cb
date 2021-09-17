@@ -196,51 +196,9 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
 
         html = generate_table_html("全网涨跌TOP10", cur, html, need_title=False, remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌'])
 
-
-        f = open('view/view_up_down.html', 'w')
-        s = ("""
-    <html>
-        <head>
-        <meta charset="UTF-8">
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.1.2-dev.20210512/dist/echarts.min.js"></script>
-        <link rel="icon" href="/img/favicon.ico">
-        <link rel="stylesheet" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
-        <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
-        
-        <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
-        <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
-        <title>可转债涨跌数据</title>
-            """ +
-             common.css_html
-             + """
-      </head>
-      <body>
-            <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-                <div class="container">
-                    <ul class="nav navbar-nav">
-                        <li><a href="/">Home</a></li>
-                    </ul>
-                </div>
-            </div>
-            <br/>
-            <br/>
-            <div class="container" style="width:1500px">
-        """ + html + """
-             </div>
-    </body>
-    </html>
-        """)
-
         con_file.close()
 
-        if need_open_page:
-            f.write(s)
-            f.close()
-            filename = 'file:///' + os.getcwd() + '/view/' + 'view_up_down.html'
-            webbrowser.open_new_tab(filename)
-        else:
-            return s
-
+        return '可转债涨跌', '<li><a href="/">Home</a></li>', html
 
     except Exception as e:
         con_file.close()

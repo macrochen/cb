@@ -1,9 +1,9 @@
 <html>
     <head>
         <meta charset="UTF-8">
+
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.2.1-dev.20210902/dist/echarts.min.js"></script>
         <link rel="icon" href="/img/favicon.ico">
-        <script src="https://code.z01.com/v4/dist/js/popper.min.js"></script>
-        <link rel="stylesheet" href="https://code.z01.com/v4/dist/css/bootstrap.min.css" >
 
         <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
         <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">
@@ -15,7 +15,7 @@
         <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
 
         <script type="text/javascript" src="/static/js/bootsnav.js"></script>
-        <title>实时更新可转债数据</title>
+        <title>{{ title }}</title>
         <style>
             html,body {height: 100%;}
 
@@ -82,12 +82,61 @@
                 div.navbar.bootsnav ul.nav > li > a{ margin: 0; }
             }
 
-            .container {max-width: 700px;}
-            .border-top { border-top: 1px solid #e5e5e5; }
-            .border-bottom { border-bottom: 1px solid #e5e5e5; }
-            .border-top-gray { border-top-color: #adb5bd; }
-            .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
-            .lh-condensed { line-height: 1.25; }
+            td, th {
+              border-right :1px solid gray;
+              border-bottom :1px solid gray;
+              text-align:center;
+              width:100px;
+              height:50px;
+              box-sizing: border-box;
+              font-size:7px;
+            }
+
+            th {
+              background-color:lightblue;
+            }
+
+
+            table {
+              border-collapse:separate;
+              table-layout: fixed;
+              width: 100%; /* 固定寬度 */
+            }
+
+            td:first-child, th:first-child {
+              position:sticky;
+              left:0; /* 首行在左 */
+              z-index:1;
+              background-color:lightpink;
+            }
+
+            thead tr th {
+              position:sticky;
+              top:0; /* 第一列最上 */
+            }
+
+            th:first-child{
+              z-index:2;
+              background-color:lightblue;
+            }
+
+            .site-link{
+                margin-bottom:2px;
+                margin-right:3px
+            }
+
+            .next-site-link{
+                margin-bottom:-1px;
+                margin-right:4px
+            }
+
+            .remarked-up{
+                color:red
+            }
+            .remarked-down{
+                color:green
+            }
+
         </style>
     </head>
     <body>
@@ -99,47 +148,29 @@
         </div>
         <div class="collapse navbar-collapse" id="navbar-menu">
             <ul class="nav navbar-nav" data-in="fadeInDown" data-out="fadeOutUp">
-                <li><a href="/">Home</a></li>
+                {% autoescape false %}
+                    {{ navbar }}
+                {% endautoescape %}
             </ul>
         </div>
       </div>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-        <div class="container">
-            <form class="needs-validation" novalidate action="/save_jsl_bond_data.html" method="post">
 
-                <div class="mb-3">
-                    <label for="source_code">JSON格式可转债数据</label>
-                    <textarea class="form-control" rows="20" cols="200" name="source_code" id="source_code" ></textarea>
-                </div>
-                <br/>
-                <center>
-                    <button class="btn btn-primary btn-lg btn-block" type="submit" style="width: 120px">提&nbsp;&nbsp;交</button>
-                </center>
-            </form>
-        </div>
-        <script>
-              (function() {
-                'use strict';
-                window.addEventListener('load', function() {
-                  var forms = document.getElementsByClassName('needs-validation');
-                  var validation = Array.prototype.filter.call(forms, function(form) {
-                    form.addEventListener('submit', function(event) {
-                      if (form.checkValidity() === false) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                      }
-                      form.classList.add('was-validated');
-                    }, false);
-                  });
-
-                }, false);
-
-              })();
-
-        </script>
+      <div class="container" style="width:1500px">
+          {% autoescape false %}
+            {{ content }}
+          {% endautoescape %}
+     </div>
+     <script>
+        let lis = document.querySelectorAll('.nav>li')
+        console.log(lis)
+        for (var i = 0; i < lis.length; i++) {
+            lis[i].onclick = function(event) {
+                let li = document.getElementsByClassName('active')[0]
+                li.classList.remove('active')
+                this.classList.add('active')
+            }
+        }
+        $("div.navbar-fixed-top").autoHidingNavbar();
+     </script>
     </body>
 </html>
-        

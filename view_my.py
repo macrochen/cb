@@ -572,12 +572,17 @@ order by 双低值
 
         cur.execute("""
 SELECT strategy_type as 策略, 
-    round(sum(h.hold_amount * h.hold_price),2) as 投入金额, 
-    round(sum(round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2)), 2) as '累积(浮)盈亏金额', 
-    round(sum(round((c.cb_price2_id/(1-c.cb_mov2_id) * c.cb_mov2_id)*h.hold_amount, 2)), 2) as '当日(浮)盈亏金额', 
+     
     count(h.bond_code) as 个数, 
-    sum(h.hold_amount) as 数量,  
-    round(sum(round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2)) /sum(h.hold_amount * c.cb_price2_id) * 100, 2) || '%' as 收益率
+    sum(h.hold_amount) as 数量,
+    
+    round(sum(h.hold_amount * h.hold_price),2) as 投入金额, 
+    
+    round(sum(round((c.cb_price2_id/(1+c.cb_mov2_id) * c.cb_mov2_id)*h.hold_amount, 2)), 2) as '当日(浮)盈亏金额', 
+    round((round(sum(c.cb_price2_id*h.hold_amount)/sum(c.cb_price2_id/(1+c.cb_mov2_id)*h.hold_amount),4)-1)*100,2) || '%' as '当日收益率',
+    
+    round(sum(round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2)), 2) as '累积(浮)盈亏金额',   
+    round(sum(round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2)) /sum(h.hold_amount * c.cb_price2_id) * 100, 2) || '%' as 累积收益率
 from hold_bond h , changed_bond c 
 where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP by strategy_type order by 投入金额 DESC        
         """)
@@ -588,6 +593,7 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
         total_money = 0
         total_profit = 0
         total_now_profit = 0
+        total_now_profit_rate = 0
         total_amount = 0
         total_num = 0
 
@@ -612,7 +618,8 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
             new_rows.append(new_row)
 
         total_yield = round(total_profit / total_money * 100, 2)
-        new_rows.append(['合计', round(total_money, 2), round(total_profit, 2), round(total_now_profit, 2), total_num, total_amount, str(total_yield) + '%', '100%'])
+        total_now_yield = round(total_now_profit / total_money * 100, 2)
+        new_rows.append(['合计', total_num, total_amount, round(total_money, 2), round(total_now_profit, 2), str(round(total_now_yield, 2))+'%', round(total_profit, 2), str(total_yield) + '%', '100%'])
 
         data = []
         for row in dict_rows:
@@ -626,7 +633,9 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
         pie_html = pie.render_embed('template.html', common.env)
 
         type = "统计"
-        sum_html = generate_table_html(type, cur, '', need_title=False, ignore_table=True, field_names=['投入占比'], remark_fields_color=['当日(浮)盈亏金额'],rows=new_rows, htmls={})
+        sum_html = generate_table_html(type, cur, '', need_title=False, ignore_table=True, field_names=['投入占比'],
+                                       remark_fields_color=['当日(浮)盈亏金额', '当日收益率', '累积收益率', '累积(浮)盈亏金额'],
+                                       rows=new_rows, htmls={})
 
         common.add_nav_html(htmls, type)
 
@@ -642,57 +651,9 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
             </div>
         """
 
-        s = """
-        <html>
-        <head>
-        <meta charset="UTF-8">
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.2.1-dev.20210902/dist/echarts.min.js"></script>
-        <link rel="icon" href="/img/favicon.ico">
-        <link rel="stylesheet" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
-        <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
-        
-        <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
-        <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
-        <title>我的策略</title>
-            """ + common.css_html + """
-      </head>
-      <body>
-            <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-                <div class="container">
-                    <ul class="nav navbar-nav">
-                        """ + htmls['nav'] + """
-                    </ul>
-                </div>
-            </div>
-            <div class="container" style="width:1500px">
-        """ + html + """
-             </div>
-             <script>
-                let lis = document.querySelectorAll('.nav>li')
-                console.log(lis)
-                for (var i = 0; i < lis.length; i++) {
-                    lis[i].onclick = function(event) {
-                        let li = document.getElementsByClassName('active')[0]
-                        li.classList.remove('active')
-                        this.classList.add('active')
-                    }
-                }
-                $("div.navbar-fixed-top").autoHidingNavbar();
-            </script>
-    </body>
-    </html>
-        """
-
         con_file.close()
 
-        if need_open_page:
-            f = open('view/view_my.html', 'w')
-            f.write(s)
-            f.close()
-            filename = 'file:///' + os.getcwd() + '/view/' + 'view_my.html'
-            webbrowser.open_new_tab(filename)
-        else:
-            return s
+        return '我的策略', htmls['nav'], html
 
     except Exception as e:
         con_file.close()

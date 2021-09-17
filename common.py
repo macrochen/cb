@@ -8,67 +8,6 @@ from selenium import webdriver
 
 import re
 
-css_html = """
-<style>
-
-    td, th {
-      border-right :1px solid gray;
-      border-bottom :1px solid gray;
-      text-align:center;
-      width:100px;
-      height:50px;
-      box-sizing: border-box;
-      font-size:7;
-    }
-
-    th {
-      background-color:lightblue;
-    }
-
-
-    table {
-      border-collapse:separate;
-      table-layout: fixed;
-      width: 100%; /* 固定寬度 */
-    }
-
-    td:first-child, th:first-child {
-      position:sticky;
-      left:0; /* 首行在左 */
-      z-index:1;
-      background-color:lightpink;
-    }
-
-    thead tr th {
-      position:sticky;
-      top:0; /* 第一列最上 */
-    }
-
-    th:first-child{
-      z-index:2;
-      background-color:lightblue;
-    }
-    
-    .site-link{
-        margin-bottom:2px;
-        margin-right:3px
-    }
-    
-    .next-site-link{
-        margin-bottom:-1px;
-        margin-right:4px
-    }
-    
-    .remarked-up{
-        color:red
-    }
-    .remarked-down{
-        color:green
-    }
-    
-</style>
-"""
-
 env = Environment(
             keep_trailing_newline=True,
             trim_blocks=True,

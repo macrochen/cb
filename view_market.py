@@ -1273,62 +1273,7 @@ def draw_market_view(need_show_figure, need_open_page):
 
         con_file.close()
 
-        f = open('view/view_market.html', 'w')
-        s = ("""
-        <html>
-        <head>
-        <meta charset="UTF-8">
-        
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.1.2-dev.20210512/dist/echarts.min.js"></script>
-        <link rel="icon" href="/img/favicon.ico">
-        <link rel="stylesheet" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
-        <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
-        
-        <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
-        <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
-        <title>市场策略</title>
-            """ +
-             common.css_html
-             + """
-          
-        </head>
-        <body>
-            <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-                <div class="container">
-                    <ul class="nav navbar-nav">
-                        """ + htmls['nav'] + """
-                    </ul>
-                </div>
-            </div>
-            <div class="container" style="width:1500px">
-            """
-             + html
-             + """
-             </div>
-             <script>
-                let lis = document.querySelectorAll('.nav>li')
-                console.log(lis)
-                for (var i = 0; i < lis.length; i++) {
-                    lis[i].onclick = function(event) {
-                        let li = document.getElementsByClassName('active')[0]
-                        li.classList.remove('active')
-                        this.classList.add('active')
-                    }
-                }
-                $("div.navbar-fixed-top").autoHidingNavbar();
-            </script>
-        </body>
-        </html>
-            """)
-
-        if need_open_page:
-            f.write(s)
-            f.close()
-            filename = 'file:///' + os.getcwd() + '/view/' + 'view_market.html'
-            webbrowser.open_new_tab(filename)
-        else:
-            return s
-
+        return '市场策略', htmls['nav'], html
 
     except Exception as e:
         con_file.close()
