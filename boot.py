@@ -55,10 +55,15 @@ def update_hold_bond():
 @app.route('/find_bond_by/<string:bond_code>', methods=['GET'])
 @login_required
 def find_bond_by_code(bond_code):
-    bond = ChangedBond.query.filter_by(bond_code=bond_code).first()
-    if bond is not None:
-        return bond.cb_name_id
-    raise Exception('not find bond by code: ' + bond_code)
+    # fixme 打新和其他策略可能同时存在
+    bond = HoldBond.query.filter_by(bond_code=bond_code).first()
+    if bond is None:
+        bond = ChangedBond.query.filter_by(bond_code=bond_code).first()
+        if bond is not None:
+            return dict(bond)
+        raise Exception('not find bond by code: ' + bond_code)
+    else:
+        return dict(bond)
 
 @app.route('/save_hold_bond.html', methods=['POST'])
 @login_required

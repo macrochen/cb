@@ -203,13 +203,19 @@
 
               document.getElementById('btn_query_bond').addEventListener('click', function (event){
                     $.get("/find_bond_by/" + $("#bond_code").val(), function (data, status) {
+                        // alert(data)
                         if (status == 'success') {
-                            document.getElementById('bond_name').setAttribute('value', data);
+                            $("#bond_name").val(data['cb_name_id']);
+                            $("#hold_price").val(data['hold_price']);
+                            $("#hold_amount").val(data['hold_amount']);
+                            $("#account").val(data['account']);
+                            $("#strategy_type").val(data['strategy_type']);
+                            $("#memo").val(data['memo'])
                         } else {
-                            alert("not find bond by code:" + $("#bond_code").val())
+                            alert("status is failure. not find bond by code:" + $("#bond_code").val())
                         }
                     }).error(function (XMLHttpRequest, status, error){
-                        alert("not find bond by code:" + $("#bond_code").val())
+                        alert("occur exception. not find bond by code:" + $("#bond_code").val())
                     })
 
                 })
