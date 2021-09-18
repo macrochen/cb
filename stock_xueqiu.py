@@ -4,9 +4,6 @@ import json
 import time
 
 import requests
-import bs4
-import html5lib
-from lxml import etree
 import sqlite3
 
 import common
@@ -15,7 +12,7 @@ header = {
     "origin": "https://xueqiu.com",
     "Referer": "https://xueqiu.com",
     'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36",
-    'Cookie': "aliyungf_tc=AQAAAEiUhlwL1gcAfkp4KtSXEQtnlZoE; __utmc=1; __utmz=1.1598963525.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); device_id=24700f9f1986800ab4fcc880530dd0ed; s=df1gw1c0ee; bid=1ed9409e593e78e912960284cfcd25ac_kmpw61pm; Hm_lvt_1db88642e346389874251b5a1eded6e3=1619750392; __utma=1.479761015.1598963525.1617020762.1619750392.7; acw_tc=2760820416202904715137216e07c8ffbb213964918733cc1d4bb3af58de55; remember=1; xq_a_token=3c59ab655f8b90a05ffac42f26934b9a22ad0844; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjIzOTM1NDMwMjAsImlzcyI6InVjIiwiZXhwIjoxNjIyMzQyMzg5LCJjdG0iOjE2MjAyOTA5Mjk4MjAsImNpZCI6ImQ5ZDBuNEFadXAifQ.M2jpA5t9HzUZs1KXVT202Hu1xvWHbpBJqPHlYatDQzUfcOzBfCiscfaAUVB58EQiMEzDPDEWAj51Kgmfsj4YnwflOKIAbT0UTvdP2RXs3w-Nf3jJ1eRjZfNiZ8dwlJmrCLL8kekdc01PGfauMtJ_rncgOGANlzJj4MZHcMGM_jWVdHlD-yQdRvbp6yVir6D_pkYq41VrXJ40nv_B3x73i9JspRfyFTfSWgwIytyzRPk1TRWyEJKi41ITWIE8GPALLVQSGCYYpAnfdGd83nENI-7HMmZSOoleESQS2vQcZrGyk9RzVw2pqPUbCGJmN_82d4qsOc-60w0wNRqy2CdyfA; xqat=3c59ab655f8b90a05ffac42f26934b9a22ad0844; xq_r_token=d4d67031d59d9d635ece80e39d3ba96005e492d1; xq_is_login=1; u=2393543020; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1620290932"
+    'Cookie': "aliyungf_tc=AQAAAEiUhlwL1gcAfkp4KtSXEQtnlZoE; __utmc=1; s=df1gw1c0ee; bid=1ed9409e593e78e912960284cfcd25ac_kmpw61pm; snbim_minify=true; __utmz=1.1620726333.9.2.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); xq_is_login=1; device_id=c34b51214fd6837799a41c7d130ffa00; xq_a_token=98959876b8a7bc87c917e0469a57a17032fc212b; xqat=98959876b8a7bc87c917e0469a57a17032fc212b; xq_r_token=884a2266c0a0ce407a5509dd83822cb7059d9d2e; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjIzOTM1NDMwMjAsImlzcyI6InVjIiwiZXhwIjoxNjMzMDY3ODQzLCJjdG0iOjE2MzA0NzU4NDM0NjksImNpZCI6ImQ5ZDBuNEFadXAifQ.LuWVIU8vO2B9xXdls_-x-IR6Dp-Ke6BhRYDYhbRfLnRa9qxWRoscbxBpWG8fGe5Dd0_AaKik05raZTVwRBsBhPbzE6equQCMc7g7UoSXDHw3Vgd7eXH9HGAMHNQ7zegr2jeF7KZREsnu9Bgq--QEaAd6q06lsulCt5ptY3308-pYGm7mKfrshWUC9oA42Q3nVVtmQPG1QjJFjrLdYMNRpvjlltM0j9Ag-AxCbhc9TbUJBSd_6h8TVdQ6-rsH3OwwO978a3eCEtse6McN4P16l2ejk2XUe7BFICymS5d3ZmzOT4vUIMM8qIdhuCKLLNji5kb-lgLxnFDFXkVOdxBtqQ; u=781630475902961; __utma=1.479761015.1598963525.1630475903.1630636568.18; acw_tc=2760829a16309752947582096eba6d8cca1d8c7ce0a18aee9f0a743c249c88; is_overseas=0; Hm_lvt_1db88642e346389874251b5a1eded6e3=1630975388; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1630975388"
 }
 
 def createDb():
@@ -63,17 +60,14 @@ def createDb():
     print("create db is successful")
 
 
-def getContent():
-    # test data
-
-    # soup = bs4.BeautifulSoup(s, "html5lib")
-    # ss = soup.text
-
-    # print(ss)
+def fetch_data():
 
     # 遍历可转债列表
     # 打开文件数据库
     con_file = sqlite3.connect('db/cb.db3')
+
+    stock_name = ''
+    earnings = None
 
     try:
 
@@ -88,27 +82,25 @@ def getContent():
 
         i = 0
         for bond_row in bond_cursor:
-
-            bond_code = bond_row[0]
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
-            stock_cursor = con_file.execute("SELECT bond_code, stock_code, last_date from stock_report where bond_code = " + bond_code)
+            stock_cursor = con_file.execute("SELECT last_date from stock_report where stock_code = '" + stock_code + "'")
 
             stocks = list(stock_cursor)
             # 还没添加正股财务指标信息
             if len(stocks) == 0:
                 earnings = getEarnings(stock_code)
                 # 新增
-                con_file.execute("""insert into stock_report(bond_code,cb_name_id,stock_code,stock_name,
+                con_file.execute("""insert into stock_report(stock_code,stock_name,
                             last_date,
                             revenue,qoq_revenue_rate,yoy_revenue_rate,
                             net,qoq_net_rate,yoy_net_rate,
                             margin,qoq_margin_rate,yoy_margin_rate,
                             roe,qoq_roe_rate,yoy_roe_rate,
                             al_ratio,qoq_rl_ratio_rate,yoy_al_ratio_rate)
-                         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                                 (bond_row[0], bond_row[1], bond_row[2], bond_row[3],
+                         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                                 (bond_row[2], bond_row[3],
                                   earnings.lastDate,
 
                                   earnings.revenue,
@@ -139,8 +131,8 @@ def getContent():
             else:
                 # todo 补充前面几年/季度的财务数据
                 # fixme 为了解决中途被中断， 继续执行时， 简化处理不更新
-                # continue
-                last_date = stocks[0][2]
+                continue
+                last_date = stocks[0][0]
 
                 if last_date != report_date:
                     earnings = getEarnings(stock_code)
@@ -151,7 +143,7 @@ def getContent():
                                 margin = ?,qoq_margin_rate = ?,yoy_margin_rate = ?,
                                 roe = ?,qoq_roe_rate = ?,yoy_roe_rate = ?,
                                 al_ratio = ?,qoq_rl_ratio_rate = ?,yoy_al_ratio_rate = ?
-                             where bond_code = ?""",
+                             where stock_code = ?""",
                                      (earnings.lastDate,
 
                                       earnings.revenue,
@@ -174,7 +166,7 @@ def getContent():
                                       earnings.qoqAlRatioRate,
                                       earnings.yoyAlRatioRate,
 
-                                      bond_code
+                                      stock_code
                                       )
                                      )
                     print("update " + stock_name + " is successful. count:" + str(i+1))
@@ -186,10 +178,12 @@ def getContent():
 
     except Exception as e:
         con_file.close()
-        print("db操作出现异常" + str(e), e)
+        print("db操作出现异常" + str(e) + ', stock_code: ' + stock_code + ', stock_name:' + stock_name + ', earnings:' + str(earnings), e)
+        raise e
     finally:
         con_file.commit()
         con_file.close()
+    return 'OK'
 
 
 def get_report_date():
@@ -218,7 +212,7 @@ def getData(url):
             response = requests.get(url=url, headers=header, timeout=5)
             code = response.status_code
             if code != 200:
-                print("获取数据失败， 状态码：" + str(code))
+                print("获取数据失败， 状态码：" + str(code) + ', url:' + url)
 
             return json.loads(response.text)
         except requests.exceptions.RequestException as e:
@@ -244,12 +238,12 @@ def getEarnings(stock_code):
     # 营收
     earnings.revenue = round(row['total_revenue'][0]/100000000, 2)
     # 同比增长率
-    earnings.yoyRevenueRate = round(row['total_revenue'][1]*100, 2)
+    earnings.yoyRevenueRate = None if row['total_revenue'][1] is None else round(row['total_revenue'][1]*100, 2)
 
     # 净利润
     earnings.net = round(row['net_profit_atsopc'][0]/100000000, 2)
     # 同比增长率
-    earnings.yoyNetRate = round(row['net_profit_atsopc'][1]*100, 2)
+    earnings.yoyNetRate = None if row['net_profit_atsopc'][1] is None else round(row['net_profit_atsopc'][1]*100, 2)
 
     # 利润率
     earnings.margin = round(row['net_profit_atsopc'][0]/row['total_revenue'][0]*100, 2)
@@ -260,12 +254,12 @@ def getEarnings(stock_code):
     # 资产负债率
     earnings.alRatio = round(row['asset_liab_ratio'][0], 2)
     # 同比增长率
-    earnings.yoyAlRatioRate = round(row['asset_liab_ratio'][1]*100, 2)
+    earnings.yoyAlRatioRate = None if row['asset_liab_ratio'][1] is None else round(row['asset_liab_ratio'][1]*100, 2)
 
     # roe
     earnings.roe = row['avg_roe'][0]
     # 同比增长率
-    earnings.yoyRoeRate = round(row['avg_roe'][1]*100, 2)
+    earnings.yoyRoeRate = None if row['avg_roe'][1] is None else round(row['avg_roe'][1] * 100, 2)
 
     # print(earnings)
     return earnings
@@ -399,7 +393,8 @@ class Earnings:
     # 环比
     qoqRoeRate = 0
     # 同比
-    yoyRoeRate = 0
+    yoyRoeRate = None
+
 
     def calcRoe(self, tds):
         record = Record()
@@ -414,6 +409,33 @@ class Earnings:
     qoqAlRatioRate = 0
     # 同比
     yoyAlRatioRate = 0
+
+    def __str__(self):
+        return 'lastDate:' + self.lastDate + \
+        ', revenue:' + str(self.revenue) + \
+        ', curQoqRevenue:' + str(self.curQoqRevenue) + \
+        ', preQoqRevenue:' + str(self.preQoqRevenue) + \
+        ', yoyRevenue:' + str(self.yoyRevenue) + \
+        ', qoqRevenueRate:' + str(self.qoqRevenueRate) + \
+        ', yoyRevenueRate:' + str(self.yoyRevenueRate) + \
+        ', net:' + str(self.net) + \
+        ', curQoqNet:' + str(self.curQoqNet) + \
+        ', preQoqNet:' + str(self.preQoqNet) + \
+        ', yoyNet:' + str(self.yoyNet) + \
+        ', qoqNetRate:' + str(self.qoqNetRate) + \
+        ', yoyNetRate:' + str(self.yoyNetRate) + \
+        ', margin:' + str(self.margin) + \
+        ', curQoqMargin:' + str(self.curQoqMargin) + \
+        ', preQoqMargin:' + str(self.preQoqMargin) + \
+        ', yoyMargin:' + str(self.yoyMargin) + \
+        ', qoqMarginRate:' + str(self.qoqMarginRate) + \
+        ', yoyMarginRate:' + str(self.yoyMarginRate) + \
+        ', roe:' + str(self.roe) + \
+        ', qoqRoeRate:' + str(self.qoqRoeRate) + \
+        ', yoyRoeRate:' + str(self.yoyRoeRate) + \
+        ', alRatio:' + str(self.alRatio) + \
+        ', qoqAlRatioRate:' + str(self.qoqAlRatioRate) + \
+        ', yoyAlRatioRate:' + str(self.yoyAlRatioRate)
 
     def calcAlRatio(self, assetsTds, debtTds):
         # 总资产
@@ -442,6 +464,7 @@ class Earnings:
 
 if __name__ == "__main__":
     # createDb()
-    getContent()
+    print('更新正股财报信息')
+    fetch_data()
 
     # getEarnings('600061')

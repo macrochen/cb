@@ -1,14 +1,8 @@
 #抓取集思录的数据(实时, 仅部分实时数据)
 
-import datetime
 import json
 import time
-from io import StringIO
-
 import requests
-import bs4
-import html5lib
-from lxml import etree
 import sqlite3
 
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
@@ -27,7 +21,15 @@ def get_content():
     if code != 200:
         print("获取数据失败， 状态码：" + code)
 
-    data = json.loads(response.text)
+    content = response.text
+
+    return parse_content(content)
+
+
+def parse_content(content):
+    data = json.loads(content)
+
+    print("load data is successful")
 
     # 所有数据行
     rows = data['rows']
@@ -35,8 +37,11 @@ def get_content():
     if len(rows) == 0:
         print("未获取到数据。")
 
-    return build_rows(rows)
+    if len(rows) == 30:
+        # print("目前是游客身份，只能获取30条记录，请先登录")
+        raise Exception("目前是游客身份，只能获取30条记录，请先登录")
 
+    return build_rows(rows)
 
 def build_rows(rows):
     new_rows = []
@@ -80,9 +85,10 @@ def build_row(row, cell):
     else:
         print(cell['bond_nm'] + "可转债换手率为空")
     # 税前收益率  需要将百分数转换成小数
-    row['bt_yield'] = percentage2float(cell, 'ytm_rt')
-    if row['bt_yield'] is None:
-        print(cell['bond_nm'] + "税前收益率为空:" + cell['ytm_rt'])
+    # fixme 目前看到的数据不正确, 舍弃
+    # row['bt_yield'] = percentage2float(cell, 'ytm_rt')
+    # if row['bt_yield'] is None or row['bt_yield'] == '-':
+    #     print(cell['bond_nm'] + "税前收益率为空:" + cell['ytm_rt'])
 
     return row
 
@@ -116,12 +122,14 @@ def update_db(rows):
                 cb_premium_id = ?,
                 remain_amount = ?,
                 cb_trade_amount_id = ?,
-                cb_trade_amount2_id = ?,
-                bt_yield = ?
+                cb_trade_amount2_id = ?
+                --,
+                --bt_yield = ?
                 where bond_code = ?""",
                 (row["cb_price2_id"], row["cb_mov2_id"], row["cb_mov_id"], row["stock_price_id"], row["cb_value_id"],
               row["cb_premium_id"], row["remain_amount"], row["cb_trade_amount_id"], row.get('cb_trade_amount2_id'),
-              row["bt_yield"], row["bond_code"]))
+              #row["bt_yield"],
+                 row["bond_code"]))
            if result.rowcount == 0:
                 print("not update cb:" + row['cb_name_id'])
 
@@ -129,14 +137,26 @@ def update_db(rows):
         # cur_file.close()
         # con_file.close()
         print("db操作出现异常", e)
+        raise e
     finally:
         con_file.commit()
         con_file.close()
 
 def fetch_data():
     rows = get_content()
+
+    print("begin to update database.")
     update_db(rows)
     print("可转债数据抓取更新完成")
+    return 'OK'
+
+def fetch_data_from_source_code(source_code):
+    rows = parse_content(source_code)
+
+    print("begin to update database.")
+    update_db(rows)
+    print("可转债数据抓取更新完成")
+    return 'OK'
 
 if __name__ == "__main__":
     fetch_data()
