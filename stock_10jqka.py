@@ -1,12 +1,7 @@
 # 从同花顺抓正股的相关数据
 import datetime
-import json
 import time
 
-import requests
-import bs4
-import html5lib
-from lxml import etree
 import sqlite3
 
 import common
@@ -42,7 +37,7 @@ def update_stock_sum():
                 continue
 
             # 已经更新了
-            if stocks[0][0] is not None and stocks[0][0] >= s:
+            if stocks[0][0] is not None and stocks[0][0] > s:
                 continue
 
             row = get_stock_sum(stock_code)
@@ -74,7 +69,7 @@ def update_stock_sum():
                 print("update " + stock_name + " is successful. count:" + str(i + 1))
 
             # 暂停5s再执行， 避免被网站屏蔽掉
-            time.sleep(5)
+            time.sleep(3)
             i += 1
 
         print("共处理" + str(i) + "条记录")
@@ -82,8 +77,11 @@ def update_stock_sum():
     except Exception as e:
         # con_file.close()
         print("db操作出现异常" + str(e), e)
+        raise e
     except TimeoutError as e:
         print("网络超时, 请手工重试")
+        raise e
+
     finally:
         con_file.commit()
         con_file.close()
@@ -127,7 +125,7 @@ def get_stock_sum(stock_code):
     return get_sum_data(driver)
 
 
-if __name__ == "__main__":
+def fetch_data():
     driver = webdriver.Chrome()
 
     driver.implicitly_wait(10)
@@ -136,3 +134,7 @@ if __name__ == "__main__":
     # print(get_stock_sum('002002'))
     driver.close()
     # modify_data_unit_error()
+    return 'OK'
+
+if __name__ == "__main__":
+    fetch_data()

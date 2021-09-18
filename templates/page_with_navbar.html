@@ -1,0 +1,176 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.2.1-dev.20210902/dist/echarts.min.js"></script>
+        <link rel="icon" href="/img/favicon.ico">
+
+        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
+        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/bootsnav.css">
+
+
+        <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
+        <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
+        <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
+
+        <script type="text/javascript" src="/static/js/bootsnav.js"></script>
+        <title>{{ title }}</title>
+        <style>
+            html,body {height: 100%;}
+
+            .navbar-brand{
+                padding: 29px 15px;
+                height: auto;
+            }
+            div.navbar.bootsnav{
+                background-color: #f8f8f8;
+                border-color: #e7e7e7;
+                margin-bottom: 10px;
+            }
+            .navbar-nav{
+                float: left;
+            }
+            div.navbar.bootsnav ul.nav > li > a{
+                color: #474747;
+                text-transform: uppercase;
+                padding: 20px;
+            }
+            div.navbar.bootsnav ul.nav > li:hover{
+                background: #f4f4f4;
+            }
+            .nav > li:after{
+                content: "";
+                width: 0;
+                height: 5px;
+                background: #34c9dd;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                transition: all 0.5s ease 0s;
+            }
+            .nav > li:hover:after{
+                width: 100%;
+            }
+            div.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after{
+                content: "+";
+                font-family: 'FontAwesome';
+                font-size: 16px;
+                font-weight: 500;
+                position: absolute;
+                top: 35%;
+                right: 10%;
+                transition: all 0.4s ease 0s;
+            }
+            div.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{
+                content: "\f105";
+                transform: rotate(90deg);
+            }
+            .dropdown-menu.multi-dropdown{
+                position: absolute;
+                left: -100% !important;
+            }
+            div.navbar.bootsnav li.dropdown ul.dropdown-menu{
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+                border: none;
+            }
+            @media only screen and (max-width:990px){
+                div.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after,
+                div.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{ content: " "; }
+                .dropdown-menu.multi-dropdown{ left: 0 !important; }
+                div.navbar.bootsnav ul.nav > li:hover{ background: transparent; }
+                div.navbar.bootsnav ul.nav > li > a{ margin: 0; }
+            }
+
+            td, th {
+              border-right :1px solid gray;
+              border-bottom :1px solid gray;
+              text-align:center;
+              width:100px;
+              height:50px;
+              box-sizing: border-box;
+              font-size:7px;
+            }
+
+            th {
+              background-color:lightblue;
+            }
+
+
+            table {
+              border-collapse:separate;
+              table-layout: fixed;
+              width: 100%; /* 固定寬度 */
+            }
+
+            td:first-child, th:first-child {
+              position:sticky;
+              left:0; /* 首行在左 */
+              z-index:1;
+              background-color:lightpink;
+            }
+
+            thead tr th {
+              position:sticky;
+              top:0; /* 第一列最上 */
+            }
+
+            th:first-child{
+              z-index:2;
+              background-color:lightblue;
+            }
+
+            .site-link{
+                margin-bottom:2px;
+                margin-right:3px
+            }
+
+            .next-site-link{
+                margin-bottom:-1px;
+                margin-right:4px
+            }
+
+            .remarked-up{
+                color:red
+            }
+            .remarked-down{
+                color:green
+            }
+
+        </style>
+    </head>
+    <body>
+      <div class="navbar navbar-default navbar-fixed-top navbar-mobile bootsnav" id="top_navbar">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <ul class="nav navbar-nav" data-in="fadeInDown" data-out="fadeOutUp">
+                {% autoescape false %}
+                    {{ navbar }}
+                {% endautoescape %}
+            </ul>
+        </div>
+      </div>
+
+      <div class="container" style="width:1500px">
+          {% autoescape false %}
+            {{ content }}
+          {% endautoescape %}
+     </div>
+     <script>
+        let lis = document.querySelectorAll('.nav>li')
+        console.log(lis)
+        for (var i = 0; i < lis.length; i++) {
+            lis[i].onclick = function(event) {
+                let li = document.getElementsByClassName('active')[0]
+                li.classList.remove('active')
+                this.classList.add('active')
+            }
+        }
+        $("div.navbar-fixed-top").autoHidingNavbar();
+     </script>
+    </body>
+</html>

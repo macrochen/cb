@@ -1,12 +1,8 @@
 # 从东方财富抓正股的相关数据
 import datetime
-import json
+import re
 import time
 
-import requests
-import bs4
-import html5lib
-from lxml import etree
 import sqlite3
 
 import common
@@ -15,7 +11,8 @@ from selenium import webdriver
 driver = None
 
 
-def update_stock_sum():
+
+def do_update_stock_sum():
     # 遍历可转债列表
     # 打开文件数据库
     con_file = sqlite3.connect('db/cb.db3')
@@ -106,7 +103,133 @@ def update_stock_sum():
                               s, stock_code)
                              )
             if result.rowcount == 0:
-                print("not update stock:" + stock_name)
+                print("not update stock:" + stock_name + ' in stock_report')
+            else:
+                print("update " + stock_name + " is successful. count:" + str(i + 1))
+
+            # 暂停5s再执行， 避免被网站屏蔽掉
+            time.sleep(5)
+            i += 1
+
+        print("共处理" + str(i) + "条记录")
+
+    except Exception as e:
+        # con_file.close()
+        print("db操作出现异常" + str(e), e)
+    except TimeoutError as e:
+        print("网络超时, 请手工重试")
+    finally:
+        con_file.commit()
+        con_file.close()
+
+# 更新概念题材的配置信息
+def update_theme_config():
+    # 打开配置文件数据库表
+    # 打开东财题材列表(5日, 10日)页面, 抓取数据
+    # 删除已有的题材概念信息
+    # 更新题材概念信息
+    # 关闭数据库
+
+    # 打开文件数据库
+    con_file = sqlite3.connect('db/cb.db3')
+
+    try:
+        # 删除已有的数据
+        result = con_file.execute("""delete from config where key = 'gn_1' """)
+        if result.rowcount == 0:
+            print("not delete gn_1 config")
+        else:
+            print("delete old gn_1 is successful. count:" + str(result.rowcount))
+
+        # 删除已有的数据
+        result = con_file.execute("""delete from config where key = 'gn_5' """)
+        if result.rowcount == 0:
+            print("not delete gn_5 config")
+        else:
+            print("delete old gn_5 is successful. count:" + str(result.rowcount))
+
+        result = con_file.execute("""delete from config where key = 'gn_10' """)
+        if result.rowcount == 0:
+            print("not delete gn_10 config")
+        else:
+            print("delete old gn_10 is successful. count:" + str(result.rowcount))
+
+        i = 0
+        # 添加当日数据
+        rows = fetch_theme_data(3, '')
+        for row in rows:
+            result = con_file.execute("""insert into config(order_index,key,value,field_name)values(?, 'gn_1', ?, 'theme')""",
+                                      (row[0], row[1])
+                                      )
+            if result.rowcount == 0:
+                print("not insert gn_1 config:" + row)
+            else:
+                print("insert gn_1 is successful. count:" + str(i + 1))
+            i += 1
+
+        # 暂停5s再执行， 避免被网站屏蔽掉
+        time.sleep(5)
+
+        # 添加5日数据
+        rows = fetch_theme_data(5, '_5')
+        for row in rows:
+            result = con_file.execute("""insert into config(order_index,key,value,field_name)values(?, 'gn_5', ?, 'theme')""",
+                                      (row[0], row[1])
+                                      )
+            if result.rowcount == 0:
+                print("not insert gn_5 config:" + row)
+            else:
+                print("insert gn_5 is successful. count:" + str(i + 1))
+            i += 1
+
+        # 暂停5s再执行， 避免被网站屏蔽掉
+        time.sleep(5)
+
+        # 添加10日数据
+        rows = fetch_theme_data(10, '_10')
+        for row in rows:
+            result = con_file.execute("""insert into config(order_index,key,value,field_name)values(?, 'gn_10', ?, 'theme')""",
+                                      (row[0], row[1])
+                                      )
+            if result.rowcount == 0:
+                print("not insert gn_10 config:" + row)
+            else:
+                print("insert gn_10 is successful. count:" + str(i + 1))
+            i += 1
+
+        print("共处理" + str(i) + "条记录")
+
+    except Exception as e:
+        # con_file.close()
+        print("db操作出现异常" + str(e), e)
+    except TimeoutError as e:
+        print("网络超时, 请手工重试")
+    finally:
+        con_file.commit()
+        con_file.close()
+
+def update_stock_theme():
+    # 遍历可转债列表
+    # 打开文件数据库
+    con_file = sqlite3.connect('db/cb.db3')
+
+    try:
+        # 查询可转债
+        bond_cursor = con_file.execute("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
+
+        i = 0
+        for bond_row in bond_cursor:
+            bond_code = bond_row[0]
+            stock_code = bond_row[2]
+            stock_name = bond_row[3]
+
+            theme = fetch_stock_theme(stock_code)
+
+            result = con_file.execute("""update changed_bond_extend set theme = ? where bond_code = ?""",
+                             (theme, bond_code)
+                             )
+            if result.rowcount == 0:
+                print("not update stock:" + stock_name + ' in changed_bond_extend')
             else:
                 print("update " + stock_name + " is successful. count:" + str(i + 1))
 
@@ -135,11 +258,10 @@ def modify_data_unit_error():
 
         i = 0
 
-        stock_cursor = con_file.execute("""SELECT bond_code, avg_net_margin, stock_name from stock_report""")
+        stock_cursor = con_file.execute("""SELECT avg_net_margin, stock_name from stock_report""")
         stocks = list(stock_cursor)
 
         for stock in stocks:
-            bond_code = stock[0]
             avg_net_margin = stock[1]
             stock_name = stock[2]
 
@@ -148,8 +270,8 @@ def modify_data_unit_error():
 
             avg_net_margin = change_data_unit(avg_net_margin, no_clean_text)
 
-            con_file.execute("""update stock_report set avg_net_margin = ? where bond_code = ?""",
-                             (avg_net_margin, bond_code))
+            con_file.execute("""update stock_report set avg_net_margin = ? where stock_name = ?""",
+                             (avg_net_margin, stock_name))
 
             i += 1
             print("update " + stock_name + " is successful. count:" + str(i))
@@ -164,6 +286,80 @@ def modify_data_unit_error():
     finally:
         con_file.commit()
         con_file.close()
+
+# http://data.eastmoney.com/bkzj/gn_5.html
+def fetch_theme_data(count, days):
+    rows = []
+    url = "http://data.eastmoney.com/bkzj/gn" + days + ".html"
+
+    # fixme 需要把chromedriver放到/usr/local/bin目录下
+    # 创建可见的Chrome浏览器， 方便调试
+
+    driver.get(url)
+
+    # div = driver.find_elements_by_class_name("dataview-body")[0]
+
+    # trs = driver.find_elements_by_xpath("//div[@class='dataview-body']/table/tbody/tr")
+    # 所有的概念行数据
+    # trs = div.find_elements_by_xpath('./table/tbody/tr')
+    # print('trs len:' + str(len(trs)))
+    # # 只取前n的数据
+    #
+    # counts_a = len(driver.find_elements_by_class('class_name'))
+    # for i in range(counts_a):
+    #     driver.find_elements_by_xpath('//a[@class="class_name"][i+1]')
+
+    keys = ['转债标的','标准普尔','富时罗素','上证380','央视50_','中证500','深成500','融资融券','上证180_','HS300_','MSCI中国','深股通','创业板综','沪股通']
+
+    for i in range(count):
+
+        # div = driver.find_elements_by_class_name("dataview-body")[0]
+        # trs = driver.find_elements_by_xpath("//div[@class='dataview-body']/table/tbody/tr")
+        # print('tr len:' + str(len(div.find_elements_by_xpath('./table/tbody/tr'))))
+        # s = div.find_elements_by_xpath('./table/tbody/tr[' + str(i+1) + ']')[0].text
+        # s = trs[i].text
+        s = driver.find_element_by_xpath("//div[@class='dataview-body']/table/tbody/tr[" + str(i+1) + "]").text
+        # 排序 题材名 涨幅 净额(亿|万)
+        # [('1', 'CAR-T细胞疗法', '4.22%', '19.68')]
+        try:
+            ss = re.findall(r"(\d+) (.*) 大单详情  股吧 (\d+.?\d*%) (\d+.?\d*)(亿|万)", s)
+            ignore = False
+            for key in keys:
+                if key in ss[0]:
+                    ignore = True
+
+            if ignore:
+                continue
+
+            rows.append(ss[0])
+        except Exception as e:
+            # 有时候出现跌幅的数据, 直接忽略掉
+            print('count:' + str(count) + ', i:' + str(i) + 's:' + s + ', e:' + str(e))
+            # raise e
+
+
+    return rows
+
+# 抓取题材信息
+# http://f10.eastmoney.com/f10_v2/CoreConception.aspx?code=sz002472
+def fetch_stock_theme(stock_code):
+
+    stock_code = common.rebuild_stock_code(stock_code)
+
+    url = "http://f10.eastmoney.com/f10_v2/CoreConception.aspx?code=" + stock_code
+
+    # fixme 需要把chromedriver放到/usr/local/bin目录下
+    # 创建可见的Chrome浏览器， 方便调试
+
+    driver.get(url)
+
+    divs = driver.find_elements_by_class_name("p_div")
+
+    s = divs[0].text
+    ss = re.findall(r"要点一:所属板块 (.*)", s)
+    if len(ss) != 1:
+        raise Exception("没有找到股票的题材信息:" + s)
+    return ss[0]
 
 
 def get_sum_data(driver):
@@ -342,12 +538,23 @@ def get_stock_sum(stock_code):
 
     return get_sum_data(driver)
 
-
-if __name__ == "__main__":
+def fetch_data():
     driver = webdriver.Chrome()
 
     driver.implicitly_wait(10)
 
-    update_stock_sum()
+    print('更新股票的关键指标信息')
+    do_update_stock_sum()
+
+    # print('更新概念题材信息')
+    # update_stock_theme()
+
+    # print('更新题材概念配置信息')
+    # update_theme_config()
+
     driver.close()
     # modify_data_unit_error()
+    return 'OK'
+
+if __name__ == "__main__":
+    fetch_data()

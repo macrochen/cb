@@ -356,91 +356,191 @@ from pyecharts.faker import Faker
 # import pinyin
 # print(pinyin.get('建工转债'))
 
-from pytz import unicode
+# from pytz import unicode
+#
+# # 获取汉字首字母
+# def multi_get_letter(str_input):
+# 	if isinstance(str_input, unicode):
+# 		unicode_str = str_input
+# 	else:
+# 		try:
+# 			unicode_str = str_input.decode('utf8')
+# 		except:
+# 			try:
+# 				unicode_str = str_input.decode('gbk')
+# 			except:
+# 				print('unknown coding')
+# 				return
+# 	return_list = []
+# 	for one_unicode in unicode_str:
+# 		return_list.append(single_get_first(one_unicode))
+# 	return return_list
+#
+# def single_get_first(unicode1):
+# 	str1 = unicode1.encode('gbk')
+# 	# print(len(str1))
+# 	try:
+# 		ord(str1)
+# 		return str1
+# 	except:
+# 		asc = str1[0] * 256 + str1[1] - 65536
+# 		# print(asc)
+# 		if asc >= -20319 and asc <= -20284:
+# 			return 'a'
+# 		if asc >= -20283 and asc <= -19776:
+# 			return 'b'
+# 		if asc >= -19775 and asc <= -19219:
+# 			return 'c'
+# 		if asc >= -19218 and asc <= -18711:
+# 			return 'd'
+# 		if asc >= -18710 and asc <= -18527:
+# 			return 'e'
+# 		if asc >= -18526 and asc <= -18240:
+# 			return 'f'
+# 		if asc >= -18239 and asc <= -17923:
+# 			return 'g'
+# 		if asc >= -17922 and asc <= -17418:
+# 			return 'h'
+# 		if asc >= -17417 and asc <= -16475:
+# 			return 'j'
+# 		if asc >= -16474 and asc <= -16213:
+# 			return 'k'
+# 		if asc >= -16212 and asc <= -15641:
+# 			return 'l'
+# 		if asc >= -15640 and asc <= -15166:
+# 			return 'm'
+# 		if asc >= -15165 and asc <= -14923:
+# 			return 'n'
+# 		if asc >= -14922 and asc <= -14915:
+# 			return 'o'
+# 		if asc >= -14914 and asc <= -14631:
+# 			return 'p'
+# 		if asc >= -14630 and asc <= -14150:
+# 			return 'q'
+# 		if asc >= -14149 and asc <= -14091:
+# 			return 'r'
+# 		if asc >= -14090 and asc <= -13119:
+# 			return 's'
+# 		if asc >= -13118 and asc <= -12839:
+# 			return 't'
+# 		if asc >= -12838 and asc <= -12557:
+# 			return 'w'
+# 		if asc >= -12556 and asc <= -11848:
+# 			return 'x'
+# 		if asc >= -11847 and asc <= -11056:
+# 			return 'y'
+# 		if asc >= -11055 and asc <= -10247:
+# 			return 'z'
+# 		return ''
+#
+# def main(str_input):
+#     list1 = multi_get_letter(str_input)
+#     res = ''
+#     for i in list1:
+#         if type(i).__name__ == 'bytes':
+#             i = i.decode()
+#         res = res + i
+#     print(res)
+# if __name__ == "__main__":
+# 	str_input='世界欢迎你'
+# 	main(str_input)
 
-# 获取汉字首字母
-def multi_get_letter(str_input):
-	if isinstance(str_input, unicode):
-		unicode_str = str_input
-	else:
-		try:
-			unicode_str = str_input.decode('utf8')
-		except:
-			try:
-				unicode_str = str_input.decode('gbk')
-			except:
-				print('unknown coding')
-				return
-	return_list = []
-	for one_unicode in unicode_str:
-		return_list.append(single_get_first(one_unicode))
-	return return_list
+import re
+# s = """
+# 各期利息：0.4，0.6，1，1.5，1.8，2
+# 到期还本（不含息）：106 本息共113.3
+# 正股：孚日股份 （002083 深圳）
+# 税前回售收益率：-0.00%
+# 下修条件：连续20个交易日中至少10个交易日收盘价格低于当期转股价格的90%
+# 强赎条件：连续30个交易日中至少15个交易日收盘价格不低于当期转股价格的130%，或者余额小于3000万元
+# 回售条件：最后2年，连续30个交易日收盘价格低于当期转股价格的70%
+# 担保：无
+#
+# """
+# s = """
+# 要点一:所属板块 机械行业 独角兽 新能源车 工业4.0 特斯拉 智能机器 铁路基建 机构重仓 QFII重仓 转债标的 创投 浙江板块
+#
+# """
+# print(re.findall(r"要点一:所属板块 (.*)", s)[0].split(' '))
+s = '1 CAR-T细胞疗法 大单详情  股吧 4.22% 19.68万 3.34% 18.20亿 3.09% 1.48亿 0.25% -11.78亿 -2.00% -7.90亿 -1.34% 药明康德'
+print(re.findall(r"(\d+) (.*) 大单详情  股吧 (\d+.?\d*%) (\d+.?\d*)(亿|万)", s))
+# print(re.findall(r"下修条件：连续(\d+)个交易日中至少(\d+)个交易日收盘价格低于当期转股价格的(\d+)%\n", s))
+# print(re.findall(r"强赎条件：连续(\d+)个交易日中至少(\d+)个交易日收盘价格不低于当期转股价格的(\d+)%，或者余额小于(\d+)万元\n", s))
+# print(re.findall(r"回售条件：最后(\d+)年，连续(\d+)个交易日收盘价格低于当期转股价格的(\d+)%\n", s))
+# print(re.findall(r"(担保：.*)\n", s))
 
-def single_get_first(unicode1):
-	str1 = unicode1.encode('gbk')
-	# print(len(str1))
-	try:
-		ord(str1)
-		return str1
-	except:
-		asc = str1[0] * 256 + str1[1] - 65536
-		# print(asc)
-		if asc >= -20319 and asc <= -20284:
-			return 'a'
-		if asc >= -20283 and asc <= -19776:
-			return 'b'
-		if asc >= -19775 and asc <= -19219:
-			return 'c'
-		if asc >= -19218 and asc <= -18711:
-			return 'd'
-		if asc >= -18710 and asc <= -18527:
-			return 'e'
-		if asc >= -18526 and asc <= -18240:
-			return 'f'
-		if asc >= -18239 and asc <= -17923:
-			return 'g'
-		if asc >= -17922 and asc <= -17418:
-			return 'h'
-		if asc >= -17417 and asc <= -16475:
-			return 'j'
-		if asc >= -16474 and asc <= -16213:
-			return 'k'
-		if asc >= -16212 and asc <= -15641:
-			return 'l'
-		if asc >= -15640 and asc <= -15166:
-			return 'm'
-		if asc >= -15165 and asc <= -14923:
-			return 'n'
-		if asc >= -14922 and asc <= -14915:
-			return 'o'
-		if asc >= -14914 and asc <= -14631:
-			return 'p'
-		if asc >= -14630 and asc <= -14150:
-			return 'q'
-		if asc >= -14149 and asc <= -14091:
-			return 'r'
-		if asc >= -14090 and asc <= -13119:
-			return 's'
-		if asc >= -13118 and asc <= -12839:
-			return 't'
-		if asc >= -12838 and asc <= -12557:
-			return 'w'
-		if asc >= -12556 and asc <= -11848:
-			return 'x'
-		if asc >= -11847 and asc <= -11056:
-			return 'y'
-		if asc >= -11055 and asc <= -10247:
-			return 'z'
-		return ''
+# print('要点一:所属板块 机械行业 独角兽 新能源车 工业4.0 特斯拉 智能机器 铁路基建 机构重仓 QFII重仓 转债标的 创投 浙江板块'.replace(',', ''))
 
-def main(str_input):
-    list1 = multi_get_letter(str_input)
-    res = ''
-    for i in list1:
-        if type(i).__name__ == 'bytes':
-            i = i.decode()
-        res = res + i
-    print(res)
-if __name__ == "__main__":
-	str_input='世界欢迎你'
-	main(str_input)
+# from http.server import HTTPServer, BaseHTTPRequestHandler
+# import json
+#
+# data = {'result': 'this is a test'}
+# host = ('localhost', 8888)
+#
+# class Resquest(BaseHTTPRequestHandler):
+#     def do_GET(self):
+#         self.send_response(200)
+#         self.send_header('Content-type', 'text/html')
+#         self.end_headers()
+#         # self.wfile.write(json.dumps(data).encode())
+#         # self.wfile.write("""
+#         # <html>
+#         #     <body>
+#         #         <b><font color='red'>hello world</font></b>
+#         #     </body>
+#         # </html>
+#         # """)
+#
+#         self.wfile.write("""
+#                 <b><font color='red'>hello world</font></b>
+#                 """)
+#
+# if __name__ == '__main__':
+#     server = HTTPServer(host, Resquest)
+#     print("Starting server, listen at: %s:%s" % host)
+#     server.serve_forever()
+
+# s = """
+# 碳交易 工程建设 雄安新区 PPP模式 转债标的 天津板块
+# 医疗行业 医疗器械 机构重仓 成渝特区 转债标的 重庆板块
+# 电力行业 富时罗素 沪股通 中证500 上证180_ 太阳能 转债标的 江西板块
+# 食品饮料 创业板综 深股通 高送转 健康中国 婴童概念 养老概念 预盈预增 股权激励 转债标的 广东板块
+# 光伏建筑一体化 装修装饰 装配建筑 数据中心 华为概念 区块链 PPP模式 风能 太阳能 云计算 深圳特区 转债标的 广东板块
+# REITs概念 工程建设 湖北自贸 雄安新区 PPP模式 新三板 融资融券 预盈预增 转债标的 参股银行 创投 节能环保 湖北板块
+# 银行 富时罗素 MSCI中国 深股通 中证500 互联金融 长江三角 深成500 转债标的 江苏板块
+# """
+# s = s.replace('转债标的 ', '')\
+#     .replace('标准普尔 ', '')\
+#     .replace('富时罗素 ', '')\
+#     .replace('上证380 ', '')\
+#     .replace('央视50_ ', '')\
+#     .replace('中证500 ', '')\
+#     .replace('深成500 ', '')\
+#     .replace('融资融券 ', '')\
+#     .replace('上证180_ ', '')\
+#     .replace('HS300_ ', '')\
+#     .replace('MSCI中国 ', '')\
+#     .replace('深股通 ', '')\
+#     .replace('创业板综 ', '')\
+#     .replace('沪股通 ', '')\
+#     .replace('\n', ' ')
+#
+# ss = s.split(" ")
+#
+# my_dict = {}
+# for s1 in ss:
+#     count = 0
+#     for s2 in ss:
+#         if s1 == s2:
+#             count += 1
+#
+#     my_dict[s1] = count
+#
+# # print(my_dict)
+#
+# print(sorted(my_dict.items(), key = lambda kv:(kv[1], kv[0])))
+
+# my_set = set(ss)
+# print(len(my_set))
+# print(my_set)
+

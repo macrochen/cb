@@ -1,0 +1,145 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="icon" href="/img/favicon.ico">
+        <script src="https://code.z01.com/v4/dist/js/popper.min.js"></script>
+        <link rel="stylesheet" href="https://code.z01.com/v4/dist/css/bootstrap.min.css" >
+
+        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
+        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/bootsnav.css">
+
+
+        <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
+        <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
+        <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
+
+        <script type="text/javascript" src="/static/js/bootsnav.js"></script>
+        <title>实时更新可转债数据</title>
+        <style>
+            html,body {height: 100%;}
+
+            .navbar-brand{
+                padding: 29px 15px;
+                height: auto;
+            }
+            div.navbar.bootsnav{
+                background-color: #f8f8f8;
+                border-color: #e7e7e7;
+                margin-bottom: 10px;
+            }
+            .navbar-nav{
+                float: left;
+            }
+            div.navbar.bootsnav ul.nav > li > a{
+                color: #474747;
+                text-transform: uppercase;
+                padding: 20px;
+            }
+            div.navbar.bootsnav ul.nav > li:hover{
+                background: #f4f4f4;
+            }
+            .nav > li:after{
+                content: "";
+                width: 0;
+                height: 5px;
+                background: #34c9dd;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                transition: all 0.5s ease 0s;
+            }
+            .nav > li:hover:after{
+                width: 100%;
+            }
+            div.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after{
+                content: "+";
+                font-family: 'FontAwesome';
+                font-size: 16px;
+                font-weight: 500;
+                position: absolute;
+                top: 35%;
+                right: 10%;
+                transition: all 0.4s ease 0s;
+            }
+            div.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{
+                content: "\f105";
+                transform: rotate(90deg);
+            }
+            .dropdown-menu.multi-dropdown{
+                position: absolute;
+                left: -100% !important;
+            }
+            div.navbar.bootsnav li.dropdown ul.dropdown-menu{
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+                border: none;
+            }
+            @media only screen and (max-width:990px){
+                div.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after,
+                div.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{ content: " "; }
+                .dropdown-menu.multi-dropdown{ left: 0 !important; }
+                div.navbar.bootsnav ul.nav > li:hover{ background: transparent; }
+                div.navbar.bootsnav ul.nav > li > a{ margin: 0; }
+            }
+
+            .container {max-width: 700px;}
+            .border-top { border-top: 1px solid #e5e5e5; }
+            .border-bottom { border-bottom: 1px solid #e5e5e5; }
+            .border-top-gray { border-top-color: #adb5bd; }
+            .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+            .lh-condensed { line-height: 1.25; }
+        </style>
+    </head>
+    <body>
+      <div class="navbar navbar-default navbar-fixed-top navbar-mobile bootsnav" id="top_navbar">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <ul class="nav navbar-nav" data-in="fadeInDown" data-out="fadeOutUp">
+                <li><a href="/">Home</a></li>
+            </ul>
+        </div>
+      </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <div class="container">
+            <form class="needs-validation" novalidate action="/save_jsl_bond_data.html" method="post">
+
+                <div class="mb-3">
+                    <label for="source_code">JSON格式可转债数据</label>
+                    <textarea class="form-control" rows="20" cols="200" name="source_code" id="source_code" ></textarea>
+                </div>
+                <br/>
+                <center>
+                    <button class="btn btn-primary btn-lg btn-block" type="submit" style="width: 120px">提&nbsp;&nbsp;交</button>
+                </center>
+            </form>
+        </div>
+        <script>
+              (function() {
+                'use strict';
+                window.addEventListener('load', function() {
+                  var forms = document.getElementsByClassName('needs-validation');
+                  var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                      if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                      }
+                      form.classList.add('was-validated');
+                    }, false);
+                  });
+
+                }, false);
+
+              })();
+
+        </script>
+    </body>
+</html>
+        

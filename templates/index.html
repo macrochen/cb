@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>可转债数据</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon"  href="/static/img/favicon.ico">
+  <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
+	<link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/bootsnav.css">
+
+	<script src="https://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+	<script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
+	<script type="text/javascript" src="/static/js/bootsnav.js"></script>
+</head>
+<style>
+html,body {height: 100%;}
+
+.navbar-brand{
+    padding: 29px 15px;
+    height: auto;
+}
+nav.navbar.bootsnav{
+    border: none;
+    margin-bottom: 150px;
+}
+.navbar-nav{
+    float: left;
+}
+nav.navbar.bootsnav ul.nav > li > a{
+    color: #474747;
+    text-transform: uppercase;
+    padding: 30px;
+}
+nav.navbar.bootsnav ul.nav > li:hover{
+    background: #f4f4f4;
+}
+.nav > li:after{
+    content: "";
+    width: 0;
+    height: 5px;
+    background: #34c9dd;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transition: all 0.5s ease 0s;
+}
+.nav > li:hover:after{
+    width: 100%;
+}
+nav.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after{
+    content: "+";
+    font-family: 'FontAwesome';
+    font-size: 16px;
+    font-weight: 500;
+    position: absolute;
+    top: 35%;
+    right: 10%;
+    transition: all 0.4s ease 0s;
+}
+nav.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{
+    content: "\f105";
+    transform: rotate(90deg);
+}
+.dropdown-menu.multi-dropdown{
+    position: absolute;
+    left: -100% !important;
+}
+nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    border: none;
+}
+@media only screen and (max-width:990px){
+    nav.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after,
+    nav.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{ content: " "; }
+    .dropdown-menu.multi-dropdown{ left: 0 !important; }
+    nav.navbar.bootsnav ul.nav > li:hover{ background: transparent; }
+    nav.navbar.bootsnav ul.nav > li > a{ margin: 0; }
+}
+
+
+
+.home_banner { background: url(/static/img/bgm.png) top center no-repeat; background-size: cover; }
+
+.form-signin {width: 100%;max-width: 330px;padding: 15px;margin: 0 auto;}
+.form-signin .checkbox {font-weight: 400;}
+.form-signin .form-control {position: relative;box-sizing: border-box;height: auto;padding: 10px;font-size: 16px;}
+.form-signin .form-control:focus {z-index: 2;}
+.form-signin input[type="email"] {margin-bottom: -1px;border-bottom-right-radius: 0;border-bottom-left-radius: 0;}
+.form-signin input[type="password"] {margin-bottom: 10px;border-top-left-radius: 0;border-top-right-radius: 0;}
+
+</style>
+<body class=" home_banner">
+
+    <nav class="navbar navbar-default navbar-mobile bootsnav">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <ul class="nav navbar-nav" data-in="fadeInDown" data-out="fadeOutUp">
+                <li><a href="#">Home</a></li>
+                <li><a href="/view_market.html">可转债策略</a></li>
+
+                {% if current_user and current_user.is_authenticated %}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">我的可转债</a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/view_my.html">可转债持仓数据</a></li>
+                      <li><a href="/update_hold_bond.html">同步更新持仓数据</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">实时更新</a>
+                    <ul class="dropdown-menu">
+                      <li><a target="_blank" href="https://www.jisilu.cn/account/login/">登录集思录</a></li>
+                      <li><a href="/jsl_update_data.html">直接同步集思录可转债数据</a></li>
+                      <li><a target="_blank" href="https://www.jisilu.cn/data/cbnew/cb_list/">访问集思录JSON格式数据</a></li>
+                      <li><a href="/sync_jsl_bond_data.html">提交集思录JSON格式数据</a></li>
+                      <li><a href="/view_up_down.html">可转债涨跌数据</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">数据同步</a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/cb_ninwen.html">更新所有可转债数据(非实时)</a></li>
+                      <li><a href="/cb_ninwen_detail.html">更新可转债条款明细</a></li>
+                      <li><a href="/stock_10jqka.html">同步同花顺正股诊断数据</a></li>
+                      <li><a href="/stock_eastmoney.html">同步东财正股关键指标</a></li>
+                      <li><a href="/stock_xueqiu.html">同步雪球正股财报指标</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+
+            </ul>
+        </div>
+    </nav>
+{% if current_user is undefined or not current_user.is_authenticated %}
+    <main role="main">
+        <form class="form-signin" action="/login.html" method="post">
+          <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+          <label for="inputUsername" class="sr-only">UserName</label>
+          <input type="text" id="inputUsername" name="username" class="form-control" placeholder="UserName" required autofocus><br/>
+          <label for="inputPassword" class="sr-only">Password</label>
+          <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
+          <div class="checkbox mb-3">
+            <label>
+              <input type="checkbox" value="remember-me"> Remember me
+            </label>
+          </div>
+          <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        </form>
+    </main>
+{% endif %}
+
+</body>
+</html>

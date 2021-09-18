@@ -1,72 +1,12 @@
 #一些公共方法
 import os
+import sqlite3
 
 from jinja2 import Environment, FileSystemLoader
 
 from selenium import webdriver
 
 import re
-
-css_html = """
-<style>
-
-    td, th {
-      border-right :1px solid gray;
-      border-bottom :1px solid gray;
-      text-align:center;
-      width:100px;
-      height:50px;
-      box-sizing: border-box;
-      font-size:7;
-    }
-
-    th {
-      background-color:lightblue;
-    }
-
-
-    table {
-      border-collapse:separate;
-      table-layout: fixed;
-      width: 100%; /* 固定寬度 */
-    }
-
-    td:first-child, th:first-child {
-      position:sticky;
-      left:0; /* 首行在左 */
-      z-index:1;
-      background-color:lightpink;
-    }
-
-    thead tr th {
-      position:sticky;
-      top:0; /* 第一列最上 */
-    }
-
-    th:first-child{
-      z-index:2;
-      background-color:lightblue;
-    }
-    
-    .site-link{
-        margin-bottom:2px;
-        margin-right:3px
-    }
-    
-    .next-site-link{
-        margin-bottom:-1px;
-        margin-right:4px
-    }
-    
-    .remarked-up{
-        color:red
-    }
-    .remarked-down{
-        color:green
-    }
-    
-</style>
-"""
 
 env = Environment(
             keep_trailing_newline=True,
@@ -78,15 +18,65 @@ env = Environment(
                 )
             )
         )
-
+#https://www.jisilu.cn/data/cbnew/cb_index/
 #转股价格中位数
-MID_X = 111.110
+MID_X = 124.08
 #转股溢价率中位数
-MID_Y = 31.22
+MID_Y = 33.4
 #到期收益率中位数
-MID_YIELD = -0.88
+MID_YIELD = -3.92
 
-def get_cb_sum_data():
+# MID_Y, MID_X, MID_YIELD = get_cb_sum_data()
+
+def init_cb_sum_data():
+
+    # 打开文件数据库
+    con_file = sqlite3.connect('db/cb.db3')
+    cur = con_file.cursor()
+    cur.execute("""
+SELECT mid_price, mid_premium from (
+    SELECT  AVG(cb_price2_id) as mid_price, row_number() OVER () as rn
+    FROM (SELECT cb_price2_id
+          FROM changed_bond
+          ORDER BY cb_price2_id
+          LIMIT 2 - (SELECT COUNT(*) FROM changed_bond) % 2    -- odd 1, even 2
+          OFFSET (SELECT (COUNT(*) - 1) / 2
+                  FROM changed_bond))) a
+left join(
+    SELECT AVG(cb_premium_id) as mid_premium, row_number() OVER () as rn
+    FROM (SELECT cb_premium_id
+          FROM changed_bond
+          ORDER BY cb_premium_id
+          LIMIT 2 - (SELECT COUNT(*) FROM changed_bond) % 2    -- odd 1, even 2
+          OFFSET (SELECT (COUNT(*) - 1) / 2
+                  FROM changed_bond)) ) b			 
+on a.rn = b.rn
+    
+    """)
+
+    row = cur.fetchone()
+    MID_X = row[0]
+    MID_Y = row[1]
+    print('init mid data is successful.MID_X:' + str(MID_X) + ', MID_Y:' + str(MID_Y))
+
+    # for row in rows:
+
+        # if key == 'mid_premium':
+        #     MID_Y = value
+        # elif key == 'mid_price':
+        #     MID_X = value
+        # elif key == 'mid_yield':
+        #     mid_yield = value
+        # else:
+        #     raise Exception('unknow key:' + key)
+
+    # return mid_y, mid_x #, mid_yield
+
+
+def update_cb_sum_data():
+
+    # 打开文件数据库
+    con_file = sqlite3.connect('db/cb.db3')
 
     driver = webdriver.Chrome()
 
@@ -103,19 +93,43 @@ def get_cb_sum_data():
     ss = re.findall(r"转股溢价率 (\d+\.?\d*)%", s)
     if len(ss) != 1:
         raise Exception("没有找到转股溢价率中位数:" + s)
-    MID_Y = ss[0]
+    # MID_Y = ss[0]
+    result = con_file.execute("""insert into config(key,value,field_name)values
+                                    ('mid_premium_rate', ?, 'cb_sum_data')""",
+                              (ss[0])
+                              )
+    if result.rowcount == 0:
+        print("not insert mid_premium_rate config:" + ss[0])
+    else:
+        print("insert mid_premium_rate is successful. count:" + str(result.rowcount))
 
     ss = re.findall(r"中位数价格 (\d+\.?\d*)", s)
     if len(ss) != 1:
         raise Exception("没有找到转股价格中位数:" + s)
-    MID_X = ss[0]
+    # MID_X = ss[0]
+    result = con_file.execute("""insert into config(key,value,field_name)values
+                                    ('mid_price', ?, 'cb_sum_data')""",
+                              (ss[0])
+                              )
+    if result.rowcount == 0:
+        print("not insert mid_price config:" + ss[0])
+    else:
+        print("insert mid_price is successful. count:" + str(result.rowcount))
 
     ss = re.findall(r"到期收益率 (-?\d+\.?\d*)%", s)
     if len(ss) != 1:
         raise Exception("没有找到到期收益率中位数:" + s)
-    MID_YIELD = ss[0]
+    # MID_YIELD = ss[0]
+    result = con_file.execute("""insert into config(key,value,field_name)values
+                                    ('mid_yield_rate', ?, 'cb_sum_data')""",
+                              (ss[0])
+                              )
+    if result.rowcount == 0:
+        print("not insert mid_yield_rate config:" + ss[0])
+    else:
+        print("insert mid_yield_rate is successful. count:" + str(result.rowcount))
 
-    print("MID_Y = " + MID_Y + ' \nMID_X = ' + MID_X + '\nMID_YIELD = ' + MID_YIELD)
+    # print("MID_Y = " + MID_Y + ' \nMID_X = ' + MID_X + '\nMID_YIELD = ' + MID_YIELD)
 
     driver.close()
 
@@ -168,17 +182,17 @@ def get_html_string(table, remark_fields_color = []):
                     market = 'sh'
                 prefix = "<a target = '_blank' href = 'http://quote.eastmoney.com/bond/" + market + bond_id + ".html'>"
 
-                prefix_append += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + nid + "'><img src='../img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' width='14' height='14' class='site-link'/></a>"
+                prefix_append += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + nid + "'><img src='../static/img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' width='14' height='14' class='site-link'/></a>"
 
-                prefix_append += "&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/" + bond_id + "'><img src='../img/jsl.png' alt='集思录' title='集思录查看转债信息' width='14' height='14' class='site-link'/></a>"
+                prefix_append += "&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/" + bond_id + "'><img src='../static/img/jsl.png' alt='集思录' title='集思录查看转债信息' width='14' height='14' class='site-link'/></a>"
 
                 # https://xueqiu.com/S/SH600998
-                suffix = "&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_id + "'><img src='../img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='next-site-link'/></a>"
-                suffix += "&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='../img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
-                suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='../img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
+                suffix = "<br/>&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_id + "'><img src='../static/img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='next-site-link'/></a>"
+                suffix += "&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='../static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
+                suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='../static/img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
 
                 #http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157
-                suffix += "&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + nid + "'><img src='../img/trend.png' alt='走势图' title='宁稳网查看转债&正股走势(非会员20次/天)' width='14' height='14' class='next-site-link'/></a>"
+                suffix += "&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + nid + "'><img src='../static/img/trend.png' alt='走势图' title='宁稳网查看转债&正股走势(非会员20次/天)' width='14' height='14' class='next-site-link'/></a>"
             remark_color = ''
             if remark_fields_color.count(field) > 0:
                 if datum.startswith('-'):
@@ -188,7 +202,22 @@ def get_html_string(table, remark_fields_color = []):
 
             lines.append(
                 ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % datum.replace("\n", linebreak)
-            )
+                # fixme 重构成函数变量
+                .replace('转债标的 ', '')
+                .replace('标准普尔 ', '')
+                .replace('富时罗素 ', '')
+                .replace('上证380 ', '')
+                .replace('央视50_ ', '')
+                .replace('中证500 ', '')
+                .replace('深成500 ', '')
+                .replace('融资融券 ', '')
+                .replace('上证180_ ', '')
+                .replace('HS300_ ', '')
+                .replace('MSCI中国 ', '')
+                .replace('深股通 ', '')
+                .replace('创业板综 ', '')
+                .replace('沪股通 ', '')
+                )
         lines.append("        </tr>")
     lines.append("    </tbody>")
     lines.append("</table>")
@@ -217,8 +246,8 @@ def getDictRow(cursor, row):
 def rebuild_stock_code(stock_code):
     # 沪市A股票买卖的代码是以600、601或603打头, 688创业板
     # 深市A股票买卖的代码是以000打头, 中小板股票代码以002打头, 创业板股票代码以300打头
-    if stock_code.startswith('600') or stock_code.startswith('601') or stock_code.startswith(
-            '603') or stock_code.startswith('688'):
+    if stock_code.startswith('600') or stock_code.startswith('601') or \
+            stock_code.startswith('605') or stock_code.startswith('603') or stock_code.startswith('688'):
         stock_code = 'SH' + stock_code
     elif stock_code.startswith('000') or stock_code.startswith('001') or stock_code.startswith(
             '002') or stock_code.startswith('300'):
@@ -234,4 +263,4 @@ def rebuild_bond_code(bond_code):
     return market + bond_code
 
 if __name__ == "__main__":
-    get_cb_sum_data()
+    update_cb_sum_data()
