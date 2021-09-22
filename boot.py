@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import os
+import sqlite3
 
-from flask import render_template, request, url_for, redirect, flash
+from flask import render_template, request, url_for, redirect, flash, send_from_directory, session
 from flask_login import login_user, login_required, logout_user, current_user
 
 from config import app, db
@@ -43,6 +45,12 @@ def login():
         if user.validate_password(password):
             login_user(user)
             flash('Login success.')
+
+    return render_template('index.html')
+
+@app.route('/logout.html')
+def logout():
+    logout_user()
 
     return render_template('index.html')
 
@@ -142,8 +150,9 @@ def my_view():
 
 @app.route('/view_market.html')
 def market_view():
+    # current_user = None
     common.init_cb_sum_data()
-    title, navbar, content = view_market.draw_market_view(False, False)
+    title, navbar, content = view_market.draw_market_view(current_user is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @app.route('/jsl_update_data.html')
@@ -175,6 +184,38 @@ def stock_eastmoney_update_data():
 @login_required
 def stock_xueqiu_update_data():
     return stock_xueqiu.fetch_data()
+
+@app.route('/download_db_data.html')
+@login_required
+def download_db_data():
+    con = sqlite3.connect('db/cb.db3')
+    file_name = 'dump/data.sql'
+    with open(file_name, 'w') as f:
+        for line in con.iterdump():
+            f.write('%s\n' % line)
+
+    # 需要知道2个参数, 第1个参数是本地目录的path, 第2个参数是文件名(带扩展名)
+    directory = os.getcwd()  # 假设在当前目录
+    return send_from_directory(directory, file_name, as_attachment=True)
+
+@app.route('/upload_db_data.html')
+@login_required
+def upload_db_data():
+    return render_template("upload_db_data.html")
+
+@app.route('/save_db_data.html', methods=['POST'])
+@login_required
+def save_db_data():
+    # 删除整个db
+    os.unlink("db/cb.db3")
+    # 获取文件(字符串?)
+    file = request.files['file']
+    s = file.read().decode('utf-8')
+    # 灌入上传的数据
+    con = sqlite3.connect('db/cb.db3')
+    con.executescript(s)
+
+    return 'OK'
 
 
 if __name__ == "__main__":

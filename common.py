@@ -162,7 +162,7 @@ def get_html_string(table, remark_fields_color = []):
     formatted_rows = table._format_rows(rows, options)
     for row in formatted_rows:
         lines.append("        <tr>")
-        record = getRecord(table, row)
+        record = get_record(table, row)
         for field, datum in record.items():
             if ignore_fields.count(field) > 0:
                 continue
@@ -224,24 +224,44 @@ def get_html_string(table, remark_fields_color = []):
 
     return "\n".join(lines)
 
+
 def add_nav_html(htmls, type):
     # 增加导航
-    active = ''
-    if len(htmls) == 0:
-        active = 'class="active"'
     nav_html = htmls.get('nav', '')
-    nav_html += '<li ' + active + '><a href="#' + type + '">' + type + '</a></li>'
+    nav_html += get_sub_nav_html(type)
     htmls['nav'] = nav_html
 
-def getRecord(table, row):
+
+def add_sub_nav_html(htmls, title, s):
+    # 增加导航
+    nav_html = htmls.get('nav', '')
+
+    nav_html += """
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">""" + title + """</a>
+            <ul class="dropdown-menu">
+              """ + s + """
+            </ul>
+        </li>
+    """
+    htmls['nav'] = nav_html
+
+
+def get_sub_nav_html(type):
+    return '<li><a href="#' + type + '">' + type + '</a></li>'
+
+
+def get_record(table, row):
     return dict(zip(table._field_names, row))
 
-def getDictRow(cursor, row):
+
+def get_dict_row(cursor, row):
     if cursor.description:
         field_names = [col[0] for col in cursor.description]
         return dict(zip(field_names, row))
 
     raise Exception('not convert to dict row')
+
 
 def rebuild_stock_code(stock_code):
     # 沪市A股票买卖的代码是以600、601或603打头, 688创业板

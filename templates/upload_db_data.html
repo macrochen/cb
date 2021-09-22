@@ -108,11 +108,11 @@
         <br/>
         <br/>
         <div class="container">
-            <form class="needs-validation" novalidate action="/save_jsl_bond_data.html" method="post">
+            <form class="needs-validation" novalidate action="/save_db_data.html" method="post" enctype="multipart/form-data">
 
-                <div class="mb-3">
-                    <label for="source_code">JSON格式可转债数据</label>
-                    <textarea class="form-control" rows="20" cols="200" name="source_code" id="source_code" ></textarea>
+                <div class="form-group">
+                    <label for="inputfile">更新数据文件</label>
+                    <input type="file" name="file" id="inputfile">
                 </div>
                 <br/>
                 <center>

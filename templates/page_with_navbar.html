@@ -3,7 +3,7 @@
         <meta charset="UTF-8">
 
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.2.1-dev.20210902/dist/echarts.min.js"></script>
-        <link rel="icon" href="/img/favicon.ico">
+        <link rel="icon" href="/static/img/favicon.ico">
 
         <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
         <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">
@@ -161,15 +161,6 @@
           {% endautoescape %}
      </div>
      <script>
-        let lis = document.querySelectorAll('.nav>li')
-        console.log(lis)
-        for (var i = 0; i < lis.length; i++) {
-            lis[i].onclick = function(event) {
-                let li = document.getElementsByClassName('active')[0]
-                li.classList.remove('active')
-                this.classList.add('active')
-            }
-        }
         $("div.navbar-fixed-top").autoHidingNavbar();
      </script>
     </body>

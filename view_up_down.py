@@ -67,7 +67,7 @@ select cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 10
                     """)
 
         rows = cur.fetchall()
-        html += '<br/>' + generate_top_bar_html(rows, '我的可转债价格TOP20')
+        html += '<br/><br/><br/><br/><br/>' + generate_top_bar_html(rows, '我的可转债价格TOP20')
 
         # =========我的转债涨跌TOP20柱状图=========
         cur.execute("""

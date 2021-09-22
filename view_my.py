@@ -600,7 +600,7 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
         money_rows = []
         for row in cur.fetchall():
             rows.append(row)
-            dict_row = common.getDictRow(cur, row)
+            dict_row = common.get_dict_row(cur, row)
             dict_rows.append(dict_row)
             money_row = dict_row['投入金额']
             money_rows.append(money_row)
@@ -677,7 +677,7 @@ def generate_scatter_html():
 
         rows = table._rows
         for row in rows:
-            record = common.getRecord(table, row)
+            record = common.get_record(table, row)
             x.append(record['转债价格'])
             y.append([record['溢价率'].replace('%', '')*1, record['名称'].replace('转债', '')])
 
