@@ -56,17 +56,37 @@ def logout():
 
 
 @app.route('/update_hold_bond.html')
+@app.route('/update_hold_bond.html/<id>/')
 @login_required
-def update_hold_bond():
-    return render_template("update_hold_bond.html")
+def update_hold_bond(id=''):
+    bond = None
+    if id != '':
+        bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
 
-@app.route('/find_bond_by/<string:bond_code>', methods=['GET'])
+    return render_template("update_hold_bond.html", bond=bond)
+
+@app.route('/find_bond_by.html', methods=['GET'])
 @login_required
-def find_bond_by_code(bond_code):
+def find_bond_by_code():
+    bond_code = request.args.get("bond_code")
+    bond_name = request.args.get("bond_name")
     # fixme 打新和其他策略可能同时存在
-    bond = HoldBond.query.filter_by(bond_code=bond_code).first()
+    # 先找hold_amount>-1的,没有再找hold_amount=-1的
+    bond = None
+    if bond_code != '':
+        bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.hold_amount > -1).first()
+        if bond is None:
+            bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code).first()
+    elif bond_name != '':
+        bond = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%'), HoldBond.hold_amount > -1).first()
+        if bond is None:
+            bond = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%')).first()
+
     if bond is None:
-        bond = ChangedBond.query.filter_by(bond_code=bond_code).first()
+        if bond_code != '':
+            bond = ChangedBond.query.filter_by(bond_code=bond_code).first()
+        elif bond_name != '':
+            bond = ChangedBond.query.filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).first()
         if bond is not None:
             return dict(bond)
         raise Exception('not find bond by code: ' + bond_code)
@@ -91,8 +111,8 @@ def save_hold_bond():
     hold_bond.cb_name_id = cb_name_id
 
     hold_amount = request.form['hold_amount']
-    if hold_amount is None or hold_amount.strip(' ') == '' or int(hold_amount.strip(' ')) <= 0:
-        raise Exception('持有数量不能为空且大于零')
+    if hold_amount is None or hold_amount.strip(' ') == '':
+        raise Exception('持有数量不能为空')
 
     hold_bond.hold_amount = int(hold_amount)
 
@@ -116,7 +136,12 @@ def save_hold_bond():
     if memo is not None and memo.strip(' ') != '':
         hold_bond.memo = memo
 
-    db.session.add(hold_bond)
+    id = request.form['id']
+    if id is not None:
+        hold_bond.id = id
+        db.session.update(hold_bond)
+    else:
+        db.session.add(hold_bond)
     db.session.commit()
 
     return my_view()
@@ -151,8 +176,9 @@ def my_view():
 @app.route('/view_market.html')
 def market_view():
     # current_user = None
+    user_id = session.get('_user_id')
     common.init_cb_sum_data()
-    title, navbar, content = view_market.draw_market_view(current_user is not None)
+    title, navbar, content = view_market.draw_market_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @app.route('/jsl_update_data.html')
@@ -214,6 +240,28 @@ def save_db_data():
     # 灌入上传的数据
     con = sqlite3.connect('db/cb.db3')
     con.executescript(s)
+
+    return 'OK'
+
+
+@app.route('/update_database.html')
+@login_required
+def update_database():
+    return render_template("update_database.html")
+
+
+@app.route('/execute_sql.html', methods=['POST'])
+@login_required
+def execute_sql():
+    sql_code = request.form['sql_code']
+    if sql_code is None or sql_code.strip(' ') == '':
+        raise Exception('SQL不能为空')
+
+    if sql_code.lower().strip().find('update') != 0:
+        raise Exception("仅允许update操作")
+
+    con = sqlite3.connect('db/cb.db3')
+    con.executescript(sql_code)
 
     return 'OK'
 

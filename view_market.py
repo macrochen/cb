@@ -231,7 +231,7 @@ def draw_market_view(use_my_features):
 
         # =========强赎=========
         sql = """
-    SELECT  c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, enforce_get as 强赎状态, 
+    SELECT  c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, enforce_get as 强赎状态, 
     cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
     from (select * from changed_bond where enforce_get in ('强赎中')) c
     order by 转债价格 desc 
@@ -246,7 +246,7 @@ def draw_market_view(use_my_features):
             sql = """
         SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
-      SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+      SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as 转债价格, round(bt_red * 100,2) || '%' as 回售收益率, red_t as '回售年限(年)', round((bt_red * 100) + (2-bond_t1),2) as 性价比,round(bt_yield*100,2) || '%' as 到期收益率,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',e.theme as 题材概念,
@@ -289,7 +289,7 @@ def draw_market_view(use_my_features):
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code
+        on d.bond_code = e.bond_code
             """
             html = generate_strategy_html(con_file, sql, "回售策略", "回售年限<1年, 回收收益率>1%", html, htmls=htmls,
                                           labelY="回售收益率(%)", field_name='回售收益率', midY=0,
@@ -301,7 +301,7 @@ def draw_market_view(use_my_features):
             sql = """
         SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
-      SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+      SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
         round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌, round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',e.theme as 题材概念,
@@ -342,7 +342,7 @@ def draw_market_view(use_my_features):
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code
+        on d.bond_code = e.bond_code
             """
             html = generate_strategy_html(con_file, sql, "下修博弈策略", "100面值以下为主", html, htmls=htmls,
                                           labelY="到期收益率(%)", field_name='到期收益率', midY=0,
@@ -371,7 +371,7 @@ def draw_market_view(use_my_features):
             sql = """
         SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
-      SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+      SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念,
@@ -411,7 +411,7 @@ def draw_market_view(use_my_features):
                 where id in (select id from hold_bond where id 
                     in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
             ) e 
-        on d.id = e.bond_code
+        on d.bond_code = e.bond_code
         
             """
             get_label = lambda row: row['名称'].replace('转债', '') + '(' + str(row['双低值']) + ')'
@@ -425,7 +425,7 @@ def draw_market_view(use_my_features):
             sql = """
         SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
-      SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+      SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as '转债价格', round(bt_yield*100,2) || '%' as 到期收益率, round(100- cb_price2_id + BT_yield * 100, 2) as 性价比,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念,
@@ -469,7 +469,7 @@ def draw_market_view(use_my_features):
                 where id in (select id from hold_bond where id 
                     in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
             ) e 
-        on d.id = e.bond_code;
+        on d.bond_code = e.bond_code;
             """
 
             html = generate_strategy_html(con_file, sql, "高收益策略", "到期收益率前10", html, htmls=htmls,
@@ -500,7 +500,7 @@ def draw_market_view(use_my_features):
             sql = """
       SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
-        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         round(cb_premium_id*100,2) || '%' as 溢价率, cb_price2_id as '转债价格', cb_t_id as 距离转股日,
          
         round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
@@ -552,7 +552,7 @@ def draw_market_view(use_my_features):
                 where id in (select id from hold_bond where id 
                     in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
             ) e 
-          on d.id = e.bond_code
+          on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(con_file, sql, "溢价率折价策略", "低溢价率top5", html, htmls=htmls,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
@@ -563,7 +563,7 @@ def draw_market_view(use_my_features):
                 sql = """
           SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
         FROM (
-            SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+            SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
             round(at_yield*100,2) || '%' as 税后到期收益率, bond_t1 as 剩余年限,
 
             c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, 
@@ -615,7 +615,7 @@ def draw_market_view(use_my_features):
                     where id in (select id from hold_bond where id 
                         in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
                 ) e 
-              on d.id = e.bond_code
+              on d.bond_code = e.bond_code
                   """
                 html = generate_strategy_html(con_file, sql, "快到期保本策略", "税后到期收益率>0, 剩余年限<3", html, htmls=htmls,
                                               remark_fields_color=['税后到期收益率', '溢价率', '转债价格', '可转债涨跌', '剩余年限'],
@@ -626,7 +626,7 @@ def draw_market_view(use_my_features):
                 sql = """
           SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
         FROM (
-            SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+            SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
             cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
             round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
 
@@ -670,7 +670,7 @@ def draw_market_view(use_my_features):
                     where id in (select id from hold_bond where id 
                         in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
                 ) e 
-              on d.id = e.bond_code
+              on d.bond_code = e.bond_code
                   """
                 html = generate_strategy_html(con_file, sql, "低溢价率策略", "溢价率<4%, 转债价格<140, 如果持有, 坚持不卖", html, htmls=htmls,
                                               remark_fields_color=['溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
@@ -681,7 +681,7 @@ def draw_market_view(use_my_features):
             sql = """
       SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
-        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
          
@@ -731,7 +731,7 @@ def draw_market_view(use_my_features):
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code
+        on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(con_file, sql, "广撒网策略", "价格<105, 溢价率<20%, pb>1", html, htmls=htmls,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
@@ -742,7 +742,7 @@ def draw_market_view(use_my_features):
             sql = """
       SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
-        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
          
@@ -798,7 +798,7 @@ def draw_market_view(use_my_features):
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code
+        on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(con_file, sql, "正股优选策略", "正股综合评分>6, 转债价格<115, 双低值<130", html, htmls=htmls,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
@@ -809,7 +809,7 @@ def draw_market_view(use_my_features):
             sql = """
       SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
-        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
          
@@ -854,7 +854,7 @@ def draw_market_view(use_my_features):
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code
+        on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(con_file, sql, "高成长策略", "利润率增长top20, 转债价格<115, 利润率>0", html, htmls=htmls,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '利润率|行业均值', '利润率同比'],
@@ -865,7 +865,7 @@ def draw_market_view(use_my_features):
             sql = """
      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
-        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
          
@@ -911,7 +911,7 @@ def draw_market_view(use_my_features):
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code
+        on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(con_file, sql, "股性策略", "转债价格<115, 溢价率<10%, 用来筛选网格对象", html, htmls=htmls,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
@@ -922,7 +922,7 @@ def draw_market_view(use_my_features):
             sql = """
      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
-        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, 
          
@@ -970,7 +970,7 @@ def draw_market_view(use_my_features):
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code
+        on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(con_file, sql, "妖债策略", "余额<3亿, 换手率>50%, 找底部长时间横盘, 刚刚放量上涨, 当大盘跌, 柚子没有攒钱的地方, 就会来短炒妖债", html, htmls=htmls,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
@@ -981,7 +981,7 @@ def draw_market_view(use_my_features):
             sql = """
      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
-        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',
         
@@ -1030,7 +1030,7 @@ def draw_market_view(use_my_features):
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code
+        on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(con_file, sql, "换手率排行榜", "换手率大于100%且top10", html, htmls=htmls,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
@@ -1041,9 +1041,9 @@ def draw_market_view(use_my_features):
             sql = """
      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
-        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+        SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         
-        round(cb_mov_id * 100, 2) || '%' as 正股涨跌, cb_price2_id as '转债价格', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,  
+        round(cb_mov_id * 100, 2) || '%' as 正股涨跌, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, cb_price2_id as '转债价格',  
         round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
          
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
@@ -1088,7 +1088,7 @@ def draw_market_view(use_my_features):
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code
+        on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(con_file, sql, "正股涨幅榜", "正股涨幅top20", html, htmls=htmls,
                                           remark_fields_color=['正股涨跌', '到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
@@ -1098,7 +1098,7 @@ def draw_market_view(use_my_features):
             sql = """
      SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
-      SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+      SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
          
@@ -1140,7 +1140,7 @@ def draw_market_view(use_my_features):
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code"""
+        on d.bond_code = e.bond_code"""
             html = generate_strategy_html(con_file, sql, "抄作业", "收集近期大V们推荐", html, htmls=htmls,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                               use_personal_features=use_personal_features)
@@ -1150,7 +1150,7 @@ def draw_market_view(use_my_features):
             sql = """
          SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
         FROM (
-          SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+          SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
 
             cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
 
@@ -1192,7 +1192,7 @@ def draw_market_view(use_my_features):
                 where id in (select id from hold_bond where id 
                     in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
                  ) e 
-            on d.id = e.bond_code"""
+            on d.bond_code = e.bond_code"""
 
             html = generate_strategy_html(con_file, sql, "自选集", "根据各种策略选出来准备买入的", html, htmls=htmls,
                                               remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
@@ -1203,7 +1203,7 @@ def draw_market_view(use_my_features):
             sql = """
          SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
         FROM (
-          SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+          SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
 
             cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, 
             round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
@@ -1248,7 +1248,7 @@ def draw_market_view(use_my_features):
                 where id in (select id from hold_bond where id 
                     in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
                  ) e 
-            on d.id = e.bond_code"""
+            on d.bond_code = e.bond_code"""
 
             html = generate_strategy_html(con_file, sql, "非200不卖", "不到200元不卖", html, htmls=htmls,
                                               remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
@@ -1259,7 +1259,7 @@ def draw_market_view(use_my_features):
             sql = """
          SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
         FROM (
-          SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, 
+          SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
 
             cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
             round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, 
@@ -1304,7 +1304,7 @@ def draw_market_view(use_my_features):
                 where id in (select id from hold_bond where id 
                     in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
                  ) e 
-            on d.id = e.bond_code"""
+            on d.bond_code = e.bond_code"""
 
             html = generate_strategy_html(con_file, sql, "凌波双低轮动", "脉冲卖出标准:110元以下(价格120双低值125)，110-115元(价格125双低值130)，115-120元(价格130双低值135)，120-125元(价格135双低值140)", html, htmls=htmls,
                                               remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
@@ -1324,7 +1324,7 @@ def build_low_remain_block(con_file, html, htmls, sort_field, sub_strategy, use_
     sql = """
     SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
-      SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, remain_amount as '余额(亿元)', 
+      SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, remain_amount as '余额(亿元)', 
         cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念,
@@ -1369,7 +1369,7 @@ def build_low_remain_block(con_file, html, htmls, sort_field, sub_strategy, use_
             where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code            
+        on d.bond_code = e.bond_code            
             """
     get_label = lambda row: row['名称'].replace('转债', '') + '(' + str(round(row['余额(亿元)'], 1)) + '亿)'
     html = generate_strategy_html(con_file, sql, "低余额策略(" + sub_strategy + ")", "余额<3亿, " + sub_strategy + "top10", html, htmls=htmls,
@@ -1405,7 +1405,7 @@ def generate_active_strategy_html(con_file, gn_c, gn_s, suffix, html, htmls, use
     sql = """
       SELECT DISTINCT d.* , case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
     FROM (
-        SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
         e.theme as 题材概念,
         
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
@@ -1458,7 +1458,7 @@ def generate_active_strategy_html(con_file, gn_c, gn_s, suffix, html, htmls, use
                 where id in (select id from hold_bond where id 
                     in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
             ) e 
-          on d.id = e.bond_code
+          on d.bond_code = e.bond_code
           """
     html = generate_strategy_html(con_file, sql, "活性债策略(" + suffix + ')',
                                   "按照主题>风格>行业方向, " + suffix + "(" + gn_s + ")\n\n结合价格<130, 溢价率<30%, 余额<3亿, 换手率>50%选出最具性价比和爆发力标的",

@@ -86,7 +86,7 @@ order by 涨跌 desc
         # =========我的转债涨跌TOP20表格=========
 
         cur.execute("""
-    SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
+    SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
         cb_price2_id as 转债价格, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)',round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏,   
         round(cb_premium_id*100,2) as 溢价率, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         remain_amount as '余额(亿元)',round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
@@ -150,7 +150,7 @@ stock_report s, (select *
         cur.execute("""
 SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
-      SELECT c.data_id as nid, c.bond_code as id, c.stock_code, c.cb_name_id as 名称,cb_mov2_id, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, 
+      SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称,cb_mov2_id, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, 
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', remain_amount as '余额(亿元)', cb_trade_amount_id as '成交额(百万)', round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
@@ -190,7 +190,7 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
             from hold_bond where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
              ) e 
-        on d.id = e.bond_code	
+        on d.bond_code = e.bond_code	
         ORDER by cb_mov2_id DESC
                     """)
 
