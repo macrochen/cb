@@ -257,8 +257,8 @@ def execute_sql():
     if sql_code is None or sql_code.strip(' ') == '':
         raise Exception('SQL不能为空')
 
-    if sql_code.lower().strip().find('update') != 0:
-        raise Exception("仅允许update操作")
+    if sql_code.lower().strip().startswith('update') or sql_code.lower().strip().startswith('insert'):
+        raise Exception("仅允许update/insert操作")
 
     con = sqlite3.connect('db/cb.db3')
     con.executescript(sql_code)
