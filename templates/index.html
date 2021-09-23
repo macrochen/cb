@@ -109,8 +109,9 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">我的可转债</a>
                     <ul class="dropdown-menu">
-                      <li><a href="/view_my.html">可转债持仓数据</a></li>
-                      <li><a href="/update_hold_bond.html">同步更新持仓数据</a></li>
+                      <li><a href="/view_my.html">按策略统计</a></li>
+                      <li><a href="/view_my_account.html">按账户统计</a></li>
+                      <li><a href="/update_hold_bond.html">更新持仓数据</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
@@ -141,7 +142,13 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                     </ul>
                 </li>
 
-                <li><a href="/update_database.html">数据库操作</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">数据库操作</a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/update_database.html">修改数据</a></li>
+                      <li><a href="/query_database.html">查询数据</a></li>
+                    </ul>
+                </li>
 
                 <li><a href="/logout.html">退出</a></li>
                 {% endif %}

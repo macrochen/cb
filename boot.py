@@ -8,6 +8,8 @@ from flask_login import login_user, login_required, logout_user, current_user
 from config import app, db
 from models import User, ChangedBond, HoldBond
 
+from prettytable import from_db_cursor
+
 import cb_jsl
 import cb_ninwen
 import cb_ninwen_detail
@@ -17,6 +19,7 @@ import stock_eastmoney
 import stock_xueqiu
 import view_market
 import view_my
+import view_my_account
 import view_up_down
 
 from flask_login import LoginManager
@@ -57,11 +60,23 @@ def logout():
 
 @app.route('/update_hold_bond.html')
 @app.route('/update_hold_bond.html/<id>/')
+@app.route('/add_hold_bond.html/<bond_code>/')
 @login_required
-def update_hold_bond(id=''):
+def update_hold_bond(id='', bond_code=''):
     bond = None
     if id != '':
         bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
+    elif bond_code != '':
+        # 先查持有的
+        bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.hold_amount > -1).first()
+        if bond is None:
+            # 没找到, 再查删除的
+            bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.hold_amount == -1).first()
+
+        # 没有持有过, 转添加操作
+        if bond is None:
+            bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
+            bond.id = ''
 
     return render_template("update_hold_bond.html", bond=bond)
 
@@ -96,13 +111,25 @@ def find_bond_by_code():
 @app.route('/save_hold_bond.html', methods=['POST'])
 @login_required
 def save_hold_bond():
-    hold_bond = HoldBond()
+    id = request.form['id']
+    hold_bond = None
+    if id is None or id.strip(' ') == '':
+        #新增操作
+        hold_bond = HoldBond()
+    else:
+        # 更新操作
+        hold_bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
 
     bond_code = request.form['bond_code']
     if bond_code is None or bond_code.strip(' ') == '':
         raise Exception('转债代码不能为空')
 
     hold_bond.bond_code = bond_code
+
+    if bond_code.startswith('11'):
+        hold_bond.hold_unit = 10
+    else:
+        hold_bond.hold_unit = 1
 
     cb_name_id = request.form['bond_name']
     if cb_name_id is None or cb_name_id.strip(' ') == '':
@@ -136,15 +163,11 @@ def save_hold_bond():
     if memo is not None and memo.strip(' ') != '':
         hold_bond.memo = memo
 
-    id = request.form['id']
-    if id is not None:
-        hold_bond.id = id
-        db.session.update(hold_bond)
-    else:
+    if id is None or id.strip(' ') == '':
         db.session.add(hold_bond)
     db.session.commit()
 
-    return my_view()
+    return redirect(request.form['back_url'])
 
 @app.route('/save_jsl_bond_data.html', methods=['POST'])
 @login_required
@@ -171,6 +194,14 @@ def up_down_view():
 def my_view():
     common.init_cb_sum_data()
     title, navbar, content = view_my.draw_my_view(False)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@app.route('/view_my_account.html')
+@login_required
+def my_account_view():
+    common.init_cb_sum_data()
+    title, navbar, content = view_my_account.draw_my_view(False)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @app.route('/view_market.html')
@@ -244,6 +275,28 @@ def save_db_data():
     return 'OK'
 
 
+@app.route('/query_database.html', methods=['POST', 'GET'])
+@login_required
+def query_database():
+    table_html = ''
+    sql_code = ''
+    if len(request.form) > 0:
+        sql_code = request.form['sql_code']
+        if sql_code is None or sql_code.strip(' ') == '':
+            raise Exception('SQL不能为空')
+
+        if not sql_code.lower().strip().startswith('select'):
+            raise Exception("仅允许select操作")
+
+        conn = sqlite3.connect("db/cb.db3")
+        cur = conn.cursor()
+        cur.execute(sql_code)
+        table = from_db_cursor(cur)
+        table_html = table.get_html_string()
+
+    return render_template("query_database.html", table_html=table_html, sql_code=sql_code)
+
+
 @app.route('/update_database.html')
 @login_required
 def update_database():
@@ -257,7 +310,7 @@ def execute_sql():
     if sql_code is None or sql_code.strip(' ') == '':
         raise Exception('SQL不能为空')
 
-    if sql_code.lower().strip().startswith('update') or sql_code.lower().strip().startswith('insert'):
+    if not sql_code.lower().strip().startswith('update') and not sql_code.lower().strip().startswith('insert'):
         raise Exception("仅允许update/insert操作")
 
     con = sqlite3.connect('db/cb.db3')

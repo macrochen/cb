@@ -29,13 +29,13 @@ plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
 
 def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
-                        color=None, remark_fields_color=[]):
+                        color=None, remark_fields_color=[], link_fields={}):
     table = from_db(cur, field_names, rows)
 
     if len(table._rows) == 0:
         return html
 
-    return html + common.get_html_string(table, remark_fields_color)
+    return html + common.get_html_string(table, remark_fields_color,link_fields)
 
 def from_db(cursor, field_names, rows, **kwargs):
     if cursor.description:
@@ -86,7 +86,7 @@ order by 涨跌 desc
         # =========我的转债涨跌TOP20表格=========
 
         cur.execute("""
-    SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
+    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
         cb_price2_id as 转债价格, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)',round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏,   
         round(cb_premium_id*100,2) as 溢价率, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         remain_amount as '余额(亿元)',round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
@@ -116,12 +116,12 @@ order by 涨跌 desc
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from (select * from (SELECT DISTINCT c. * from changed_bond c, (select * 
+    from (select * from (SELECT DISTINCT c. *, h.id from changed_bond c, (select * 
             from hold_bond where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) h where  c.bond_code = h.bond_code  order by cb_mov2_id DESC limit 10)     
 UNION  
-select * from (SELECT DISTINCT c. * from changed_bond c, hold_bond h where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 10)) c, 
+select * from (SELECT DISTINCT c. *, h.id from changed_bond c, hold_bond h where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 10)) c, 
 stock_report s, (select * 
             from hold_bond where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
@@ -130,7 +130,7 @@ stock_report s, (select *
     order  by cb_mov2_id desc
             """)
 
-        html = generate_table_html("涨跌TOP10", cur, html, need_title=False, remark_fields_color=['策略', '盈亏', '到期收益率', '溢价率', '可转债涨跌'])
+        html = generate_table_html("涨跌TOP10", cur, html, need_title=False, remark_fields_color=['策略', '盈亏', '到期收益率', '溢价率', '可转债涨跌'], link_fields={'成本(量)': common.make_link})
 
         # =========全网可转债涨跌TOP20柱状图=========
 

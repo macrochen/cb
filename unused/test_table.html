@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+
+
+
+
+table {
+  table-layout: fixed;
+  width: 100%;
+  *margin-left: -100px; /*ie7*/
+}
+td, th {
+  vertical-align: top;
+  border-top: 1px solid #ccc;
+  padding: 10px;
+  width: 100px;
+}
+.fix1 {
+  position: absolute;
+  *position: relative; /*ie7*/
+  margin-left: -100px;
+  width: 100px;
+}
+.outer {
+  position: relative;
+}
+.inner {
+  overflow-x: scroll;
+  overflow-y: visible;
+  width: 400px;
+  margin-left: 100px;
+}
+
+
+
+
+</style>
+<body>
+<div class="outer">
+  <div class="inner">
+    <table>
+      <tr>
+        <th class=fix1></th>
+        <th>Col 1</th>
+        <th>Col 2</th>
+        <th>Col 3</th>
+        <th>Col 4</th>
+        <th class="fix">Col 5</th>
+      </tr>
+      <tr>
+        <th class=fix1>Header A</th>
+        <td>col 1 - A</td>
+        <td>col 2 - A (WITH LONGER CONTENT)</td>
+        <td>col 3 - A</td>
+        <td>col 4 - A</td>
+        <td class=fix>col 5 - A</td>
+      </tr>
+      <tr>
+        <th class=fix1>Header B</th>
+        <td>col 1 - B</td>
+        <td>col 2 - B</td>
+        <td>col 3 - B</td>
+        <td>col 4 - B</td>
+        <td class=fix>col 5 - B</td>
+      </tr>
+      <tr>
+        <th class=fix1>Header C</th>
+        <td>col 1 - C</td>
+        <td>col 2 - C</td>
+        <td>col 3 - C</td>
+        <td>col 4 - C</td>
+        <td class=fix>col 5 - C</td>
+      </tr>
+    </table>
+  </div>
+</div>
+</body>
+</html>

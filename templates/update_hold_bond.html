@@ -109,7 +109,8 @@
     <br/>
     <div class="container">
         <form class="needs-validation" novalidate action="/save_hold_bond.html" method="post">
-            <input type="hidden" name="id" value="{{ bond.id}}">
+            <input type="hidden" name="id" id="id" value="{{ bond['id']}}">
+            <input type="hidden" name="back_url" value="{{ request.referrer}}">
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="bond_code" style="display: block">转债代码</label>
@@ -153,9 +154,15 @@
                         <option value="">Choose...</option>
                         <option value="华宝"{% if bond.account=='华宝' %} selected="selected"{% endif %}>华宝证券</option>
                         <option value="银河"{% if bond.account=='银河' %} selected="selected"{% endif %}>银河证券</option>
+                        <option value="华泰"{% if bond.account=='华泰' %} selected="selected"{% endif %}>华泰证券</option>
+                        <option value="财通"{% if bond.account=='财通' %} selected="selected"{% endif %}>财通证券</option>
+                        <option value="其他"{% if bond.account=='其他' %} selected="selected"{% endif %}>其他</option>
                     </select>
-
+                    <div class="invalid-feedback">
+                        必须指定策略类型
+                    </div>
                 </div>
+
                 <div class="col-md-6 mb-3">
                     <label for="strategy_type">策&nbsp;&nbsp;&nbsp;略</label>
                     <select class="custom-select d-block w-100" id="strategy_type" name="strategy_type" required style="height: 35px">
@@ -226,25 +233,6 @@
                 alert("occur exception. not find bond by code:" + $("#bond_code").val())
             })
             }
-
-              // document.getElementById('btn_query_bond').addEventListener('click', function (event){
-              //       $.get("/find_bond_by/" + $("#bond_code").val(), function (data, status) {
-              //           // alert(data)
-              //           if (status == 'success') {
-              //               $("#bond_name").val(data['cb_name_id']);
-              //               $("#hold_price").val(data['hold_price']);
-              //               $("#hold_amount").val(data['hold_amount']);
-              //               $("#account").val(data['account']);
-              //               $("#strategy_type").val(data['strategy_type']);
-              //               $("#memo").val(data['memo'])
-              //           } else {
-              //               alert("status is failure. not find bond by code:" + $("#bond_code").val())
-              //           }
-              //       }).error(function (XMLHttpRequest, status, error){
-              //           alert("occur exception. not find bond by code:" + $("#bond_code").val())
-              //       })
-              //
-              //   })
 
             }, false);
 
