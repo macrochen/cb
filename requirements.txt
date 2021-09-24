@@ -1,13 +1,15 @@
-numpy
-matplotlib
-PrettyTable
-requests
-bs4
-html5lib
+<<<<<<< HEAD
+numpy==1.21.2
+matplotlib==3.4.3
+prettytable==2.2.0
+requests==2.26.0
+beautifulsoup4==4.10.0
+html5lib==1.1
 lxml
-pyecharts
-selenium
-flask
-flask_login
-flask_sqlalchemy
+pyecharts==1.9.0
+selenium==3.141.0
+Flask==2.0.1
+Flask-Login==0.5.0
+Flask-SQLAlchemy==2.5.1
 uwsgi
+

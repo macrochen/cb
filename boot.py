@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+import os
+import sqlite3
 
-from flask import render_template, request, url_for, redirect, flash
+from flask import render_template, request, url_for, redirect, flash, send_from_directory, session
 from flask_login import login_user, login_required, logout_user, current_user
 
 from config import app, db
 from models import User, ChangedBond, HoldBond
+
+from prettytable import from_db_cursor
 
 import cb_jsl
 import cb_ninwen
@@ -15,6 +19,7 @@ import stock_eastmoney
 import stock_xueqiu
 import view_market
 import view_my
+import view_my_account
 import view_up_down
 
 from flask_login import LoginManager
@@ -46,19 +51,57 @@ def login():
 
     return render_template('index.html')
 
+@app.route('/logout.html')
+def logout():
+    logout_user()
+
+    return render_template('index.html')
+
 
 @app.route('/update_hold_bond.html')
+@app.route('/update_hold_bond.html/<id>/')
+@app.route('/add_hold_bond.html/<bond_code>/')
 @login_required
-def update_hold_bond():
-    return render_template("update_hold_bond.html")
+def update_hold_bond(id='', bond_code=''):
+    bond = None
+    if id != '':
+        bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
+    elif bond_code != '':
+        # 先查持有的
+        bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.hold_amount > -1).first()
+        if bond is None:
+            # 没找到, 再查删除的
+            bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.hold_amount == -1).first()
 
-@app.route('/find_bond_by/<string:bond_code>', methods=['GET'])
+        # 没有持有过, 转添加操作
+        if bond is None:
+            bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
+            bond.id = ''
+
+    return render_template("update_hold_bond.html", bond=bond)
+
+@app.route('/find_bond_by.html', methods=['GET'])
 @login_required
-def find_bond_by_code(bond_code):
+def find_bond_by_code():
+    bond_code = request.args.get("bond_code")
+    bond_name = request.args.get("bond_name")
     # fixme 打新和其他策略可能同时存在
-    bond = HoldBond.query.filter_by(bond_code=bond_code).first()
+    # 先找hold_amount>-1的,没有再找hold_amount=-1的
+    bond = None
+    if bond_code != '':
+        bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.hold_amount > -1).first()
+        if bond is None:
+            bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code).first()
+    elif bond_name != '':
+        bond = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%'), HoldBond.hold_amount > -1).first()
+        if bond is None:
+            bond = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%')).first()
+
     if bond is None:
-        bond = ChangedBond.query.filter_by(bond_code=bond_code).first()
+        if bond_code != '':
+            bond = ChangedBond.query.filter_by(bond_code=bond_code).first()
+        elif bond_name != '':
+            bond = ChangedBond.query.filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).first()
         if bond is not None:
             return dict(bond)
         raise Exception('not find bond by code: ' + bond_code)
@@ -68,13 +111,25 @@ def find_bond_by_code(bond_code):
 @app.route('/save_hold_bond.html', methods=['POST'])
 @login_required
 def save_hold_bond():
-    hold_bond = HoldBond()
+    id = request.form['id']
+    hold_bond = None
+    if id is None or id.strip(' ') == '':
+        #新增操作
+        hold_bond = HoldBond()
+    else:
+        # 更新操作
+        hold_bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
 
     bond_code = request.form['bond_code']
     if bond_code is None or bond_code.strip(' ') == '':
         raise Exception('转债代码不能为空')
 
     hold_bond.bond_code = bond_code
+
+    if bond_code.startswith('11'):
+        hold_bond.hold_unit = 10
+    else:
+        hold_bond.hold_unit = 1
 
     cb_name_id = request.form['bond_name']
     if cb_name_id is None or cb_name_id.strip(' ') == '':
@@ -83,8 +138,8 @@ def save_hold_bond():
     hold_bond.cb_name_id = cb_name_id
 
     hold_amount = request.form['hold_amount']
-    if hold_amount is None or hold_amount.strip(' ') == '' or int(hold_amount.strip(' ')) <= 0:
-        raise Exception('持有数量不能为空且大于零')
+    if hold_amount is None or hold_amount.strip(' ') == '':
+        raise Exception('持有数量不能为空')
 
     hold_bond.hold_amount = int(hold_amount)
 
@@ -108,10 +163,11 @@ def save_hold_bond():
     if memo is not None and memo.strip(' ') != '':
         hold_bond.memo = memo
 
-    db.session.add(hold_bond)
+    if id is None or id.strip(' ') == '':
+        db.session.add(hold_bond)
     db.session.commit()
 
-    return my_view()
+    return redirect(request.form['back_url'])
 
 @app.route('/save_jsl_bond_data.html', methods=['POST'])
 @login_required
@@ -140,10 +196,20 @@ def my_view():
     title, navbar, content = view_my.draw_my_view(False)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
+
+@app.route('/view_my_account.html')
+@login_required
+def my_account_view():
+    common.init_cb_sum_data()
+    title, navbar, content = view_my_account.draw_my_view(False)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
 @app.route('/view_market.html')
 def market_view():
+    # current_user = None
+    user_id = session.get('_user_id')
     common.init_cb_sum_data()
-    title, navbar, content = view_market.draw_market_view(False, False)
+    title, navbar, content = view_market.draw_market_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @app.route('/jsl_update_data.html')
@@ -175,6 +241,82 @@ def stock_eastmoney_update_data():
 @login_required
 def stock_xueqiu_update_data():
     return stock_xueqiu.fetch_data()
+
+@app.route('/download_db_data.html')
+@login_required
+def download_db_data():
+    con = sqlite3.connect('db/cb.db3')
+    file_name = 'dump/data.sql'
+    with open(file_name, 'w') as f:
+        for line in con.iterdump():
+            f.write('%s\n' % line)
+
+    # 需要知道2个参数, 第1个参数是本地目录的path, 第2个参数是文件名(带扩展名)
+    directory = os.getcwd()  # 假设在当前目录
+    return send_from_directory(directory, file_name, as_attachment=True)
+
+@app.route('/upload_db_data.html')
+@login_required
+def upload_db_data():
+    return render_template("upload_db_data.html")
+
+@app.route('/save_db_data.html', methods=['POST'])
+@login_required
+def save_db_data():
+    # 删除整个db
+    os.unlink("db/cb.db3")
+    # 获取文件(字符串?)
+    file = request.files['file']
+    s = file.read().decode('utf-8')
+    # 灌入上传的数据
+    con = sqlite3.connect('db/cb.db3')
+    con.executescript(s)
+
+    return 'OK'
+
+
+@app.route('/query_database.html', methods=['POST', 'GET'])
+@login_required
+def query_database():
+    table_html = ''
+    sql_code = ''
+    if len(request.form) > 0:
+        sql_code = request.form['sql_code']
+        if sql_code is None or sql_code.strip(' ') == '':
+            raise Exception('SQL不能为空')
+
+        if not sql_code.lower().strip().startswith('select'):
+            raise Exception("仅允许select操作")
+
+        conn = sqlite3.connect("db/cb.db3")
+        cur = conn.cursor()
+        cur.execute(sql_code)
+        table = from_db_cursor(cur)
+        table_html = table.get_html_string()
+
+    return render_template("query_database.html", table_html=table_html, sql_code=sql_code)
+
+
+@app.route('/update_database.html')
+@login_required
+def update_database():
+    return render_template("update_database.html")
+
+
+@app.route('/execute_sql.html', methods=['POST'])
+@login_required
+def execute_sql():
+    sql_code = request.form['sql_code']
+    if sql_code is None or sql_code.strip(' ') == '':
+        raise Exception('SQL不能为空')
+
+    if not sql_code.lower().strip().startswith('update') and not sql_code.lower().strip().startswith('insert'):
+        raise Exception("仅允许update/insert操作")
+
+    con = sqlite3.connect('db/cb.db3')
+    con.executescript(sql_code)
+
+    return 'OK'
 
 
 if __name__ == "__main__":

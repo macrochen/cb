@@ -1,7 +1,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <link rel="icon" href="/img/favicon.ico">
+        <link rel="icon" href="/static/img/favicon.ico">
         <script src="https://code.z01.com/v4/dist/js/popper.min.js"></script>
         <link rel="stylesheet" href="https://code.z01.com/v4/dist/css/bootstrap.min.css" >
 
@@ -109,32 +109,37 @@
     <br/>
     <div class="container">
         <form class="needs-validation" novalidate action="/save_hold_bond.html" method="post">
+            <input type="hidden" name="id" id="id" value="{{ bond['id']}}">
+            <input type="hidden" name="back_url" value="{{ request.referrer}}">
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="bond_code" style="display: block">转债代码</label>
-                    <input type="text" class="form-control" id="bond_code" name="bond_code" placeholder="" value="" required style="width: 220px;display: inline">&nbsp;&nbsp;&nbsp;
-                    <input type="button" id="btn_query_bond" class="btn btn-primary btn-lg btn-block" style="margin-bottom:2px;width: 70px;height: 32px;font-size: 12px;display: inline" value="查&nbsp;&nbsp;询">
+                    <input type="text" class="form-control" id="bond_code" name="bond_code" placeholder="" value="{{ bond['bond_code'] }}">&nbsp;&nbsp;&nbsp;
                     <div class="invalid-feedback">
                         必须指定转债代码
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="bond_name">转债名称</label>
-                    <input type="text" class="form-control" id="bond_name" name="bond_name" value="" readonly="readonly">
+                    <input type="text" class="form-control" id="bond_name" name="bond_name" value="{{ bond['cb_name_id'] }}" required >
+
+                    <div class="invalid-feedback">
+                        必须指定转债名称
+                    </div>
                 </div>
             </div>
             <br/>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="hold_amount">数&nbsp;&nbsp;&nbsp;量</label>
-                    <input type="number" class="form-control" id="hold_amount" name="hold_amount" placeholder="" required>
+                    <input type="number" class="form-control" id="hold_amount" name="hold_amount" value="{{ bond['hold_amount'] }}" placeholder="" required>
                     <div class="invalid-feedback" style="width: 100%;">
                        必须指定数量
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="hold_price">价&nbsp;&nbsp;&nbsp;格</label>
-                    <input type="text" class="form-control" id="hold_price" name="hold_price" placeholder="" required>
+                    <input type="text" class="form-control" id="hold_price" name="hold_price" value="{{ bond['hold_price'] }}" placeholder="" required>
                     <div class="invalid-feedback">
                         必须指定价格
                     </div>
@@ -147,25 +152,31 @@
                     <label for="account">账&nbsp;&nbsp;&nbsp;户</label>
                     <select class="custom-select d-block w-100" id="account" name="account" style="height: 35px">
                         <option value="">Choose...</option>
-                        <option value="华宝">华宝证券</option>
-                        <option value="银河">银河证券</option>
+                        <option value="华宝"{% if bond.account=='华宝' %} selected="selected"{% endif %}>华宝证券</option>
+                        <option value="银河"{% if bond.account=='银河' %} selected="selected"{% endif %}>银河证券</option>
+                        <option value="华泰"{% if bond.account=='华泰' %} selected="selected"{% endif %}>华泰证券</option>
+                        <option value="财通"{% if bond.account=='财通' %} selected="selected"{% endif %}>财通证券</option>
+                        <option value="其他"{% if bond.account=='其他' %} selected="selected"{% endif %}>其他</option>
                     </select>
-
+                    <div class="invalid-feedback">
+                        必须指定策略类型
+                    </div>
                 </div>
+
                 <div class="col-md-6 mb-3">
                     <label for="strategy_type">策&nbsp;&nbsp;&nbsp;略</label>
                     <select class="custom-select d-block w-100" id="strategy_type" name="strategy_type" required style="height: 35px">
                         <option value="">Choose...</option>
-                        <option value="回售">回售</option>
-                        <option value="双低">双低</option>
-                        <option value="低余额">低余额</option>
-                        <option value="高收益">高收益</option>
-                        <option value="网格">网格</option>
-                        <option value="打新">打新</option>
-                        <option value="基本面">基本面</option>
-                        <option value="多因子">多因子</option>
-                        <option value="双低轮动">双低轮动</option>
-                        <option value="其他">其他</option>
+                        <option value="回售"{% if bond.strategy_type=='回售' %} selected="selected"{% endif %}>回售</option>
+                        <option value="双低"{% if bond.strategy_type=='双低' %} selected="selected"{% endif %}>双低</option>
+                        <option value="低余额"{% if bond.strategy_type=='低余额' %} selected="selected"{% endif %}>低余额</option>
+                        <option value="高收益"{% if bond.strategy_type=='高收益' %} selected="selected"{% endif %}>高收益</option>
+                        <option value="网格"{% if bond.strategy_type=='网格' %} selected="selected"{% endif %}>网格</option>
+                        <option value="打新"{% if bond.strategy_type=='打新' %} selected="selected"{% endif %}>打新</option>
+                        <option value="基本面"{% if bond.strategy_type=='基本面' %} selected="selected"{% endif %}>基本面</option>
+                        <option value="多因子"{% if bond.strategy_type=='多因子' %} selected="selected"{% endif %}>多因子</option>
+                        <option value="双低轮动"{% if bond.strategy_type=='双低轮动' %} selected="selected"{% endif %}>双低轮动</option>
+                        <option value="其他"{% if bond.strategy_type=='其他' %} selected="selected"{% endif %}>其他</option>
                     </select>
                     <div class="invalid-feedback">
                         必须指定策略类型
@@ -177,7 +188,7 @@
 
             <div class="mb-3">
                 <label for="memo">备注</label>
-                <textarea class="form-control" rows="5" cols="10" name="memo" id="memo" style="width: 500px"></textarea>
+                <textarea class="form-control" rows="5" cols="10" name="memo" id="memo" style="width: 500px">{{ bond['memo'] }}</textarea>
             </div>
             <br/>
             <center>
@@ -200,25 +211,28 @@
                 }, false);
               });
 
+            $("#bond_name").bind("input propertychange",dd);
+            $("#bond_code").bind("input propertychange",dd);
 
-              document.getElementById('btn_query_bond').addEventListener('click', function (event){
-                    $.get("/find_bond_by/" + $("#bond_code").val(), function (data, status) {
-                        // alert(data)
-                        if (status == 'success') {
-                            $("#bond_name").val(data['cb_name_id']);
-                            $("#hold_price").val(data['hold_price']);
-                            $("#hold_amount").val(data['hold_amount']);
-                            $("#account").val(data['account']);
-                            $("#strategy_type").val(data['strategy_type']);
-                            $("#memo").val(data['memo'])
-                        } else {
-                            alert("status is failure. not find bond by code:" + $("#bond_code").val())
-                        }
-                    }).error(function (XMLHttpRequest, status, error){
-                        alert("occur exception. not find bond by code:" + $("#bond_code").val())
-                    })
-
-                })
+            function dd(event){
+              $.get("/find_bond_by.html?bond_code=" + $("#bond_code").val() + "&bond_name=" + $("#bond_name").val(), function (data, status) {
+                // alert(data)
+                if (status == 'success') {
+                    $("#id").val(data['id']);
+                    $("#bond_code").val(data['bond_code']);
+                    $("#bond_name").val(data['cb_name_id']);
+                    $("#hold_price").val(data['hold_price']);
+                    $("#hold_amount").val(data['hold_amount']);
+                    $("#account").val(data['account']);
+                    $("#strategy_type").val(data['strategy_type']);
+                    $("#memo").val(data['memo'])
+                } else {
+                    alert("status is failure. not find bond by code:" + $("#bond_code").val())
+                }
+            }).error(function (XMLHttpRequest, status, error){
+                alert("occur exception. not find bond by code:" + $("#bond_code").val())
+            })
+            }
 
             }, false);
 

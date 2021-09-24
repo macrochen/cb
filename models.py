@@ -34,6 +34,7 @@ class HoldBond(db.Model):
     cb_name_id = db.Column(db.String(20))
     hold_price = db.Column(db.Float())
     hold_amount = db.Column(db.Integer)
+    hold_unit = db.Column(db.Integer)
     account = db.Column(db.String(20))
     strategy_type = db.Column(db.String(20))
     memo = db.Column(db.String(1024))
