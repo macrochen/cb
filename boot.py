@@ -5,8 +5,9 @@ import sqlite3
 from flask import render_template, request, url_for, redirect, flash, send_from_directory, session
 from flask_login import login_user, login_required, logout_user, current_user
 
+import view_my_select
 from config import app, db
-from models import User, ChangedBond, HoldBond
+from models import User, ChangedBond, HoldBond, ChangedBondSelect
 
 from prettytable import from_db_cursor
 
@@ -18,7 +19,7 @@ import stock_10jqka
 import stock_eastmoney
 import stock_xueqiu
 import view_market
-import view_my
+import view_my_strategy
 import view_my_account
 import view_up_down
 
@@ -58,11 +59,11 @@ def logout():
     return render_template('index.html')
 
 
-@app.route('/update_hold_bond.html')
-@app.route('/update_hold_bond.html/<id>/')
-@app.route('/add_hold_bond.html/<bond_code>/')
+@app.route('/edit_hold_bond.html')
+@app.route('/edit_hold_bond_by_id.html/<id>/')
+@app.route('/edit_hold_bond.html/<bond_code>/')
 @login_required
-def update_hold_bond(id='', bond_code=''):
+def edit_hold_bond(id='', bond_code=''):
     bond = None
     if id != '':
         bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
@@ -78,7 +79,7 @@ def update_hold_bond(id='', bond_code=''):
             bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
             bond.id = ''
 
-    return render_template("update_hold_bond.html", bond=bond)
+    return render_template("edit_hold_bond.html", bond=bond)
 
 @app.route('/find_bond_by.html', methods=['GET'])
 @login_required
@@ -107,6 +108,87 @@ def find_bond_by_code():
         raise Exception('not find bond by code: ' + bond_code)
     else:
         return dict(bond)
+
+
+@app.route('/view_my_select.html')
+@login_required
+def my_select_view():
+    user_id = session.get('_user_id')
+    title, navbar, content = view_my_select.draw_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@app.route('/edit_changed_bond_select.html')
+@app.route('/edit_changed_bond_select.html/<bond_code>/')
+@login_required
+def edit_changed_bond_select(bond_code=''):
+    bond = None
+    if bond_code != '':
+        bond = db.session.query(ChangedBondSelect).filter(ChangedBondSelect.bond_code == bond_code).first()
+
+    return render_template("edit_changed_bond_select.html", bond=bond)
+
+
+@app.route('/find_changed_bond_select_by_code.html', methods=['GET'])
+@login_required
+def find_changed_bond_select_by_code():
+    bond_code = request.args.get("bond_code")
+    bond_name = request.args.get("bond_name")
+    bond = None
+    if bond_code != '':
+        bond = db.session.query(ChangedBondSelect).filter(ChangedBondSelect.bond_code == bond_code).first()
+        if bond is None:
+            bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
+            if bond is not None:
+                bond.id = ''
+    elif bond_name != '':
+        bond = db.session.query(ChangedBondSelect).filter(ChangedBondSelect.cb_name_id.like('%' + bond_name + '%')).first()
+        if bond is None:
+            bond = db.session.query(ChangedBond).filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).first()
+            if bond is not None:
+                bond.id = ''
+
+    if bond is None:
+        raise Exception('not find bond by code/name: ' + bond_code + "," + bond_name)
+    else:
+        return dict(bond)
+
+@app.route('/save_changed_bond_select.html', methods=['POST'])
+@login_required
+def save_changed_bond_select():
+    id = request.form['id']
+    changed_bond_select = None
+    if id is None or id.strip(' ') == '':
+        changed_bond_select = ChangedBondSelect()
+    else:
+        changed_bond_select = db.session.query(ChangedBondSelect).filter(ChangedBondSelect.id == id).first()
+
+    bond_code = request.form['bond_code']
+    if bond_code is None or bond_code.strip(' ') == '':
+        raise Exception('转债代码不能为空')
+
+    changed_bond_select.bond_code = bond_code
+
+    cb_name_id = request.form['cb_name_id']
+    if cb_name_id is None or cb_name_id.strip(' ') == '':
+        raise Exception('转债名称不能为空')
+
+    changed_bond_select.cb_name_id = cb_name_id
+
+    strategy_type = request.form['strategy_type']
+    if strategy_type is not None and strategy_type.strip(' ') != '':
+        changed_bond_select.strategy_type = strategy_type
+
+    memo = request.form['memo']
+    if memo is not None and memo.strip(' ') != '':
+        changed_bond_select.memo = memo
+
+    if id is None or id.strip(' ') == '':
+        db.session.add(changed_bond_select)
+    db.session.commit()
+
+    return redirect(request.form['back_url'])
+
 
 @app.route('/save_hold_bond.html', methods=['POST'])
 @login_required
@@ -186,22 +268,25 @@ def sync_jsl_bond_data():
 @app.route('/view_up_down.html')
 @login_required
 def up_down_view():
-    title, navbar, content = view_up_down.draw_view(False, False)
+    user_id = session.get('_user_id')
+    title, navbar, content = view_up_down.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
-@app.route('/view_my.html')
+@app.route('/view_my_strategy.html')
 @login_required
-def my_view():
+def my_strategy_view():
+    user_id = session.get('_user_id')
     common.init_cb_sum_data()
-    title, navbar, content = view_my.draw_my_view(False)
+    title, navbar, content = view_my_strategy.draw_my_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
 @app.route('/view_my_account.html')
 @login_required
 def my_account_view():
+    user_id = session.get('_user_id')
     common.init_cb_sum_data()
-    title, navbar, content = view_my_account.draw_my_view(False)
+    title, navbar, content = view_my_account.draw_my_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @app.route('/view_market.html')

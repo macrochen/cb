@@ -33,50 +33,9 @@ select = [
     "其他",
 ]
 
-myCb = {}
-
-def generate_table_html(type, cur, html, need_title = True, ignore_table = False, field_names = None, rows = None,
-                        remark_fields_color=[], htmls={}, subtitle=''):
-    table = from_db(cur, field_names, rows)
-
-    if len(table._rows) == 0:
-        return html
-
-    if ignore_table is False:
-        myCb[type] = table
-
-    common.add_nav_html(htmls, type)
-
-    title = ''
-    if need_title:
-        # 首行加两个换行, 避免被但导航栏遮挡
-        return html + """
-            <div id=\"""" + type + """\">""" + ('' if len(html) > 0 else '<br/><br/>') + """
-                <br><br><center><font size='4'><b> =========我的""" + type + """账户=========</b></font></center>""" \
-               + ('' if len(subtitle) == 0 else """<center> """ + subtitle + """</center>""") + """<br>
-                
-                """ + common.get_html_string(table, remark_fields_color, link_fields={'数量': common.make_link}) + """
-            </div>
-            """
-    else:
-        return html + common.get_html_string(table, remark_fields_color, link_fields={'数量': common.make_link})
 
 
-
-def from_db(cursor, field_names, rows, **kwargs):
-    if cursor.description:
-        table = PrettyTable(**kwargs)
-        table.field_names = [col[0] for col in cursor.description]
-        if field_names is not None:
-            table.field_names.extend(field_names)
-        if rows is None:
-            rows = cursor.fetchall()
-        for row in rows:
-            table.add_row(row)
-        return table
-
-
-def draw_my_view(need_open_page):
+def draw_my_view(is_login_user):
     # 打开文件数据库
     con_file = sqlite3.connect('db/cb.db3')
     cur = con_file.cursor()
@@ -84,19 +43,20 @@ def draw_my_view(need_open_page):
 
         html = ''
         htmls = {'nav': '<li><a href="/">Home</a></li>'}
+        tables = {}
 
         # =========银河=========
         account = '银河'
-        html = generate_account_block(account, cur, html, htmls)
+        html = generate_account_block(account, cur, html, htmls, tables, is_login_user=is_login_user)
 
         # =========华宝=========
         #fixme 华宝证券的手和张要分开处理(如果是手, 要除以10)
         account = '华宝'
-        html = generate_account_block(account, cur, html, htmls, 'case when h.hold_unit = 10 then  h.hold_amount/10 else  h.hold_amount END')
+        html = generate_account_block(account, cur, html, htmls, tables, 'case when h.hold_unit = 10 then  h.hold_amount/10 else  h.hold_amount END', is_login_user=is_login_user)
 
         # =========其他=========
         account = '其他'
-        html = generate_account_block(account, cur, html, htmls)
+        html = generate_account_block(account, cur, html, htmls, tables, is_login_user=is_login_user)
 
         # 数据汇总
 
@@ -109,12 +69,13 @@ SELECT account as 账户,
     sum(h.hold_amount) as 数量,
     
     round(sum(h.hold_amount * h.hold_price),2) as 投入金额, 
+    round(sum(h.hold_amount * c.cb_price2_id),2) as 市值, 
     
-    round(sum(round((c.cb_price2_id/(1+c.cb_mov2_id) * c.cb_mov2_id)*h.hold_amount, 2)), 2) as '当日(浮)盈亏金额', 
-    round((round(sum(c.cb_price2_id*h.hold_amount)/sum(c.cb_price2_id/(1+c.cb_mov2_id)*h.hold_amount),4)-1)*100,2) || '%' as '当日收益率',
+    round(sum(round((c.cb_price2_id/(1+c.cb_mov2_id) * c.cb_mov2_id)*h.hold_amount, 2)), 2) as '日收益', 
+    round((round(sum(c.cb_price2_id*h.hold_amount)/sum(c.cb_price2_id/(1+c.cb_mov2_id)*h.hold_amount),4)-1)*100,2) || '%' as '日收益率',
     
-    round(sum(round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2)), 2) as '累积(浮)盈亏金额',   
-    round(sum(round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2)) /sum(h.hold_amount * c.cb_price2_id) * 100, 2) || '%' as 累积收益率
+    round(sum(round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2)), 2) as '持有收益',   
+    round(sum(round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2)) /sum(h.hold_amount * c.cb_price2_id) * 100, 2) || '%' as 持有收益率
 from hold_bond h , changed_bond c 
 where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP by account order by 投入金额 DESC        
         """)
@@ -123,6 +84,7 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
         dict_rows = []
         # 增加合计行
         total_money = 0
+        assets_money = 0
         total_profit = 0
         total_now_profit = 0
         total_now_profit_rate = 0
@@ -134,11 +96,13 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
             rows.append(row)
             dict_row = common.get_dict_row(cur, row)
             dict_rows.append(dict_row)
+            asset_row = dict_row['市值']
             money_row = dict_row['投入金额']
             money_rows.append(money_row)
             total_money += money_row
-            total_profit += dict_row['累积(浮)盈亏金额']
-            total_now_profit += dict_row['当日(浮)盈亏金额']
+            assets_money += asset_row
+            total_profit += dict_row['持有收益']
+            total_now_profit += dict_row['日收益']
             total_num += dict_row['个数']
             total_amount += dict_row['个数'] * dict_row['数量']
 
@@ -151,28 +115,20 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
 
         total_yield = round(total_profit / total_money * 100, 2)
         total_now_yield = round(total_now_profit / total_money * 100, 2)
-        new_rows.append(['合计', total_num, total_amount, round(total_money, 2), round(total_now_profit, 2), str(round(total_now_yield, 2))+'%', round(total_profit, 2), str(total_yield) + '%', '100%'])
+        new_rows.append(['合计', total_num, total_amount, round(total_money, 2), round(assets_money, 2), round(total_now_profit, 2), str(round(total_now_yield, 2))+'%', round(total_profit, 2), str(total_yield) + '%', '100%'])
 
-        data = []
-        for row in dict_rows:
-            data.append([row['账户'], round(row['投入金额'], 2)])
-
-        pie = Pie(init_opts=opts.InitOpts(theme=ThemeType.SHINE))
-        pie.add("", data)
-        # pie.set_global_opts(title_opts=opts.TitleOpts(title="我的摊大饼策略分布"))
-        pie.set_global_opts(legend_opts=opts.LegendOpts(is_show=False))
-        pie.set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {d}%"))
-        pie_html = pie.render_embed('template.html', common.env)
+        pie_html = common.generate_pie_html(dict_rows, '账户', '投入金额')
 
         type = "统计"
-        sum_html = generate_table_html(type, cur, '', need_title=False, ignore_table=True, field_names=['投入占比'],
-                                       remark_fields_color=['当日(浮)盈亏金额', '当日收益率', '累积收益率', '累积(浮)盈亏金额'],
-                                       rows=new_rows, htmls={})
+        sum_html = common.generate_table_html(type, cur, '', need_title=False, field_names=['投入占比'],
+                                       remark_fields_color=['日收益', '日收益率', '持有收益率', '持有收益'],
+                                       rows=new_rows, htmls={}, ignore_fields=['投入金额'],
+                                              is_login_user=is_login_user)
 
         common.add_nav_html(htmls, type)
 
         # 用柱状图从大到小展示持有可转债涨跌幅情况
-        scatter_html = generate_scatter_html()
+        scatter_html = common.generate_scatter_html(tables, select)
 
         html += """
             <br/>
@@ -193,7 +149,8 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
         raise e
 
 
-def generate_account_block(account, cur, html, htmls, amount_field='h.hold_amount'):
+
+def generate_account_block(account, cur, html, htmls, tables, amount_field='h.hold_amount', is_login_user=False):
     cur.execute("""
    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
 		--c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
@@ -202,7 +159,7 @@ def generate_account_block(account, cur, html, htmls, amount_field='h.hold_amoun
 		--case when h.hold_unit = 10 then  h.hold_amount/10 else  h.hold_amount END as 数量,
 		--h.hold_amount
 		 as 数量, 
-		h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, 
+		h.hold_price as '成本', round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, 
 		--remain_amount as '余额(亿元)', 
         --round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',
 		round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
@@ -220,140 +177,8 @@ def generate_account_block(account, cur, html, htmls, amount_field='h.hold_amoun
     and h.account = '""" + account + """'
     order by 数量, h.bond_code
         """)
-    html = generate_table_html(account, cur, html, htmls=htmls,
-                               remark_fields_color=['盈亏', '正股涨跌', '溢价率', '可转债涨跌'])
-    return html
+    return common.generate_table_html(account, cur, html, htmls=htmls, tables=tables,
+                                      remark_fields_color=['盈亏', '正股涨跌', '溢价率', '可转债涨跌'],
+                                      is_login_user=is_login_user)
 
 
-def generate_scatter_html():
-    # 用散点图展示
-    scatter = Scatter(opts.InitOpts(height='700px', width='1624px', theme=ThemeType.LIGHT))
-
-    # x = []
-    # y = []
-
-    for label, table in myCb.items():
-        if label not in select:
-            continue
-
-        x = []
-        y = []
-
-        rows = table._rows
-        for row in rows:
-            record = common.get_record(table, row)
-            x.append(record['转债价格'])
-            y.append([record['溢价率'].replace('%', '')*1, record['名称'].replace('转债', ''), record['数量']])
-
-        scatter.add_xaxis(x)
-
-        scatter.add_yaxis(
-            label,
-            y,
-            label_opts=opts.LabelOpts(
-                position='bottom',
-                formatter=JsCode(  # 调用js代码设置方法提取参数第2个值和参数第3个值
-                    "function(params){return params.value[2];}"
-                )
-            ),
-            # markarea_opts=opts.MarkAreaOpts(
-            #     is_silent=True,
-            #     itemstyle_opts=opts.ItemStyleOpts(
-            #         color='transparent',
-            #         border_type='dashed',
-            #         border_width=1,
-            #     ),
-            #     data=[
-            #         [
-            #             {
-            #                 'name': label,
-            #                 'xAxis': 'min',
-            #                 'yAxis': 'min',
-            #             },
-            #             {
-            #                 'xAxis': 'max',
-            #                 'yAxis': 'max'
-            #             }
-            #         ]
-            #
-            #     ]
-            # ),
-            # markpoint_opts=opts.MarkPointOpts(
-            #     data=[
-            #         {'type': 'max', 'name': 'Max'},
-            #         {'type': 'min', 'name': 'Min'}
-            #     ]
-            # ),
-            markline_opts=opts.MarkLineOpts(
-                linestyle_opts=opts.LineStyleOpts(type_='dashed'),
-                is_silent=True,
-                data=[
-                    opts.MarkLineItem(x=common.MID_X, name='转债价格中位数'),
-                    opts.MarkLineItem(y=common.MID_Y, name='转债溢价率中位数'),
-                ]
-            )
-        )
-
-    # scatter.add_xaxis(x)
-
-    scatter.set_global_opts(
-        title_opts=opts.TitleOpts(title="不同账户可转债分布情况", pos_left='center'),
-        tooltip_opts=opts.TooltipOpts(
-            formatter=JsCode(
-                "function (params) {return '价格:' + params.value[0] + '元<br/> 溢价率:' + params.value[1] + '%<br/> 数量:' + params.value[3];}"
-            )
-        ),
-        legend_opts=opts.LegendOpts(
-            pos_bottom=5,
-            # selected_mode='single'
-        ),
-        toolbox_opts=opts.ToolboxOpts(feature={
-            'dataZoom': {},
-        }
-        ),
-        # visualmap_opts=opts.VisualMapOpts(
-        #     type_="color", max_=150, min_=20, dimension=1
-        # ),
-        xaxis_opts=opts.AxisOpts(
-            # data=None,
-            type_='value',
-            name='转债价格(元)',
-            name_gap=30,
-            is_scale=True,
-            name_location='middle',
-            splitline_opts=opts.SplitLineOpts(is_show=False),
-            axislabel_opts=opts.LabelOpts(formatter='{value}元'),
-            axisline_opts=opts.AxisLineOpts(
-                is_on_zero=False,
-                symbol=['none', 'arrow']
-            )
-        ),
-        yaxis_opts=opts.AxisOpts(
-            type_='value',
-            name='转股溢价率(%)',
-            name_rotate=90,
-            name_gap=35,
-            name_location='middle',
-            is_scale=True,
-            axislabel_opts=opts.LabelOpts(formatter='{value}%'),
-            splitline_opts=opts.SplitLineOpts(is_show=False),
-            axisline_opts=opts.AxisLineOpts(
-                is_on_zero=False,
-                symbol=['none', 'arrow']
-            )
-        )
-    )
-    # scatter.set_series_opts(emphasis={
-    #     'focus': 'series'
-    # })
-    scatter_html = scatter.render_embed('template.html', common.env)
-    return scatter_html
-
-
-if __name__ == "__main__":
-    # draw_my_view(True, True)
-
-    common.init_cb_sum_data()
-
-    draw_my_view(True)
-    print("processing is successful")

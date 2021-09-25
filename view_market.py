@@ -119,7 +119,7 @@ def generate_strategy_html(con_file,
 
     html += """
     <div id=\"""" + type + """\">
-        """ + scatter_html + common.get_html_string(table, remark_fields_color) + """
+        """ + scatter_html + common.get_html_string(table, remark_fields_color, is_login_user=use_personal_features) + """
     </div>
     """
 

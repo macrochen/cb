@@ -29,29 +29,16 @@ plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
 
 def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
-                        color=None, remark_fields_color=[], link_fields={}):
-    table = from_db(cur, field_names, rows)
+                        color=None, remark_fields_color=[], is_login_user=False):
+    table = common.from_db(cur, field_names, rows)
 
     if len(table._rows) == 0:
         return html
 
-    return html + common.get_html_string(table, remark_fields_color,link_fields)
-
-def from_db(cursor, field_names, rows, **kwargs):
-    if cursor.description:
-        table = PrettyTable(**kwargs)
-        table.field_names = [col[0] for col in cursor.description]
-        if field_names is not None:
-            table.field_names.extend(field_names)
-        if rows is None:
-            rows = cursor.fetchall()
-        for row in rows:
-            table.add_row(row)
-        return table
+    return html + common.get_html_string(table, remark_fields_color, is_login_user=is_login_user)
 
 
-
-def draw_view(need_show_figure, need_open_page):
+def draw_view(is_login_user):
     # 打开文件数据库
     con_file = sqlite3.connect('db/cb.db3')
     cur = con_file.cursor()
@@ -130,7 +117,9 @@ stock_report s, (select *
     order  by cb_mov2_id desc
             """)
 
-        html = generate_table_html("涨跌TOP10", cur, html, need_title=False, remark_fields_color=['策略', '盈亏', '到期收益率', '溢价率', '可转债涨跌'], link_fields={'成本(量)': common.make_link})
+        html = generate_table_html("涨跌TOP10", cur, html, need_title=False,
+                                   remark_fields_color=['策略', '盈亏', '到期收益率', '溢价率', '可转债涨跌'],
+                                              is_login_user=is_login_user)
 
         # =========全网可转债涨跌TOP20柱状图=========
 
@@ -194,7 +183,9 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
         ORDER by cb_mov2_id DESC
                     """)
 
-        html = generate_table_html("全网涨跌TOP10", cur, html, need_title=False, remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌'])
+        html = generate_table_html("全网涨跌TOP10", cur, html, need_title=False,
+                                   remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌'],
+                                              is_login_user=is_login_user)
 
         con_file.close()
 
@@ -413,12 +404,3 @@ def generate_top_bar_html(rows, title):
 
     bar_html = bar.render_embed('template.html', common.env)
     return bar_html
-
-
-if __name__ == "__main__":
-    # 展示之前先更新一下数据
-    cb_jsl.fetch_data()
-    # draw_my_view(True, True)
-    print("fetch data is successful")
-    draw_view(False, True)
-    print("draw view is successful")

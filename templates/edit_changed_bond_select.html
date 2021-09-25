@@ -1,0 +1,207 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="icon" href="/static/img/favicon.ico">
+        <script src="https://code.z01.com/v4/dist/js/popper.min.js"></script>
+        <link rel="stylesheet" href="https://code.z01.com/v4/dist/css/bootstrap.min.css" >
+
+        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
+        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/bootsnav.css">
+
+
+        <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
+        <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
+        <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
+
+        <script type="text/javascript" src="/static/js/bootsnav.js"></script>
+        <title>编辑可转债笔记</title>
+        <style>
+            html,body {height: 100%;}
+
+            .navbar-brand{
+                padding: 29px 15px;
+                height: auto;
+            }
+            div.navbar.bootsnav{
+                background-color: #f8f8f8;
+                border-color: #e7e7e7;
+                margin-bottom: 10px;
+            }
+            .navbar-nav{
+                float: left;
+            }
+            div.navbar.bootsnav ul.nav > li > a{
+                color: #474747;
+                text-transform: uppercase;
+                padding: 20px;
+            }
+            div.navbar.bootsnav ul.nav > li:hover{
+                background: #f4f4f4;
+            }
+            .nav > li:after{
+                content: "";
+                width: 0;
+                height: 5px;
+                background: #34c9dd;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                transition: all 0.5s ease 0s;
+            }
+            .nav > li:hover:after{
+                width: 100%;
+            }
+            div.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after{
+                content: "+";
+                font-family: 'FontAwesome';
+                font-size: 16px;
+                font-weight: 500;
+                position: absolute;
+                top: 35%;
+                right: 10%;
+                transition: all 0.4s ease 0s;
+            }
+            div.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{
+                content: "\f105";
+                transform: rotate(90deg);
+            }
+            .dropdown-menu.multi-dropdown{
+                position: absolute;
+                left: -100% !important;
+            }
+            div.navbar.bootsnav li.dropdown ul.dropdown-menu{
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+                border: none;
+            }
+            @media only screen and (max-width:990px){
+                div.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after,
+                div.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{ content: " "; }
+                .dropdown-menu.multi-dropdown{ left: 0 !important; }
+                div.navbar.bootsnav ul.nav > li:hover{ background: transparent; }
+                div.navbar.bootsnav ul.nav > li > a{ margin: 0; }
+            }
+
+            .container {max-width: 700px;}
+            .border-top { border-top: 1px solid #e5e5e5; }
+            .border-bottom { border-bottom: 1px solid #e5e5e5; }
+            .border-top-gray { border-top-color: #adb5bd; }
+            .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+            .lh-condensed { line-height: 1.25; }
+        </style>
+    </head>
+    <body>
+      <div class="navbar navbar-default navbar-fixed-top navbar-mobile bootsnav" id="top_navbar">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <ul class="nav navbar-nav" data-in="fadeInDown" data-out="fadeOutUp">
+                <li><a href="/">Home</a></li>
+            </ul>
+        </div>
+      </div>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <div class="container">
+        <form class="needs-validation" novalidate action="/save_changed_bond_select.html" method="post">
+            <input type="hidden" name="id" id="id" value="{{ bond['id']}}">
+            <input type="hidden" name="back_url" value="{{ request.referrer}}">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="bond_code" style="display: block">转债代码</label>
+                    <input type="text" class="form-control" id="bond_code" name="bond_code" placeholder="" value="{{ bond['bond_code'] }}">&nbsp;&nbsp;&nbsp;
+                    <div class="invalid-feedback">
+                        必须指定转债代码
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="bond_name">转债名称</label>
+                    <input type="text" class="form-control" id="bond_name" name="cb_name_id" value="{{ bond['cb_name_id'] }}" required >
+
+                    <div class="invalid-feedback">
+                        必须指定转债名称
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="strategy_type">策&nbsp;&nbsp;&nbsp;略</label>
+                    <select class="custom-select d-block w-100" id="strategy_type" name="strategy_type" style="height: 35px">
+                        <option value="">Choose...</option>
+                        <option value="回售"{% if bond.strategy_type=='回售' %} selected="selected"{% endif %}>回售</option>
+                        <option value="双低"{% if bond.strategy_type=='双低' %} selected="selected"{% endif %}>双低</option>
+                        <option value="低余额"{% if bond.strategy_type=='低余额' %} selected="selected"{% endif %}>低余额</option>
+                        <option value="高收益"{% if bond.strategy_type=='高收益' %} selected="selected"{% endif %}>高收益</option>
+                        <option value="网格"{% if bond.strategy_type=='网格' %} selected="selected"{% endif %}>网格</option>
+                        <option value="打新"{% if bond.strategy_type=='打新' %} selected="selected"{% endif %}>打新</option>
+                        <option value="基本面"{% if bond.strategy_type=='基本面' %} selected="selected"{% endif %}>基本面</option>
+                        <option value="多因子"{% if bond.strategy_type=='多因子' %} selected="selected"{% endif %}>多因子</option>
+                        <option value="双低轮动"{% if bond.strategy_type=='双低轮动' %} selected="selected"{% endif %}>双低轮动</option>
+                        <option value="其他"{% if bond.strategy_type=='其他' %} selected="selected"{% endif %}>其他</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="memo">备&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;注</label>
+                    <textarea class="form-control" rows="5" cols="10" name="memo" id="memo" style="width: 500px">{{ bond['memo'] }}</textarea>
+                </div>
+            </div>
+            <br/>
+
+            <center>
+                <button class="btn btn-primary btn-lg btn-block" type="submit" style="width: 120px">提&nbsp;&nbsp;交</button>
+            </center>
+        </form>
+    </div>
+    <script>
+          (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+              var forms = document.getElementsByClassName('needs-validation');
+              var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                  if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }
+                  form.classList.add('was-validated');
+                }, false);
+              });
+
+            $("#bond_name").bind("input propertychange",dd);
+            $("#bond_code").bind("input propertychange",dd);
+
+            function dd(event){
+              $.get("/find_changed_bond_select_by_code.html?bond_code=" + $("#bond_code").val() + "&bond_name=" + $("#bond_name").val(), function (data, status) {
+                // alert(data)
+                if (status == 'success') {
+                    $("#id").val(data['id']);
+                    $("#bond_code").val(data['bond_code']);
+                    $("#bond_name").val(data['cb_name_id']);
+                    $("#strategy_type").val(data['strategy_type']);
+                    $("#memo").val(data['memo'])
+                } else {
+                    alert("status is failure. not find bond by code:" + $("#bond_code").val())
+                }
+            }).error(function (XMLHttpRequest, status, error){
+                alert("occur exception. not find bond by code:" + $("#bond_code").val())
+            })
+            }
+
+            }, false);
+
+          })();
+
+        </script>
+    </body>
+</html>
+        

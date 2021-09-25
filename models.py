@@ -28,6 +28,20 @@ class ChangedBond(db.Model):
         return getattr(self, item)
 
 
+class ChangedBondSelect(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    bond_code = db.Column(db.String(20))
+    cb_name_id = db.Column(db.String(20))
+    strategy_type = db.Column(db.String(20))
+    memo = db.Column(db.String(2048))
+
+    def keys(self):
+        return ('id', 'bond_code', 'cb_name_id', 'strategy_type', 'memo')
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+
 class HoldBond(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bond_code = db.Column(db.String(20))

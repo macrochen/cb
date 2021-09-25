@@ -3,6 +3,12 @@ import os
 import sqlite3
 
 from jinja2 import Environment, FileSystemLoader
+from prettytable import PrettyTable
+from pyecharts.charts import Pie
+from pyecharts import options as opts
+from pyecharts.globals import ThemeType
+from pyecharts.charts import Scatter
+from pyecharts.commons.utils import JsCode
 
 from selenium import webdriver
 
@@ -134,14 +140,193 @@ def update_cb_sum_data():
     driver.close()
 
 
-def make_link(id):
-    return '/update_hold_bond.html/' + id
+def generate_pie_html(dict_rows, key, value):
+    data = []
+    for row in dict_rows:
+        data.append([row[key], round(row[value], 2)])
+
+    pie = Pie(init_opts=opts.InitOpts(theme=ThemeType.SHINE))
+    pie.add("", data)
+    # pie.set_global_opts(title_opts=opts.TitleOpts(title="我的摊大饼策略分布"))
+    pie.set_global_opts(legend_opts=opts.LegendOpts(is_show=False))
+    pie.set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {d}%"))
+    pie_html = pie.render_embed('template.html', env)
+    return pie_html
+
+
+def generate_scatter_html(tables, select=None):
+    # 用散点图展示
+    scatter = Scatter(opts.InitOpts(height='700px', width='1624px', theme=ThemeType.LIGHT))
+
+    # x = []
+    # y = []
+
+    for label, table in tables.items():
+        if select is not None and label not in select:
+            continue
+
+        x = []
+        y = []
+
+        rows = table._rows
+        for row in rows:
+            record = get_record(table, row)
+            x.append(record['转债价格'])
+            y.append([record['溢价率'].replace('%', '')*1, record['名称'].replace('转债', '')])
+
+        scatter.add_xaxis(x)
+
+        scatter.add_yaxis(
+            label,
+            y,
+            label_opts=opts.LabelOpts(
+                position='bottom',
+                formatter=JsCode(  # 调用js代码设置方法提取参数第2个值和参数第3个值
+                    "function(params){return params.value[2];}"
+                )
+            ),
+            # markarea_opts=opts.MarkAreaOpts(
+            #     is_silent=True,
+            #     itemstyle_opts=opts.ItemStyleOpts(
+            #         color='transparent',
+            #         border_type='dashed',
+            #         border_width=1,
+            #     ),
+            #     data=[
+            #         [
+            #             {
+            #                 'name': label,
+            #                 'xAxis': 'min',
+            #                 'yAxis': 'min',
+            #             },
+            #             {
+            #                 'xAxis': 'max',
+            #                 'yAxis': 'max'
+            #             }
+            #         ]
+            #
+            #     ]
+            # ),
+            # markpoint_opts=opts.MarkPointOpts(
+            #     data=[
+            #         {'type': 'max', 'name': 'Max'},
+            #         {'type': 'min', 'name': 'Min'}
+            #     ]
+            # ),
+            markline_opts=opts.MarkLineOpts(
+                linestyle_opts=opts.LineStyleOpts(type_='dashed'),
+                is_silent=True,
+                data=[
+                    opts.MarkLineItem(x=MID_X, name='转债价格中位数'),
+                    opts.MarkLineItem(y=MID_Y, name='转债溢价率中位数'),
+                ]
+            )
+        )
+
+    # scatter.add_xaxis(x)
+
+    scatter.set_global_opts(
+        title_opts=opts.TitleOpts(title="不同策略可转债分布情况", pos_left='center'),
+        tooltip_opts=opts.TooltipOpts(
+            formatter=JsCode(
+                "function (params) {return '价格:' + params.value[0] + '元<br/> 溢价率:' + params.value[1] + '%';}"
+            )
+        ),
+        legend_opts=opts.LegendOpts(
+            pos_bottom=5,
+            # selected_mode='single'
+        ),
+        toolbox_opts=opts.ToolboxOpts(feature={
+            'dataZoom': {},
+        }
+        ),
+        # visualmap_opts=opts.VisualMapOpts(
+        #     type_="color", max_=150, min_=20, dimension=1
+        # ),
+        xaxis_opts=opts.AxisOpts(
+            # data=None,
+            type_='value',
+            name='转债价格(元)',
+            name_gap=30,
+            is_scale=True,
+            name_location='middle',
+            splitline_opts=opts.SplitLineOpts(is_show=False),
+            axislabel_opts=opts.LabelOpts(formatter='{value}元'),
+            axisline_opts=opts.AxisLineOpts(
+                is_on_zero=False,
+                symbol=['none', 'arrow']
+            )
+        ),
+        yaxis_opts=opts.AxisOpts(
+            type_='value',
+            name='转股溢价率(%)',
+            name_rotate=90,
+            name_gap=35,
+            name_location='middle',
+            is_scale=True,
+            axislabel_opts=opts.LabelOpts(formatter='{value}%'),
+            splitline_opts=opts.SplitLineOpts(is_show=False),
+            axisline_opts=opts.AxisLineOpts(
+                is_on_zero=False,
+                symbol=['none', 'arrow']
+            )
+        )
+    )
+    # scatter.set_series_opts(emphasis={
+    #     'focus': 'series'
+    # })
+    scatter_html = scatter.render_embed('template.html', env)
+    return scatter_html
+
+
+def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
+                        remark_fields_color=[],
+                        htmls={},
+                        tables=None,
+                        subtitle='',
+                        ignore_fields=[],
+                        is_login_user=False):
+    table = from_db(cur, field_names, rows)
+
+    if len(table._rows) == 0:
+        return html
+
+    if tables is not None:
+        tables[type] = table
+
+    add_nav_html(htmls, type)
+
+    title = ''
+    if need_title:
+        # 首行加两个换行, 避免被但导航栏遮挡
+        return html + """
+            <div id=\"""" + type + """\">""" + ('' if len(html) > 0 else '<br/><br/>') + """
+                <br><br><center><font size='4'><b> =========我的""" + type + """账户=========</b></font></center>""" \
+               + ('' if len(subtitle) == 0 else """<center> """ + subtitle + """</center>""") + """<br>
+
+                """ + get_html_string(table, remark_fields_color, ignore_fields, is_login_user) + """
+            </div>
+            """
+    else:
+        return html + get_html_string(table, remark_fields_color, ignore_fields, is_login_user)
+
+
+def from_db(cursor, field_names, rows, **kwargs):
+    if cursor.description:
+        table = PrettyTable(**kwargs)
+        table.field_names = [col[0] for col in cursor.description]
+        if field_names is not None:
+            table.field_names.extend(field_names)
+        if rows is None:
+            rows = cursor.fetchall()
+        for row in rows:
+            table.add_row(row)
+        return table
 
 
 def get_html_string(table, remark_fields_color=[],
-                    link_fields={},
-                    ignore_fields=['nid', 'id', 'bond_code', 'stock_code', '持有', '持有成本', '持有数量', 'cb_mov2_id']):
-
+                    ignore_fields=[], is_login_user=False, edit_link='/edit_hold_bond.html'):
+    ignore_fields.extend(['nid', 'id', 'bond_code', 'stock_code', '持有', '持有成本', '持有数量', 'cb_mov2_id'])
     lines = []
     linebreak = "<br>"
 
@@ -203,7 +388,8 @@ def get_html_string(table, remark_fields_color=[],
                 #http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157
                 suffix += "&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + nid + "'><img src='../static/img/trend.png' alt='走势图' title='宁稳网查看转债&正股走势(非会员20次/天)' width='14' height='14' class='next-site-link'/></a>"
 
-                suffix += "&nbsp;<a href='/add_hold_bond.html/" + bond_code + "/'><img src='../static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
+                if is_login_user:
+                    suffix += "&nbsp;<a href='" + edit_link + "/" + bond_code + "/'><img src='../static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
 
             # id = record.get('id')
             # if len(link_fields) > 0 and id is not None:

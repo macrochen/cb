@@ -107,11 +107,19 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
 
                 {% if current_user and current_user.is_authenticated %}
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">我的可转债</a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">我的自选</a>
                     <ul class="dropdown-menu">
-                      <li><a href="/view_my.html">按策略统计</a></li>
+                      <li><a href="/view_my_select.html">我的可转债自选</a></li>
+                      <li><a href="/edit_changed_bond_select.html">编辑可转债笔记</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">我的持仓</a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/view_my_strategy.html">按策略统计</a></li>
                       <li><a href="/view_my_account.html">按账户统计</a></li>
-                      <li><a href="/update_hold_bond.html">更新持仓数据</a></li>
+                      <li><a href="/edit_hold_bond.html">更新持仓数据</a></li>
+                      <li><a href="/view_up_down.html">可转债涨跌数据</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
@@ -121,7 +129,6 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                       <li><a href="/jsl_update_data.html">直接同步集思录可转债数据</a></li>
                       <li><a target="_blank" href="https://www.jisilu.cn/data/cbnew/cb_list/">访问集思录JSON格式数据</a></li>
                       <li><a href="/sync_jsl_bond_data.html">提交集思录JSON格式数据</a></li>
-                      <li><a href="/view_up_down.html">可转债涨跌数据</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
