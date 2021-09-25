@@ -226,7 +226,7 @@ def generate_scatter_html(tables, select=None):
     # scatter.add_xaxis(x)
 
     scatter.set_global_opts(
-        title_opts=opts.TitleOpts(title="不同策略可转债分布情况", pos_left='center'),
+        title_opts=opts.TitleOpts(title="可转债分布情况", pos_left='center'),
         tooltip_opts=opts.TooltipOpts(
             formatter=JsCode(
                 "function (params) {return '价格:' + params.value[0] + '元<br/> 溢价率:' + params.value[1] + '%';}"
