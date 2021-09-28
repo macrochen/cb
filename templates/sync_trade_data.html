@@ -15,7 +15,7 @@
         <script src="/static/js/jquery.bootstrap-autohidingnavbar.min.js"></script>
 
         <script type="text/javascript" src="/static/js/bootsnav.js"></script>
-        <title>编辑可转债笔记</title>
+        <title>更新可转债持仓</title>
         <style>
             html,body {height: 100%;}
 
@@ -89,11 +89,6 @@
             .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
             .lh-condensed { line-height: 1.25; }
         </style>
-        <script>
-            {% if result %}
-                alert("{{ result }}")
-            {% endif %}
-        </script>
     </head>
     <body>
       <div class="navbar navbar-default navbar-fixed-top navbar-mobile bootsnav" id="top_navbar">
@@ -113,58 +108,93 @@
     <br/>
     <br/>
     <div class="container">
-        <form class="needs-validation" novalidate action="/save_changed_bond_select.html" method="post">
-            <input type="hidden" name="id" id="id" value="{{ bond and bond['id'] or ''}}">
+        <form class="needs-validation" novalidate action="/save_trade_data.html" method="post">
+            <input type="hidden" name="id" id="id" value="{{ bond['id']}}">
+            <input type="hidden" name="direction" id="direction" value="">
             <input type="hidden" name="back_url" value="{{ request.referrer}}">
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="bond_code" style="display: block">转债代码</label>
-                    <input type="text" class="form-control" id="bond_code" name="bond_code" placeholder="" value="{{ bond and bond['bond_code'] or '' }}">&nbsp;&nbsp;&nbsp;
+                    <input type="text" class="form-control" id="bond_code" name="bond_code" placeholder="" value="{{ bond['bond_code'] }}">&nbsp;&nbsp;&nbsp;
                     <div class="invalid-feedback">
                         必须指定转债代码
                     </div>
                 </div>
-            </div>
-            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="bond_name">转债名称</label>
-                    <input type="text" class="form-control" id="bond_name" name="cb_name_id" value="{{ bond and bond['cb_name_id'] or '' }}" required >
+                    <input type="text" class="form-control" id="bond_name" name="bond_name" value="{{ bond['cb_name_id'] }}" required >
 
                     <div class="invalid-feedback">
                         必须指定转债名称
                     </div>
                 </div>
             </div>
+            <br/>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="strategy_type">策&nbsp;&nbsp;&nbsp;略</label>
-                    <select class="custom-select d-block w-100" id="strategy_type" name="strategy_type" style="height: 35px">
-                        <option value="">Choose...</option>
-                        <option value="回售"{% if bond and bond.strategy_type=='回售' %} selected="selected"{% endif %}>回售</option>
-                        <option value="双低"{% if bond and bond.strategy_type=='双低' %} selected="selected"{% endif %}>双低</option>
-                        <option value="低余额"{% if bond and bond.strategy_type=='低余额' %} selected="selected"{% endif %}>低余额</option>
-                        <option value="高收益"{% if bond and bond.strategy_type=='高收益' %} selected="selected"{% endif %}>高收益</option>
-                        <option value="网格"{% if bond and bond.strategy_type=='网格' %} selected="selected"{% endif %}>网格</option>
-                        <option value="打新"{% if bond and bond.strategy_type=='打新' %} selected="selected"{% endif %}>打新</option>
-                        <option value="基本面"{% if bond and bond.strategy_type=='基本面' %} selected="selected"{% endif %}>基本面</option>
-                        <option value="多因子"{% if bond and bond.strategy_type=='多因子' %} selected="selected"{% endif %}>多因子</option>
-                        <option value="双低轮动"{% if bond and bond.strategy_type=='双低轮动' %} selected="selected"{% endif %}>双低轮动</option>
-                        <option value="其他"{% if bond and bond.strategy_type=='其他' %} selected="selected"{% endif %}>其他</option>
-                    </select>
+                    <label for="trade_amount">成交量</label>
+                    <input type="number" class="form-control" id="trade_amount" name="trade_amount" value="" placeholder="{{ bond['hold_amount'] }}" required>
+                    <div class="invalid-feedback" style="width: 100%;">
+                       必须指定数量
+                    </div>
                 </div>
-            </div>
-
-            <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="memo">备&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;注</label>
-                    <textarea class="form-control" rows="5" cols="10" name="memo" id="memo" style="width: 500px">{{ bond and bond['memo'] or '' }}</textarea>
+                    <label for="trade_price">成交价</label>
+                    <input type="text" class="form-control" id="trade_price" name="trade_price" value="" placeholder="{{ bond['hold_price'] }}" required>
+                    <div class="invalid-feedback">
+                        必须指定价格
+                    </div>
                 </div>
             </div>
             <br/>
 
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="account">账&nbsp;&nbsp;&nbsp;户</label>
+                    <select class="custom-select d-block w-100" id="account" name="account" style="height: 35px">
+                        <option value="">Choose...</option>
+                        <option value="华宝"{% if bond.account=='华宝' %} selected="selected"{% endif %}>华宝证券</option>
+                        <option value="银河"{% if bond.account=='银河' %} selected="selected"{% endif %}>银河证券</option>
+                        <option value="华泰"{% if bond.account=='华泰' %} selected="selected"{% endif %}>华泰证券</option>
+                        <option value="财通"{% if bond.account=='财通' %} selected="selected"{% endif %}>财通证券</option>
+                        <option value="其他"{% if bond.account=='其他' %} selected="selected"{% endif %}>其他</option>
+                    </select>
+                    <div class="invalid-feedback">
+                        必须指定策略类型
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="strategy_type">策&nbsp;&nbsp;&nbsp;略</label>
+                    <select class="custom-select d-block w-100" id="strategy_type" name="strategy_type" required style="height: 35px">
+                        <option value="">Choose...</option>
+                        <option value="回售"{% if bond.strategy_type=='回售' %} selected="selected"{% endif %}>回售</option>
+                        <option value="双低"{% if bond.strategy_type=='双低' %} selected="selected"{% endif %}>双低</option>
+                        <option value="低余额"{% if bond.strategy_type=='低余额' %} selected="selected"{% endif %}>低余额</option>
+                        <option value="高收益"{% if bond.strategy_type=='高收益' %} selected="selected"{% endif %}>高收益</option>
+                        <option value="网格"{% if bond.strategy_type=='网格' %} selected="selected"{% endif %}>网格</option>
+                        <option value="打新"{% if bond.strategy_type=='打新' %} selected="selected"{% endif %}>打新</option>
+                        <option value="基本面"{% if bond.strategy_type=='基本面' %} selected="selected"{% endif %}>基本面</option>
+                        <option value="多因子"{% if bond.strategy_type=='多因子' %} selected="selected"{% endif %}>多因子</option>
+                        <option value="双低轮动"{% if bond.strategy_type=='双低轮动' %} selected="selected"{% endif %}>双低轮动</option>
+                        <option value="其他"{% if bond.strategy_type=='其他' %} selected="selected"{% endif %}>其他</option>
+                    </select>
+                    <div class="invalid-feedback">
+                        必须指定策略类型
+                    </div>
+                </div>
+
+            </div>
+            <br/>
+
             <center>
-                <button class="btn btn-primary btn-lg btn-block" type="submit" style="width: 120px">提&nbsp;&nbsp;交</button>
+                <button class="btn btn-primary btn-lg" id="btn_buy" style="width: 120px;">买&nbsp;&nbsp;入</button>&nbsp;&nbsp;&nbsp;
+                <button class="btn btn-primary btn-lg" id="btn_sell" style="width: 120px">卖&nbsp;&nbsp;出</button>
             </center>
+            <br/><br/>
+            <div>
+                <b style="color: red">PS:如果需要在指定账户新建交易, 必须先指定账户, 再填写转债代码或转债名称</b>
+            </div>
         </form>
     </div>
     <script>
@@ -182,29 +212,40 @@
                 }, false);
               });
 
-            $("#bond_name").bind("input propertychange",function (event) {
-                $("#bond_code").val('')
-                doChange(event)
-            });
-            $("#bond_code").bind("input propertychange",function (event) {
-                $("#bond_name").val('')
-                doChange(event)
-            });
+              $("#btn_buy").bind('click', function (event) {
+                  $("#direction").val('buy')
+                  forms[0].submit()
+              })
+              $("#btn_sell").bind('click', function (event) {
+                  $("#direction").val('sell')
+                  forms[0].submit()
+              })
 
-            function doChange(event){
-              $.get("/find_changed_bond_select_by_code.html?bond_code=" + $("#bond_code").val() + "&bond_name=" + $("#bond_name").val(), function (data, status) {
+
+            $("#bond_name").bind("input propertychange",dd);
+            $("#bond_code").bind("input propertychange",dd);
+
+            function dd(event){
+              $.get("/find_bond_by.html?bond_code=" + $("#bond_code").val() + "&bond_name=" + $("#bond_name").val() + "&account=" + $("#account").val(), function (data, status) {
                 // alert(data)
                 if (status == 'success') {
                     $("#id").val(data['id']);
                     $("#bond_code").val(data['bond_code']);
                     $("#bond_name").val(data['cb_name_id']);
-                    $("#strategy_type").val(data['strategy_type']);
+                    $("#hold_price").val(data['hold_price']);
+                    $("#hold_amount").val(data['hold_amount']);
+                    if (data['account'] != null) {
+                        $("#account").val(data['account']);
+                    }
+                    if (data['strategy_type'] != null) {
+                        $("#strategy_type").val(data['strategy_type']);
+                    }
                     $("#memo").val(data['memo'])
                 } else {
-                    // alert("status is failure. not find bond by code:" + $("#bond_code").val())
+                    alert("status is failure. not find bond by code:" + $("#bond_code").val())
                 }
             }).error(function (XMLHttpRequest, status, error){
-                // alert("occur exception. not find bond by code:" + $("#bond_code").val())
+                alert("occur exception. not find bond by code:" + $("#bond_code").val())
             })
             }
 

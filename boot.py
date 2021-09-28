@@ -3,7 +3,7 @@ import os
 import sqlite3
 
 from flask import render_template, request, url_for, redirect, flash, send_from_directory, session
-from flask_login import login_user, login_required, logout_user, current_user
+from flask_login import login_user, login_required, logout_user
 
 import view_my_select
 from config import app, db
@@ -52,6 +52,7 @@ def login():
 
     return render_template('index.html')
 
+
 @app.route('/logout.html')
 def logout():
     logout_user()
@@ -70,9 +71,6 @@ def edit_hold_bond(id='', bond_code=''):
     elif bond_code != '':
         # 先查持有的
         bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.hold_amount > -1).first()
-        if bond is None:
-            # 没找到, 再查删除的
-            bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.hold_amount == -1).first()
 
         # 没有持有过, 转添加操作
         if bond is None:
@@ -81,21 +79,25 @@ def edit_hold_bond(id='', bond_code=''):
 
     return render_template("edit_hold_bond.html", bond=bond)
 
+
 @app.route('/find_bond_by.html', methods=['GET'])
 @login_required
 def find_bond_by_code():
     bond_code = request.args.get("bond_code")
     bond_name = request.args.get("bond_name")
+    account = request.args.get("account")
     # fixme 打新和其他策略可能同时存在
     # 先找hold_amount>-1的,没有再找hold_amount=-1的
     bond = None
     if bond_code != '':
-        bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.hold_amount > -1).first()
-        if bond is None:
+        if account != '':
+            bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.account == account).first()
+        else:
             bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code).first()
     elif bond_name != '':
-        bond = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%'), HoldBond.hold_amount > -1).first()
-        if bond is None:
+        if account != '':
+            bond = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%'), HoldBond.account == account).first()
+        else:
             bond = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%')).first()
 
     if bond is None:
@@ -103,6 +105,8 @@ def find_bond_by_code():
             bond = ChangedBond.query.filter_by(bond_code=bond_code).first()
         elif bond_name != '':
             bond = ChangedBond.query.filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).first()
+
+        bond.id = None
         if bond is not None:
             return dict(bond)
         raise Exception('not find bond by code: ' + bond_code)
@@ -180,14 +184,14 @@ def save_changed_bond_select():
         changed_bond_select.strategy_type = strategy_type
 
     memo = request.form['memo']
-    if memo is not None and memo.strip(' ') != '':
-        changed_bond_select.memo = memo
+    # if memo is not None and memo.strip(' ') != '':
+    changed_bond_select.memo = memo
 
     if id is None or id.strip(' ') == '':
         db.session.add(changed_bond_select)
     db.session.commit()
 
-    return redirect(request.form['back_url'])
+    return render_template("edit_changed_bond_select.html", result='save is successful')
 
 
 @app.route('/save_hold_bond.html', methods=['POST'])
@@ -195,7 +199,8 @@ def save_changed_bond_select():
 def save_hold_bond():
     id = request.form['id']
     hold_bond = None
-    if id is None or id.strip(' ') == '':
+    is_new = id is None or id.strip(' ') == ''
+    if is_new:
         #新增操作
         hold_bond = HoldBond()
     else:
@@ -230,6 +235,12 @@ def save_hold_bond():
         raise Exception('持有价格不能为空')
 
     hold_bond.hold_price = float(hold_price)
+    # 重置一下累积金额信息, 避免下次持仓价格计算错误
+    if not is_new:
+        # 增加数量
+        delta = float(hold_price) - hold_bond.hold_price
+        # 持仓金额同时增加
+        hold_bond.sum_buy += delta * hold_bond.hold_amount
 
     account = request.form['account']
     if account is not None and account.strip(' ') != '':
@@ -245,25 +256,123 @@ def save_hold_bond():
     if memo is not None and memo.strip(' ') != '':
         hold_bond.memo = memo
 
+    if is_new:
+        db.session.add(hold_bond)
+    db.session.commit()
+
+    return redirect(request.form['back_url'])
+
+@app.route('/save_trade_data.html', methods=['POST'])
+@login_required
+def save_trade_data():
+    id = request.form['id']
+    hold_bond = None
+    if id is None or id.strip(' ') == '':
+        #新增操作
+        hold_bond = HoldBond()
+    else:
+        # 更新操作
+        hold_bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
+
+    bond_code = request.form['bond_code']
+    if bond_code is None or bond_code.strip(' ') == '':
+        raise Exception('转债代码不能为空')
+
+    hold_bond.bond_code = bond_code
+
+    is_sh_market = bond_code.startswith('11')
+
+    if is_sh_market:
+        hold_bond.hold_unit = 10
+    else:
+        hold_bond.hold_unit = 1
+
+    cb_name_id = request.form['bond_name']
+    if cb_name_id is None or cb_name_id.strip(' ') == '':
+        raise Exception('转债名称不能为空')
+
+    hold_bond.cb_name_id = cb_name_id
+
+    trade_amount = request.form['trade_amount']
+    if trade_amount is None or trade_amount.strip(' ') == '':
+        raise Exception('成交量不能为空')
+
+    if int(trade_amount) < 0:
+        raise Exception("成交量必须大于0")
+
+    trade_price = request.form['trade_price']
+    if trade_price is None or trade_price.strip(' ') == '':
+        raise Exception('成交价不能为空')
+
+    direction = request.form['direction']
+    if direction is None or direction.strip(' ') == '':
+        raise Exception('必须指定买卖方向')
+
+    if direction == 'sell':
+        if int(trade_amount) > hold_bond.hold_amount:
+            raise Exception("成交量(" + trade_amount + ")不能超过持有量(" + str(hold_bond.hold_amount) + ")")
+
+    account = request.form['account']
+    if account is None or account.strip(' ') == '':
+        raise Exception("必须指定交易账户")
+
+    hold_bond.account = account
+
+    # 计算持仓成本
+    hold_bond.calc_hold_price(direction, trade_amount, trade_price)
+
+    strategy_type = request.form['strategy_type']
+    if strategy_type is None or strategy_type.strip(' ') == '':
+        raise Exception('必须指定策略类型')
+
+    hold_bond.strategy_type = strategy_type
+
     if id is None or id.strip(' ') == '':
         db.session.add(hold_bond)
     db.session.commit()
 
     return redirect(request.form['back_url'])
 
-@app.route('/save_jsl_bond_data.html', methods=['POST'])
-@login_required
-def save_jsl_bond_data():
-    source_code = request.form['source_code']
-    if source_code is None or source_code.strip(' ') == '':
-        raise Exception('网页源码不能为空')
-
-    return cb_jsl.fetch_data_from_source_code(source_code)
 
 @app.route('/sync_jsl_bond_data.html')
 @login_required
 def sync_jsl_bond_data():
     return render_template("sync_jsl_bond_data.html")
+
+
+# # fixme 启动一个定时任务, 添加收益记录
+# # 前一天秒数
+# today = datetime.now()
+# yesterday = today + timedelta(days=-1)
+# ymd = yesterday.strftime('%Y-%m-%d')
+# d = datetime.strptime(ymd, '%Y-%m-%d')
+# s = int(time.mktime(d.timetuple()))
+# invest_yield = db.session.query(InvestYield).filter(InvestYield.date == s).first()
+# if invest_yield is None:
+#     invest_yield = InvestYield()
+#
+# invest_yield.date = s
+# # 累积的收益率, 根据trade_summary中的数据计算
+# sql = """
+#     select * from trade_summary
+# """
+# list = db.session.query(TradeSummary).all()
+# invest_yield.value =
+
+
+@app.route('/sync_trade_data.html/<id>/')
+@app.route('/new_sync_trade_data.html/<bond_code>/')
+@app.route('/new_sync_trade_data.html')
+@login_required
+def sync_trade_data(id='', bond_code=''):
+    bond = None
+    if id != '':
+        bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
+    elif bond_code != '':
+        bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
+
+    return render_template("sync_trade_data.html", bond=bond)
+
 
 @app.route('/view_up_down.html')
 @login_required

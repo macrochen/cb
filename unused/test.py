@@ -5,7 +5,7 @@
 # stock_zh_a_spot_df = ak.stock_zh_a_spot()
 # print(stock_zh_a_spot_df)
 
-import datetime
+# import datetime
 # print(datetime.datetime.now().year)
 # print(datetime.datetime.now().month)
 # print(datetime.datetime.now().day)
@@ -544,3 +544,13 @@ print(re.findall(r"(\d+) (.*) 大单详情  股吧 (\d+.?\d*%) (\d+.?\d*)(亿|�
 # print(len(my_set))
 # print(my_set)
 
+from datetime import datetime, timedelta
+# 前一天
+date_1 = datetime.now()
+date_2 = date_1 + timedelta(days=-1)
+s = date_2.strftime('%Y-%m-%d')
+print(s)
+# print(date_2)
+ta = datetime.strptime(s, '%Y-%m-%d')
+t = time.mktime(ta.timetuple())
+print(t)

@@ -5,14 +5,14 @@
         <script src="https://code.z01.com/v4/dist/js/popper.min.js"></script>
         <link rel="stylesheet" href="https://code.z01.com/v4/dist/css/bootstrap.min.css" >
 
-        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
-        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+        <!--<link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">-->
         <link rel="stylesheet" type="text/css" href="/static/css/bootsnav.css">
 
 
-        <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
-        <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
-        <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
+        <script src="/static/js/jquery.min.js"></script>
+        <script src="/static/js/bootstrap.min.js"></script>
+        <script src="/static/js/jquery.bootstrap-autohidingnavbar.min.js"></script>
 
         <script type="text/javascript" src="/static/js/bootsnav.js"></script>
         <title>更新可转债持仓</title>
@@ -188,7 +188,7 @@
 
             <div class="mb-3">
                 <label for="memo">备注</label>
-                <textarea class="form-control" rows="5" cols="10" name="memo" id="memo" style="width: 500px">{{ bond['memo'] }}</textarea>
+                <textarea class="form-control" rows="5" cols="10" name="memo" id="memo" style="width: 500px">{{ bond['memo'] or '' }}</textarea>
             </div>
             <br/>
             <center>

@@ -36,12 +36,12 @@ def draw_my_view(is_login_user):
     try:
 
         html = ''
-        htmls = {'nav': '<li><a href="/">Home</a></li>'}
+        htmls = {}
 
         # =========我的强赎=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, enforce_get as 强赎状态, round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, 
-    h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, h.account as 账户, h.memo as 备注
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, enforce_get as 强赎状态, 
+    round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, h.account as 账户, h.memo as 备注
     from (select * from changed_bond where enforce_get in ('强赎中')) c, hold_bond h
     WHERE c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格 desc 
@@ -52,8 +52,8 @@ def draw_my_view(is_login_user):
 
         # =========我的回售=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', 
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', 
         cb_price2_id as 转债价格, round(bt_red * 100,2) as 回售收益率, red_t as 回售年限,  
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         round(cb_premium_id*100,2) || '%' as 溢价率, 
@@ -92,8 +92,8 @@ def draw_my_view(is_login_user):
 
         # =========我的低余额策略=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', remain_amount as '余额(亿元)', 
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', remain_amount as '余额(亿元)', 
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, 
         round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
@@ -135,8 +135,8 @@ def draw_my_view(is_login_user):
 
         # =========我的低价高收益策略=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', 
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', 
         cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率, round(100- cb_price2_id + BT_yield * 100, 2) as 性价比,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
         
@@ -174,8 +174,8 @@ def draw_my_view(is_login_user):
 
         # =========我的双低策略=========
         cur.execute("""
-        SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
-            round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
+        SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
+            round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
             round(cb_price2_id + cb_premium_id * 100,2) as 双低值, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
             round(bt_yield*100,2) || '%' as 到期收益率,round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
 
@@ -213,8 +213,8 @@ def draw_my_view(is_login_user):
 
         # =========我的双低轮动策略=========
         cur.execute("""
-        SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
-            round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
+        SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
+            round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
             round(cb_price2_id + cb_premium_id * 100,2) as 双低值,round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
             round(bt_yield*100,2) || '%' as 到期收益率, round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
 
@@ -252,8 +252,8 @@ def draw_my_view(is_login_user):
 
         # =========我的多因子策略=========
         cur.execute("""
-        SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
-            round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率,
+        SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
+            round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率,
             round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
             round(cb_price2_id + cb_premium_id * 100,2) as 双低值, 
             round(bt_yield*100,2) || '%' as 到期收益率,round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
@@ -292,7 +292,7 @@ def draw_my_view(is_login_user):
 
         # =========我的打新策略=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
         round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, 
         h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
         round(cb_price2_id + cb_premium_id * 100,2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
@@ -332,7 +332,7 @@ def draw_my_view(is_login_user):
 
         # =========我的网格策略=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
         round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, 
         h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率, 
         round(cb_price2_id + cb_premium_id * 100,2) as 双低值, 
@@ -372,8 +372,8 @@ def draw_my_view(is_login_user):
 
         # =========我的基本面策略=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', 
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', 
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
         round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
@@ -414,8 +414,8 @@ def draw_my_view(is_login_user):
 
         # =========我的每周精选策略=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, 
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, 
         round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         rating as '信用', duration as 续存期, round(bt_yield*100,2) || '%' as 到期收益率,
@@ -434,8 +434,8 @@ def draw_my_view(is_login_user):
 
         # =========我的活性债策略=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率, round(bt_yield*100,2) || '%' as 到期收益率,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
@@ -475,8 +475,8 @@ def draw_my_view(is_login_user):
 
         # =========其他=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
         round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
@@ -515,9 +515,9 @@ order by 双低值
                                               is_login_user=is_login_user)
         # =========清仓建议=========
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
     
-        round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
+        round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) as 盈亏, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
         round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         round(bt_yield*100,2) || '%' as 到期收益率, round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',
         h.account as 账户, h.strategy_type as 策略,
@@ -549,14 +549,14 @@ SELECT strategy_type as 策略,
     count(h.bond_code) as 个数, 
     sum(h.hold_amount) as 数量,
     
-    round(sum(h.hold_amount * h.hold_price),2) as 投入金额, 
+    round(sum(h.sum_buy-h.sum_sell),2) as 投入金额, 
     round(sum(h.hold_amount * c.cb_price2_id),2) as 市值, 
     
     round(sum(round((c.cb_price2_id/(1+c.cb_mov2_id) * c.cb_mov2_id)*h.hold_amount, 2)), 2) as '日收益', 
     round((round(sum(c.cb_price2_id*h.hold_amount)/sum(c.cb_price2_id/(1+c.cb_mov2_id)*h.hold_amount),4)-1)*100,2) || '%' as '日收益率',
     
-    round(sum(round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2)), 2) as '持有收益',   
-    round(sum(round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2)) /sum(h.hold_amount * c.cb_price2_id) * 100, 2) || '%' as 持有收益率
+    round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)), 2) as '累积收益',   
+    round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy-h.sum_sell) * 100, 2) || '%' as 累积收益率
 from hold_bond h , changed_bond c 
 where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP by strategy_type order by 投入金额 DESC        
         """)
@@ -582,7 +582,7 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
             money_rows.append(money_row)
             total_money += money_row
             assets_money += asset_row
-            total_profit += dict_row['持有收益']
+            total_profit += dict_row['累积收益']
             total_now_profit += dict_row['日收益']
             total_num += dict_row['个数']
             total_amount += dict_row['个数'] * dict_row['数量']
@@ -600,25 +600,28 @@ where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP b
 
         pie_html = common.generate_pie_html(dict_rows, '策略', '投入金额')
 
-        type = "统计"
+        type = "汇总"
         sum_html = common.generate_table_html(type, cur, '', need_title=False, field_names=['投入占比'],
-                                       remark_fields_color=['日收益', '日收益率', '持有收益率', '持有收益'],
+                                       remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
                                        ignore_fields=['投入金额'],
                                        rows=new_rows, htmls={})
 
-        common.add_nav_html(htmls, type)
+        common.add_nav_html_to_head(htmls, type, '<li><a href="/view_my_account.html">切换到按账户</a></li>')
 
         # 用柱状图从大到小展示持有可转债涨跌幅情况
         scatter_html = common.generate_scatter_html(tables, select)
 
-        html += """
+        html = """
+            <br/>
+            <br/>
+            <br/>
             <br/>
             <div id=\"""" + type + """\">
                 <center>
-                    """ + scatter_html + pie_html + "<br/>" + sum_html + '<br/>' + """
+                    """ + sum_html + '<br/>' + pie_html + scatter_html + "<br/>" + """
                 </center>
             </div>
-        """
+        """ + html
 
         con_file.close()
 

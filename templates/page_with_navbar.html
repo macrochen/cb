@@ -5,14 +5,14 @@
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.2.1-dev.20210902/dist/echarts.min.js"></script>
         <link rel="icon" href="/static/img/favicon.ico">
 
-        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/bootstrap-3.3.4.css">
-        <link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+        <!--<link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">-->
         <link rel="stylesheet" type="text/css" href="/static/css/bootsnav.css">
 
 
-        <script src="https://www.jq22.com/jquery/1.11.1/jquery.min.js"></script>
-        <script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
-        <script src="https://www.jq22.com/demo/bootstrap-autohidingnavbar-master/src/jquery.bootstrap-autohidingnavbar.js"></script>
+        <script src="/static/js/jquery.min.js"></script>
+        <script src="/static/js/bootstrap.min.js"></script>
+        <script src="/static/js/jquery.bootstrap-autohidingnavbar.min.js"></script>
 
         <script type="text/javascript" src="/static/js/bootsnav.js"></script>
         <title>{{ title }}</title>
@@ -104,7 +104,7 @@
             }
             .inner_table {
               overflow-x: scroll;
-              overflow-y: visible;
+              overflow-y: scroll;
               width: 1400px;
               /*margin-left: 100px;*/
               /*  border: 1px solid;*/
@@ -120,9 +120,11 @@
             td:first-child, th:first-child {
               position:sticky;
               left:0; /* 首行在左 */
-              z-index:1;
+              z-index:10;
               background-color:lightgray;
               margin-left: -100px;
+              margin-top: -50px;
+              height: 50px;
               width: 100px;
                 border-left :1px solid gray;
             }
@@ -133,7 +135,7 @@
             }
 
             th:first-child{
-              z-index:2;
+              z-index:20;
               background-color:lightblue;
             }
 

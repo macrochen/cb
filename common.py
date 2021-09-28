@@ -285,6 +285,7 @@ def generate_table_html(type, cur, html, need_title=True, field_names=None, rows
                         tables=None,
                         subtitle='',
                         ignore_fields=[],
+                        field_links={},
                         is_login_user=False):
     table = from_db(cur, field_names, rows)
 
@@ -297,18 +298,16 @@ def generate_table_html(type, cur, html, need_title=True, field_names=None, rows
     add_nav_html(htmls, type)
 
     title = ''
+    title_suffix = ''
     if need_title:
         # 首行加两个换行, 避免被但导航栏遮挡
-        return html + """
+        title = """
             <div id=\"""" + type + """\">""" + ('' if len(html) > 0 else '<br/><br/>') + """
                 <br><br><center><font size='4'><b> =========我的""" + type + """账户=========</b></font></center>""" \
-               + ('' if len(subtitle) == 0 else """<center> """ + subtitle + """</center>""") + """<br>
+               + ('' if len(subtitle) == 0 else """<center> """ + subtitle + """</center>""") + """<br>"""
+        title_suffix = """</div>"""
 
-                """ + get_html_string(table, remark_fields_color, ignore_fields, is_login_user) + """
-            </div>
-            """
-    else:
-        return html + get_html_string(table, remark_fields_color, ignore_fields, is_login_user)
+    return html + title + get_html_string(table, remark_fields_color, ignore_fields, is_login_user, field_links) + title_suffix
 
 
 def from_db(cursor, field_names, rows, **kwargs):
@@ -324,14 +323,30 @@ def from_db(cursor, field_names, rows, **kwargs):
         return table
 
 
+def default_edit_link_maker(hold_id, bond_code):
+    if hold_id is not None:
+        return '/sync_trade_data.html/' + str(hold_id) + '/'
+
+    return '/new_sync_trade_data.html/' + bond_code + '/'
+
+
 def get_html_string(table, remark_fields_color=[],
-                    ignore_fields=[], is_login_user=False, edit_link='/edit_hold_bond.html'):
-    ignore_fields.extend(['nid', 'id', 'bond_code', 'stock_code', '持有', '持有成本', '持有数量', 'cb_mov2_id'])
+                    ignore_fields=[], is_login_user=False,
+                    field_links={},
+                    table_rows_size=10
+                    ):
+    options = table._get_options({})
+    rows = table._get_rows(options)
+    table_height_style = ''
+    if len(rows) > table_rows_size:
+        table_height_style = """style="height: """ + str(50*10) + """px\"""" #'style:' + str(50*15) + 'px'
+
+    ignore_fields.extend(['nid', 'id', 'hold_id', 'bond_code', 'stock_code', '持有', '持有成本', '持有数量', 'cb_mov2_id'])
     lines = []
     linebreak = "<br>"
 
     lines.append("<div class='outer_table'>")
-    lines.append("<div class='inner_table'>")
+    lines.append("<div class='inner_table' " + table_height_style + ">")
     lines.append("<table>")
 
     # Headers
@@ -350,52 +365,18 @@ def get_html_string(table, remark_fields_color=[],
 
     # Data
     lines.append("    <tbody>")
-    options = table._get_options({})
-    rows = table._get_rows(options)
-    formatted_rows = table._format_rows(rows, options)
-    for row in formatted_rows:
+    # formatted_rows = table._format_rows(rows, options)
+    for row in rows:
         lines.append("        <tr>")
         record = get_record(table, row)
         for field, datum in record.items():
             if ignore_fields.count(field) > 0:
                 continue
 
-            # 标题增加链接
-            # 可转债: http://quote.eastmoney.com/bond/sz128051.html
-            # 正股: http://quote.eastmoney.com/sz002741.html
-            prefix = ''
-            prefix_append = ''
-            suffix = ''
-
-            if field == '名称':
-                bond_code = record.get('bond_code')
-                nid = record['nid']
-                stock_code = record['stock_code']
-                market = 'sz'
-                if bond_code.startswith('11'):
-                    market = 'sh'
-                prefix = "<a target = '_blank' href = 'http://quote.eastmoney.com/bond/" + market + bond_code + ".html'>"
-
-                prefix_append += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + nid + "'><img src='../static/img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' width='14' height='14' class='site-link'/></a>"
-
-                prefix_append += "&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/" + bond_code + "'><img src='../static/img/jsl.png' alt='集思录' title='集思录查看转债信息' width='14' height='14' class='site-link'/></a>"
-
-                # https://xueqiu.com/S/SH600998
-                suffix = "<br/><a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_code + "'><img src='../static/img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='next-site-link'/></a>"
-                suffix += "&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='../static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
-                suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='../static/img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
-
-                #http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157
-                suffix += "&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + nid + "'><img src='../static/img/trend.png' alt='走势图' title='宁稳网查看转债&正股走势(非会员20次/天)' width='14' height='14' class='next-site-link'/></a>"
-
-                if is_login_user:
-                    suffix += "&nbsp;<a href='" + edit_link + "/" + bond_code + "/'><img src='../static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
-
-            # id = record.get('id')
-            # if len(link_fields) > 0 and id is not None:
-            #     for key, value in link_fields.items():
-            #         if field == key:
-            #             datum = "<a href='" + value(id) + "'>" + datum + "</a>"
+            if datum is not None:
+                datum = str(datum)
+            else:
+                datum = ''
 
             remark_color = ''
             if remark_fields_color.count(field) > 0:
@@ -403,6 +384,13 @@ def get_html_string(table, remark_fields_color=[],
                     remark_color = 'class="remarked-down"'
                 else:
                     remark_color = 'class="remarked-up"'
+
+            if len(field_links) > 0 and id is not None:
+                for key, value in field_links.items():
+                    if field == key:
+                        datum = value(datum, record)
+
+            prefix, prefix_append, suffix = generate_head_tail_html(field, is_login_user, record)
 
             lines.append(
                 ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % datum.replace("\n", linebreak)
@@ -431,10 +419,55 @@ def get_html_string(table, remark_fields_color=[],
     return "\n".join(lines)
 
 
+def generate_head_tail_html(field, is_login_user, record):
+    # 标题增加链接
+    # 可转债: http://quote.eastmoney.com/bond/sz128051.html
+    # 正股: http://quote.eastmoney.com/sz002741.html
+    prefix = ''
+    prefix_append = ''
+    suffix = ''
+    if field == '名称':
+        bond_code = record.get('bond_code')
+        nid = record['nid']
+        stock_code = record['stock_code']
+        market = 'sz'
+        if bond_code.startswith('11'):
+            market = 'sh'
+        prefix = "<a target = '_blank' href = 'http://quote.eastmoney.com/bond/" + market + bond_code + ".html'>"
+
+        prefix_append += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + str(
+            nid) + "'><img src='../static/img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' width='14' height='14' class='site-link'/></a>"
+
+        prefix_append += "&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/" + bond_code + "'><img src='../static/img/jsl.png' alt='集思录' title='集思录查看转债信息' width='14' height='14' class='site-link'/></a>"
+
+        # https://xueqiu.com/S/SH600998
+        suffix = "<br/><a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_code + "'><img src='../static/img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='next-site-link'/></a>"
+        suffix += "&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='../static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
+        suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='../static/img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
+
+        # http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157
+        suffix += "&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + str(
+            nid) + "'><img src='../static/img/trend.png' alt='走势图' title='宁稳网查看转债&正股走势(非会员20次/天)' width='14' height='14' class='next-site-link'/></a>"
+
+        if is_login_user:
+            hold_id = record.get('hold_id', None)
+            suffix += "&nbsp;<a href='" + default_edit_link_maker(hold_id,
+                                                                  bond_code) + "'><img src='../static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
+    return prefix, prefix_append, suffix
+
+
 def add_nav_html(htmls, type):
     # 增加导航
     nav_html = htmls.get('nav', '')
     nav_html += get_sub_nav_html(type)
+    htmls['nav'] = nav_html
+
+
+def add_nav_html_to_head(htmls, type, prefix_nav = ''):
+    # 'nav': '<li><a href="/">Home</a></li>'
+    # 增加导航
+    nav_html = htmls.get('nav', '')
+    nav_html = '<li><a href="/">Home</a></li>' + prefix_nav + get_sub_nav_html(type) + nav_html
     htmls['nav'] = nav_html
 
 
