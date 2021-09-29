@@ -77,7 +77,7 @@ SELECT account as 账户,
     round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)), 2) as '累积收益',   
     round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy - h.sum_sell) * 100, 2) || '%' as 累积收益率
 from hold_bond h , changed_bond c 
-where h.bond_code = c.bond_code and h.hold_amount >0 and hold_owner='me' GROUP by account order by 投入金额 DESC        
+where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by 投入金额 DESC        
         """)
 
         rows = []
@@ -177,7 +177,6 @@ def generate_account_block(account, cur, html, htmls, tables, amount_field='h.ho
     from changed_bond c, stock_report s, hold_bond h
     WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code 
     and h.hold_owner = 'me' 
-    and h.hold_amount != -1
     and h.account = '""" + account + """'
     order by 数量, h.bond_code
         """)

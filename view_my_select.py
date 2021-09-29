@@ -47,7 +47,7 @@ def draw_view(is_login_user):
     from changed_bond_select b left join hold_bond h on b.bond_code = h.bond_code,  
         changed_bond c
     WHERE  c.bond_code = b.bond_code
-    order  by cb_mov2_id desc
+    --order  by cb_mov2_id desc
             """)
 
         table, html = generate_table_html(cur, html,

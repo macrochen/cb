@@ -2,8 +2,8 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+import trade_utils
 from config import db
-import biz_common
 
 
 class User(db.Model, UserMixin):
@@ -49,8 +49,8 @@ class TradeDetail(db.Model):
 class InvestYield(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Integer)
-    value = db.Column(db.Float)
-    diff_value = db.Column(db.Float)
+    all_yield = db.Column(db.Float)
+    day_yield = db.Column(db.Float)
 
 
 class TradeSummary(db.Model):
@@ -122,7 +122,7 @@ class HoldBond(db.Model):
     def calc_hold_price(self, direction, trade_amount, trade_price):
         # 交易金额
         trade_num = round(float(trade_price) * int(trade_amount), 3)
-        fee = biz_common.calc_trade_fee(self.account, self.hold_unit == 10, trade_num)
+        fee = trade_utils.calc_trade_fee(self.account, self.hold_unit == 10, trade_num)
         # 持仓成本
         cost_num = self.sum_buy - self.sum_sell + fee
         if direction == 'buy':

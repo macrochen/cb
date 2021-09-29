@@ -1,15 +1,23 @@
 # -*- coding: utf-8 -*-
 import os
 import sqlite3
+import threading
+import time
+from datetime import datetime
 
+import schedule
 from flask import render_template, request, url_for, redirect, flash, send_from_directory, session
 from flask_login import login_user, login_required, logout_user
 
+import trade_utils
 import view_my_select
+import view_my_yield
 from config import app, db
-from models import User, ChangedBond, HoldBond, ChangedBondSelect
+from models import User, ChangedBond, HoldBond, ChangedBondSelect, InvestYield
 
 from prettytable import from_db_cursor
+
+from apscheduler.schedulers.background import BackgroundScheduler
 
 import cb_jsl
 import cb_ninwen
@@ -340,26 +348,6 @@ def sync_jsl_bond_data():
     return render_template("sync_jsl_bond_data.html")
 
 
-# # fixme 启动一个定时任务, 添加收益记录
-# # 前一天秒数
-# today = datetime.now()
-# yesterday = today + timedelta(days=-1)
-# ymd = yesterday.strftime('%Y-%m-%d')
-# d = datetime.strptime(ymd, '%Y-%m-%d')
-# s = int(time.mktime(d.timetuple()))
-# invest_yield = db.session.query(InvestYield).filter(InvestYield.date == s).first()
-# if invest_yield is None:
-#     invest_yield = InvestYield()
-#
-# invest_yield.date = s
-# # 累积的收益率, 根据trade_summary中的数据计算
-# sql = """
-#     select * from trade_summary
-# """
-# list = db.session.query(TradeSummary).all()
-# invest_yield.value =
-
-
 @app.route('/sync_trade_data.html/<id>/')
 @app.route('/new_sync_trade_data.html/<bond_code>/')
 @app.route('/new_sync_trade_data.html')
@@ -385,8 +373,15 @@ def up_down_view():
 @login_required
 def my_strategy_view():
     user_id = session.get('_user_id')
-    common.init_cb_sum_data()
+    common.calc_middle_info()
     title, navbar, content = view_my_strategy.draw_my_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@app.route('/view_my_yield.html')
+@login_required
+def my_yield_view():
+    title, navbar, content = view_my_yield.draw_my_view()
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -394,7 +389,7 @@ def my_strategy_view():
 @login_required
 def my_account_view():
     user_id = session.get('_user_id')
-    common.init_cb_sum_data()
+    common.calc_middle_info()
     title, navbar, content = view_my_account.draw_my_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -402,7 +397,7 @@ def my_account_view():
 def market_view():
     # current_user = None
     user_id = session.get('_user_id')
-    common.init_cb_sum_data()
+    common.calc_middle_info()
     title, navbar, content = view_market.draw_market_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -474,6 +469,7 @@ def save_db_data():
 def query_database():
     table_html = ''
     sql_code = ''
+    table_height_style = ''
     if len(request.form) > 0:
         sql_code = request.form['sql_code']
         if sql_code is None or sql_code.strip(' ') == '':
@@ -486,9 +482,13 @@ def query_database():
         cur = conn.cursor()
         cur.execute(sql_code)
         table = from_db_cursor(cur)
+
+        if len(table._rows) > 10:
+            table_height_style = """style="height:500px" """
+
         table_html = table.get_html_string()
 
-    return render_template("query_database.html", table_html=table_html, sql_code=sql_code)
+    return render_template("query_database.html", table_html=table_html, sql_code=sql_code, table_height_style=table_height_style)
 
 
 @app.route('/update_database.html')
@@ -513,5 +513,69 @@ def execute_sql():
     return 'OK'
 
 
+@app.route('/update_bond_yield.html')
+@login_required
+def update_bond_yield():
+    # 检查是否交易日
+    if trade_utils.is_trade_date() is False:
+        return 'OK'
+
+    # 先同步一下可转债数据
+    # cb_ninwen.fetch_data()
+
+    # 获取收益率
+    day_yield, all_yield = common.calc_yield()
+
+    # 去掉时分秒
+    today = datetime.now()
+    ymd = today.strftime('%Y-%m-%d')
+    d = datetime.strptime(ymd, '%Y-%m-%d')
+    s = int(time.mktime(d.timetuple()))
+    invest_yield = db.session.query(InvestYield).filter(InvestYield.date == s).first()
+
+    if invest_yield is None:
+        invest_yield = InvestYield()
+        invest_yield.date = s
+        invest_yield.all_yield = all_yield
+        invest_yield.day_yield = day_yield
+        db.session.add(invest_yield)
+    else:
+        invest_yield.all_yield = all_yield
+        invest_yield.day_yield = day_yield
+
+    db.session.commit()
+
+    return 'OK'
+
+
+def sync_cb_data_job():
+    print("begin to sync data job...")
+    try:
+        # 检查是否交易日
+        if trade_utils.is_trade_date() is False:
+            return 'OK'
+
+        # 先同步一下可转债数据
+        cb_ninwen.fetch_data()
+    except Exception as e:
+        print('sync_cb_data_job is failure. ', e)
+
+
+def update_bond_yield_job():
+    print('begin to update yield job...')
+    try:
+        update_bond_yield()
+    except Exception as e:
+        print('update_bond_yield_job is failure', e)
+
+
 if __name__ == "__main__":
+
+    scheduler = BackgroundScheduler()
+    # 每天上午交易结束之后执行可转债数据同步
+    scheduler.add_job(sync_cb_data_job, 'cron', hour='11', minute='35')
+    # 每天下午交易结束之后执行可转债数据同步并更新收益率
+    scheduler.add_job(update_bond_yield_job, 'cron', hour='15', minute='35')
+    scheduler.start()
+
     app.run(port=8080, host="127.0.0.1", debug=True)  # 调用run方法，设定端口号，启动服务

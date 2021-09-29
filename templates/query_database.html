@@ -97,7 +97,7 @@
             }
             .inner_table {
               overflow-x: scroll;
-              overflow-y: visible;
+              overflow-y: scroll;
               width: 1400px;
               /*margin-left: 100px;*/
               /*  border: 1px solid;*/
@@ -190,8 +190,8 @@
             </form>
         </div>
       <div id="view_table" class="container" style="width:1500px;max-width: 1500px">
-          <div class="outer_table"><div class="inner_table">
-            {% autoescape false %}
+          {% autoescape false %}
+          <div class="outer_table"><div class="inner_table" {{table_height_style}}>
                 {{ table_html }}
             {% endautoescape %}
           </div></div>

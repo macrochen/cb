@@ -546,11 +546,45 @@ print(re.findall(r"(\d+) (.*) 大单详情  股吧 (\d+.?\d*%) (\d+.?\d*)(亿|�
 
 from datetime import datetime, timedelta
 # 前一天
-date_1 = datetime.now()
-date_2 = date_1 + timedelta(days=-1)
-s = date_2.strftime('%Y-%m-%d')
-print(s)
-# print(date_2)
-ta = datetime.strptime(s, '%Y-%m-%d')
-t = time.mktime(ta.timetuple())
-print(t)
+for i in range(1,10):
+    date_1 = datetime.now()
+    date_2 = date_1 + timedelta(days=i)
+    s = date_2.strftime('%Y-%m-%d')
+    print(s)
+    # print(date_2)
+    ta = datetime.strptime(s, '%Y-%m-%d')
+    t = time.mktime(ta.timetuple())
+    t_a = time.localtime(t)
+    t_s = time.strftime('%Y-%m-%d %H:%M:%S', t_a)
+    print(t_s)
+    print(int(t))
+
+# import urllib.request as request
+# from datetime import datetime, timedelta
+#
+#
+# def get_date_type():
+#     date = datetime.now().strftime('%Y-%m-%d')
+#     url = 'http://tool.bitefu.net/jiari/?d=' + date
+#     resp = request.urlopen(url, timeout=3)
+#     content = resp.read()
+#     if content:
+#         try:
+#             day_type = int(content)
+#         except ValueError:
+#             return -1
+#         else:
+#             return day_type
+#
+#     return -1
+#
+#
+# def is_trade_date():
+#     weekday = datetime.now().isoweekday()
+#     if weekday <= 5 and get_date_type() == 0:
+#         return True
+#     else:
+#         return False
+#
+# # print(datetime.now().strftime('%Y-%m-%d'))
+# print(is_trade_date())

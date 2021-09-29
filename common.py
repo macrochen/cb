@@ -7,7 +7,7 @@ from prettytable import PrettyTable
 from pyecharts.charts import Pie
 from pyecharts import options as opts
 from pyecharts.globals import ThemeType
-from pyecharts.charts import Scatter
+from pyecharts.charts import Scatter, Line
 from pyecharts.commons.utils import JsCode
 
 from selenium import webdriver
@@ -34,7 +34,27 @@ MID_YIELD = -3.92
 
 # MID_Y, MID_X, MID_YIELD = get_cb_sum_data()
 
-def init_cb_sum_data():
+
+def calc_yield():
+    # 打开文件数据库
+    con_file = sqlite3.connect('db/cb.db3')
+    cur = con_file.cursor()
+    cur.execute("""
+SELECT 
+    round((round(sum(c.cb_price2_id*h.hold_amount)/sum(c.cb_price2_id/(1+c.cb_mov2_id)*h.hold_amount),4)-1)*100,2)  as '日收益率',
+    round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy - h.sum_sell) * 100, 2)  as 累积收益率
+from hold_bond h , changed_bond c 
+where h.bond_code = c.bond_code  and hold_owner='me' 
+        """)
+
+    row = cur.fetchone()
+    day_yield = row[0]
+    all_yield = row[1]
+    return day_yield, all_yield
+
+
+# 计算可转债中位数
+def calc_middle_info():
 
     # 打开文件数据库
     con_file = sqlite3.connect('db/cb.db3')
@@ -152,6 +172,77 @@ def generate_pie_html(dict_rows, key, value):
     pie.set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {d}%"))
     pie_html = pie.render_embed('template.html', env)
     return pie_html
+
+
+def generate_line_html(rows, select=None):
+    # 用散点图展示
+    line = Line(opts.InitOpts(height='700px', width='1524px', theme=ThemeType.LIGHT)) # .add_xaxis().add_yaxis().set_global_opts()
+
+    x = []
+    y = []
+
+    for row in rows:
+        x.append(row['时间'])
+        y.append(row['收益率'])
+
+    line.add_xaxis(x)
+
+    line.add_yaxis("累积收益率", y)
+
+    line.set_global_opts(
+        title_opts=opts.TitleOpts(title="收益曲线", pos_left='center'),
+        tooltip_opts=opts.TooltipOpts(
+            formatter=JsCode(
+                "function (params) {return params.value[1] + '%';}"
+            )
+        ),
+        legend_opts=opts.LegendOpts(
+            pos_bottom=5,
+            # selected_mode='single'
+        ),
+        toolbox_opts=opts.ToolboxOpts(feature={
+            'dataZoom': {},
+        }
+        ),
+        # visualmap_opts=opts.VisualMapOpts(
+        #     type_="color", max_=150, min_=20, dimension=1
+        # ),
+        xaxis_opts=opts.AxisOpts(
+            # data=None,
+            type_='time',
+            name='时间',
+            name_gap=30,
+            is_scale=True,
+            name_location='middle',
+            splitline_opts=opts.SplitLineOpts(is_show=False),
+            # axislabel_opts=opts.LabelOpts(formatter="{value}"), #echarts.format.formatTime('yy-MM-dd', value*1000)
+            axisline_opts=opts.AxisLineOpts(
+                is_on_zero=False,
+                symbol=['none', 'arrow']
+            )
+        ),
+        yaxis_opts=opts.AxisOpts(
+            type_='value',
+            name='收益率(%)',
+            name_rotate=90,
+            name_gap=55,
+            name_location='middle',
+            is_scale=True,
+            axislabel_opts=opts.LabelOpts(formatter='{value}%'),
+            splitline_opts=opts.SplitLineOpts(is_show=False),
+            axisline_opts=opts.AxisLineOpts(
+                is_on_zero=False,
+                symbol=['none', 'arrow']
+            )
+        )
+    )
+    line.set_series_opts(
+        # symbol='none',
+        smooth=True,
+        label_opts=opts.LabelOpts(is_show=False)
+    )
+    line_html = line.render_embed('template.html', env)
+    return line_html
 
 
 def generate_scatter_html(tables, select=None):
