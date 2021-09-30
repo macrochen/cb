@@ -28,7 +28,7 @@ date_string as 时间,
 all_yield as 累积收益率,
 day_yield as 日收益率
 from invest_yield 
-order by date     --limit 2   
+order by date  desc   --limit 2   
         """)
 
         rows = []
