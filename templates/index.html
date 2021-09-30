@@ -119,25 +119,17 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                       <li><a href="/view_my_strategy.html">按策略统计</a></li>
                       <li><a href="/view_my_account.html">按账户统计</a></li>
                         <li><a href="/new_sync_trade_data.html">同步交易数据</a></li>
-                        <li><a href="/view_up_down.html">可转债涨跌数据</a></li>
                         <li><a href="/edit_hold_bond.html">更新持仓数据</a></li>
+                        <li><a href="/view_up_down.html">可转债涨跌排行</a></li>
                         <li><a href="/view_my_yield.html">我的收益率</a></li>
-                        <li><a href="#" onclick="$.get('/update_bond_yield.html', function(data, status) {
-                        if (status == 'success' && data == 'OK'){
-                            $('#myModal').modal('show');
-                        }
-                      });return false">手动更新可转债收益率</a></li>
+                        <li><a href="#" onclick="$.get('/update_bond_yield.html', doCallback);return false">更新可转债收益率</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">实时更新</a>
                     <ul class="dropdown-menu">
                       <li><a target="_blank" href="https://www.jisilu.cn/account/login/">登录集思录</a></li>
-                      <li><a href="#" onclick="$.get('/jsl_update_data.html', function(data, status) {
-                        if (status == 'success' && data == 'OK'){
-                            $('#myModal').modal('show');
-                        }
-                      });return false">直接同步集思录可转债数据</a></li>
+                      <li><a href="#" onclick="$.get('/jsl_update_data.html', doCallback);return false">直接同步集思录可转债数据</a></li>
                       <li><a target="_blank" href="https://www.jisilu.cn/data/cbnew/cb_list/">访问集思录JSON格式数据</a></li>
                       <li><a href="/sync_jsl_bond_data.html">提交集思录JSON格式数据</a></li>
                     </ul>
@@ -145,11 +137,7 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">数据同步</a>
                     <ul class="dropdown-menu">
-                      <li><a href="#" onclick="$.get('/cb_ninwen.html', function(data, status) {
-                        if (status == 'success' && data == 'OK'){
-                            $('#myModal').modal('show');
-                        }
-                      });return false">更新所有可转债数据(非实时)</a></li>
+                      <li><a href="#" onclick="$.get('/cb_ninwen.html', doCallback);return false">更新所有可转债数据(非实时)</a></li>
                       <li><a href="/cb_ninwen_detail.html">更新可转债条款明细</a></li>
                       <li><a href="/stock_10jqka.html">同步同花顺正股诊断数据</a></li>
                       <li><a href="/stock_eastmoney.html">同步东财正股关键指标</a></li>
@@ -173,6 +161,10 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                 </li>
 
                 <li><a href="/logout.html">退出</a></li>
+<!--                <li><a href="#" onclick="-->
+<!--                    doCallback('OK', 'success');-->
+<!--                    return false-->
+<!--                ">Test</a></li>-->
                 {% endif %}
 
             </ul>
@@ -205,7 +197,7 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                     <h4 class="modal-title">操作</h4>
                 </div>
                 <div class="modal-body" id = 'dialog_body'>
-                    <p>操作成功</p>
+                    操作成功
                 </div>
                 <div class="modal-footer" style = 'text-align:center'>
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭
@@ -216,20 +208,29 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
         </div>
     </div>
 <script type="text/javascript">
-$(document).ready(function(){
-    function alignModal(){
-        var modalDialog = $(this).find(".modal-dialog");
-        /* Applying the top margin on modal dialog to align it vertically center */
-        modalDialog.css("margin-top", Math.max(0, ($(window).height() - modalDialog.height()) / 2));
-    }
-    // Align modal when it is displayed
-    $(".modal").on("shown.bs.modal", alignModal);
+    $(document).ready(function(){
+        function alignModal(){
+            var modalDialog = $(this).find(".modal-dialog");
+            /* Applying the top margin on modal dialog to align it vertically center */
+            modalDialog.css("margin-top", Math.max(0, ($(window).height() - modalDialog.height()) / 2));
+        }
+        // Align modal when it is displayed
+        $(".modal").on("shown.bs.modal", alignModal);
 
-    // Align modal when user resize the window
-    $(window).on("resize", function(){
-        $(".modal:visible").each(alignModal);
+        // Align modal when user resize the window
+        $(window).on("resize", function(){
+            $(".modal:visible").each(alignModal);
+        });
     });
-});
+
+    function doCallback(data, status) {
+        if (status == 'success' && data == 'OK'){
+            $('#dialog_body').text('操作成功!');
+        }else{
+            $('#dialog_body').html('<p style=\'color: red\'>后端异常, 操作失败, 请检查!</p>')
+        }
+        $('#myModal').modal('show');
+    }
 </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 
 import sqlite3
 
+from prettytable import from_db_cursor
 from pyecharts.globals import ThemeType
 
 import common
@@ -23,10 +24,9 @@ def draw_my_view():
 
         cur.execute("""
 SELECT
- --date
-strftime('%Y-%m-%d', datetime(date, 'unixepoch', 'localtime'))
- as 时间, 
-all_yield as 收益率
+date_string as 时间, 
+all_yield as 累积收益率,
+day_yield as 日收益率
 from invest_yield 
 order by date     --limit 2   
         """)
@@ -34,7 +34,17 @@ order by date     --limit 2
         rows = []
         dict_rows = []
 
-        for row in cur.fetchall():
+        table = from_db_cursor(cur)
+
+        table_height_style = """"""
+        if len(table._rows) > 10:
+            table_height_style += """ style="height:500px;width:800px"> """
+        else:
+            table_height_style += """ style="width:800px"> """
+
+        table_html = table.get_html_string()
+
+        for row in table._rows:
             rows.append(row)
             dict_row = common.get_dict_row(cur, row)
             dict_rows.append(dict_row)
@@ -47,13 +57,13 @@ order by date     --limit 2
             <br/>
             <br/>
                 <center>
-                    """ + line_html + """
+                    """ + line_html + "<br/>" + """<div class="outer_table"><div class="inner_table" """ + table_height_style + table_html + '</div></div>' + """
                 </center>
         """
 
         con_file.close()
 
-        return '我的账户', '<li><a href="/">Home</a></li>', html
+        return '我的可转债收益情况', '<li><a href="/">Home</a></li>', html
 
     except Exception as e:
         con_file.close()

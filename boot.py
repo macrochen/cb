@@ -536,6 +536,7 @@ def update_bond_yield():
     if invest_yield is None:
         invest_yield = InvestYield()
         invest_yield.date = s
+        invest_yield.date_string = ymd
         invest_yield.all_yield = all_yield
         invest_yield.day_yield = day_yield
         db.session.add(invest_yield)
@@ -578,4 +579,5 @@ if __name__ == "__main__":
     scheduler.add_job(update_bond_yield_job, 'cron', hour='15', minute='35')
     scheduler.start()
 
-    app.run(port=8080, host="127.0.0.1", debug=True)  # 调用run方法，设定端口号，启动服务
+    # app.run(port=8080, host="127.0.0.1")  # 生产环境使用, 调用run方法，设定端口号，启动服务
+    app.run(port=8080, host="127.0.0.1", debug=True, use_reloader=True)  #开发环境使用, 注意use_reloader=true会导致scheduler被调用两次

@@ -4,7 +4,7 @@ import sqlite3
 
 from jinja2 import Environment, FileSystemLoader
 from prettytable import PrettyTable
-from pyecharts.charts import Pie
+from pyecharts.charts import Pie, Bar
 from pyecharts import options as opts
 from pyecharts.globals import ThemeType
 from pyecharts.charts import Scatter, Line
@@ -40,11 +40,11 @@ def calc_yield():
     con_file = sqlite3.connect('db/cb.db3')
     cur = con_file.cursor()
     cur.execute("""
-SELECT 
-    round((round(sum(c.cb_price2_id*h.hold_amount)/sum(c.cb_price2_id/(1+c.cb_mov2_id)*h.hold_amount),4)-1)*100,2)  as '日收益率',
-    round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy - h.sum_sell) * 100, 2)  as 累积收益率
+SELECT    
+	round(sum(round((c.cb_price2_id/(1+c.cb_mov2_id) * c.cb_mov2_id)*h.hold_amount, 2)) /    sum(h.sum_buy-h.sum_sell)*100,2)  as '日收益率',
+	round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy - h.sum_sell) * 100, 2)  as 累积收益率
 from hold_bond h , changed_bond c 
-where h.bond_code = c.bond_code  and hold_owner='me' 
+where h.bond_code = c.bond_code and hold_owner='me'
         """)
 
     row = cur.fetchone()
@@ -176,30 +176,40 @@ def generate_pie_html(dict_rows, key, value):
 
 def generate_line_html(rows, select=None):
     # 用散点图展示
-    line = Line(opts.InitOpts(height='700px', width='1524px', theme=ThemeType.LIGHT)) # .add_xaxis().add_yaxis().set_global_opts()
+    line = Line(opts.InitOpts(height='700px', width='1524px', theme=ThemeType.LIGHT))
 
     x = []
     y = []
 
     for row in rows:
         x.append(row['时间'])
-        y.append(row['收益率'])
+        # y.append([row['累积收益率'], row['日收益率']])
+        y.append(row['累积收益率'])
 
     line.add_xaxis(x)
 
-    line.add_yaxis("累积收益率", y)
+    line.add_yaxis("累积收益率", y,
+            label_opts=opts.LabelOpts(
+                position='bottom',
+                formatter=JsCode(  # 调用js代码设置方法提取参数第2个值和参数第3个值
+                    "function(params){return params.value[2];}"
+                )
+            ),
+            )
 
     line.set_global_opts(
         title_opts=opts.TitleOpts(title="收益曲线", pos_left='center'),
         tooltip_opts=opts.TooltipOpts(
             formatter=JsCode(
-                "function (params) {return params.value[1] + '%';}"
+                "function (params) {return '累积收益率<br/>' + params.value[1] + '%';}"
+                # "function (params) {return '累积收益率:' + params.value[1] + '%' + '<br/>日收益率:' + params.value[2] + '%';}"
             )
         ),
         legend_opts=opts.LegendOpts(
             pos_bottom=5,
             # selected_mode='single'
         ),
+        datazoom_opts={'start': 0, 'end': 100},
         toolbox_opts=opts.ToolboxOpts(feature={
             'dataZoom': {},
         }

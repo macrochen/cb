@@ -49,6 +49,7 @@ class TradeDetail(db.Model):
 class InvestYield(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Integer)
+    date_string = db.Column(db.String(20))
     all_yield = db.Column(db.Float)
     day_yield = db.Column(db.Float)
 

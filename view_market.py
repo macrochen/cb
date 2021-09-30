@@ -92,7 +92,7 @@ def generate_strategy_html(con_file,
         x.append(x1)
         y1 = record[field_name].replace('%', '')
         if use_personal_features:
-            y.append([y1, get_label(record), record.get("持有成本", 0), record.get("持有数量", 0)])
+            y.append([y1, get_label(record), record.get("持有数量", 0)])
         else:
             y.append([y1, get_label(record)])
 
@@ -157,7 +157,7 @@ def genrate_scatter_html(field_name, labelY, midX, midY, sub_title, type, point_
                     "return '价格:' + params.value[0] + '元<br/> " + \
                         field_name + ":' + params.value[1] + '%'+ " \
                         "( params.value[3] == null ? '' : " \
-                                     "('<br/>持有成本:' + params.value[3] + '元<br/>持有数量:' + params.value[4] + '张'));" \
+                                     "('<br/>持有数量:' + params.value[3] + '张'));" \
                  "}"
     scatter.set_global_opts(
         title_opts=opts.TitleOpts(title="=========" + type + "=========", subtitle=sub_title, pos_left='center'),

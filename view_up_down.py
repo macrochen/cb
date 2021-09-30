@@ -46,16 +46,6 @@ def draw_view(is_login_user):
 
         html = ''
 
-        # =========我的转债价格TOP20柱状图=========
-        cur.execute("""
-select cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 100, 2) as 涨跌, round(cb_premium_id*100,2) || '%' as 溢价率
- from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
- where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_price2_id DESC limit 20)     
-                    """)
-
-        rows = cur.fetchall()
-        html += '<br/><br/><br/><br/><br/>' + generate_top_bar_html(rows, '我的可转债价格TOP20')
-
         # =========我的转债涨跌TOP20柱状图=========
         cur.execute("""
 select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
@@ -68,7 +58,7 @@ select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id 
 order by 涨跌 desc
                     """)
         rows = cur.fetchall()
-        html += '<br/>' + generate_bar_html(rows, '我持有的可转债涨跌TOP20')
+        html += '<br/><br/><br/><br/><br/>' + generate_bar_html(rows, '我持有的可转债涨跌TOP20')
 
         # =========我的转债涨跌TOP20表格=========
 
@@ -120,6 +110,16 @@ stock_report s, (select *
         html = generate_table_html("涨跌TOP10", cur, html, need_title=False,
                                    remark_fields_color=['策略', '盈亏', '到期收益率', '溢价率', '可转债涨跌'],
                                               is_login_user=is_login_user)
+
+        # =========我的转债价格TOP20柱状图=========
+        cur.execute("""
+select cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 100, 2) as 涨跌, round(cb_premium_id*100,2) || '%' as 溢价率
+ from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
+ where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_price2_id DESC limit 20)     
+                    """)
+
+        rows = cur.fetchall()
+        html += '<br/>' + generate_top_bar_html(rows, '我的可转债价格TOP20')
 
         # =========全网可转债涨跌TOP20柱状图=========
 
