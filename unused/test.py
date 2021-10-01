@@ -552,7 +552,7 @@ for i in range(1,10):
     s = date_2.strftime('%Y-%m-%d')
     print(s)
     # print(date_2)
-    ta = datetime.strptime(s, '%Y-%m-%d')
+    ta = datetime.strptime('2021-09-28', '%Y-%m-%d')
     t = time.mktime(ta.timetuple())
     t_a = time.localtime(t)
     t_s = time.strftime('%Y-%m-%d %H:%M:%S', t_a)

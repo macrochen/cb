@@ -521,10 +521,15 @@ def update_bond_yield():
         return 'OK'
 
     # 先同步一下可转债数据
-    # cb_ninwen.fetch_data()
+    cb_ninwen.fetch_data()
 
     # 获取收益率
     day_yield, all_yield = common.calc_yield()
+
+    # todo 获取可转债等权涨跌幅, 沪深300涨跌幅信息 from: https://www.ninwin.cn/index.php?m=cb&c=idx
+    # 参考update_cb_sum_data
+
+    # 获取上一个交易日的净值, 计算今天的净值
 
     # 去掉时分秒
     today = datetime.now()

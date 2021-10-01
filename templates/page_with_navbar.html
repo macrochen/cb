@@ -156,9 +156,73 @@
                 color:green
             }
 
+            div.x-goto-top {
+                display: none;
+                opacity: 0.9;
+                z-index: 999999;
+                position: fixed;
+                bottom: 100px;
+                right: 1%;
+                margin-left: 40px;
+                width: 38px;
+                height: 38px;
+                border-radius: 3px;
+                cursor: pointer;
+                background-color: #f5f5f5;
+                border: 1px solid #0593d3;
+            }
+            div.x-goto-top div.x-arrow {
+                position: absolute;
+                left: 6px;
+                top: -3px;
+                width: 0;
+                height: 0;
+                border: 13px solid transparent;
+                border-bottom-color: #0593d3;
+            }
+            div.x-goto-top div.x-stick {
+                position: absolute;
+                left: 15px;
+                top: 15px;
+                width: 8px;
+                height: 14px;
+                display: block;
+                border-radius: 1px;
+                background-color: #0593d3;
+            }
         </style>
+        <script>
+             $(function() {
+
+                //返回顶部===>出现与消失
+                //当屏幕滚动，触生 scroll 事件
+                $(window).scroll(function() {
+
+                   var top1 = $(this).scrollTop();     //获取相对滚动条顶部的偏移
+
+                   if (top1>200) {      //当偏移大于200px时让图标淡入（css设置为隐藏）
+
+                    $(".x-goto-top").stop().fadeIn();
+
+                   }else{
+                         //当偏移小于200px时让图标淡出
+                    $(".x-goto-top").stop().fadeOut();
+                   }
+                });
+
+                //去往顶部
+                $(".x-goto-top").click(function(){
+                    $("body , html").animate({scrollTop:0},300);   //300是所用时间
+                });
+
+            });
+        </script>
     </head>
     <body>
+        <div class="x-goto-top">
+            <div class="x-arrow"></div>
+            <div class="x-stick"></div>
+        </div>
       <div class="navbar navbar-default navbar-fixed-top navbar-mobile bootsnav" id="top_navbar">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">

@@ -179,26 +179,25 @@ def generate_line_html(rows, select=None):
     line = Line(opts.InitOpts(height='700px', width='1524px', theme=ThemeType.LIGHT))
 
     x = []
-    y = []
+    y1 = []
+    y2 = []
+    y3 = []
 
     for row in rows:
         x.append(row['时间'])
         # y.append([row['累积收益率'], row['日收益率']])
-        y.append(row['累积收益率'])
+        y1.append(row['我的净值'])
+        y2.append(row['等权指数净值'])
+        y3.append(row['沪深300净值'])
 
     line.add_xaxis(x)
 
-    line.add_yaxis("累积收益率", y,
-            label_opts=opts.LabelOpts(
-                position='bottom',
-                formatter=JsCode(  # 调用js代码设置方法提取参数第2个值和参数第3个值
-                    "function(params){return params.value[2];}"
-                )
-            ),
-            )
+    line.add_yaxis("我的净值", y1)
+    line.add_yaxis("等权指数净值", y2)
+    line.add_yaxis("沪深300净值", y3)
 
     line.set_global_opts(
-        title_opts=opts.TitleOpts(title="收益曲线", pos_left='center'),
+        title_opts=opts.TitleOpts(title="收益率曲线", pos_left='center', pos_top=-5),
         tooltip_opts=opts.TooltipOpts(
             formatter=JsCode(
                 "function (params) {return '累积收益率<br/>' + params.value[1] + '%';}"
@@ -206,7 +205,7 @@ def generate_line_html(rows, select=None):
             )
         ),
         legend_opts=opts.LegendOpts(
-            pos_bottom=5,
+            pos_top=20,
             # selected_mode='single'
         ),
         datazoom_opts={'start': 0, 'end': 100},
@@ -380,14 +379,17 @@ def generate_scatter_html(tables, select=None):
     return scatter_html
 
 
-def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
-                        remark_fields_color=[],
-                        htmls={},
-                        tables=None,
-                        subtitle='',
-                        ignore_fields=[],
-                        field_links={},
-                        is_login_user=False):
+def generate_table(type, cur, html, need_title=True, field_names=None, rows=None,
+                   remark_fields_color=[],
+                   htmls={},
+                   tables=None,
+                   subtitle='',
+                   ignore_fields=[],
+                   field_links={},
+                   is_login_user=False,
+                   table_width=None
+                   ):
+
     table = from_db(cur, field_names, rows)
 
     if len(table._rows) == 0:
@@ -408,8 +410,19 @@ def generate_table_html(type, cur, html, need_title=True, field_names=None, rows
                + ('' if len(subtitle) == 0 else """<center> """ + subtitle + """</center>""") + """<br>"""
         title_suffix = """</div>"""
 
-    return html + title + get_html_string(table, remark_fields_color, ignore_fields, is_login_user, field_links) + title_suffix
+    return table, html + title + get_html_string(table, remark_fields_color, ignore_fields, is_login_user, field_links, table_width=table_width) + title_suffix
 
+
+def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
+                        remark_fields_color=[],
+                        htmls={},
+                        tables=None,
+                        subtitle='',
+                        ignore_fields=[],
+                        field_links={},
+                        is_login_user=False):
+    table, html = generate_table(type, cur, html, need_title, field_names, rows, remark_fields_color, htmls, tables, subtitle, ignore_fields, field_links, is_login_user)
+    return html
 
 def from_db(cursor, field_names, rows, **kwargs):
     if cursor.description:
@@ -434,13 +447,19 @@ def default_edit_link_maker(hold_id, bond_code):
 def get_html_string(table, remark_fields_color=[],
                     ignore_fields=[], is_login_user=False,
                     field_links={},
-                    table_rows_size=10
+                    table_rows_size=10,
+                    table_width=None
                     ):
     options = table._get_options({})
     rows = table._get_rows(options)
-    table_height_style = ''
+    table_height_style_content = ''
+    if table_width is not None:
+        table_height_style_content = 'width: ' + table_width
+
     if len(rows) > table_rows_size:
-        table_height_style = """style="height: """ + str(50*10) + """px\"""" #'style:' + str(50*15) + 'px'
+        table_height_style_content = ',height: ' + str(50*10) + 'px' #'style:' + str(50*15) + 'px'
+
+    table_height_style = """style=" """ + table_height_style_content + """ " """
 
     ignore_fields.extend(['nid', 'id', 'hold_id', 'bond_code', 'stock_code', '持有', '持有成本', '持有数量', 'cb_mov2_id'])
     lines = []
@@ -558,10 +577,11 @@ def generate_head_tail_html(field, is_login_user, record):
 
 
 def add_nav_html(htmls, type):
-    # 增加导航
-    nav_html = htmls.get('nav', '')
-    nav_html += get_sub_nav_html(type)
-    htmls['nav'] = nav_html
+    if type is not None:
+        # 增加导航
+        nav_html = htmls.get('nav', '')
+        nav_html += get_sub_nav_html(type)
+        htmls['nav'] = nav_html
 
 
 def add_nav_html_to_head(htmls, type, prefix_nav = ''):
