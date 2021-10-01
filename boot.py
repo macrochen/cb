@@ -523,31 +523,50 @@ def update_bond_yield():
     # 先同步一下可转债数据
     cb_ninwen.fetch_data()
 
-    # 获取收益率
+    # 获取最新收益率
     day_yield, all_yield = common.calc_yield()
 
-    # todo 获取可转债等权涨跌幅, 沪深300涨跌幅信息 from: https://www.ninwin.cn/index.php?m=cb&c=idx
-    # 参考update_cb_sum_data
-
-    # 获取上一个交易日的净值, 计算今天的净值
+    # 获取可转债等权, 沪深300涨跌幅信息 from: https://www.ninwin.cn/index.php?m=cb&c=idx
+    cb_day_yield, hs_day_yield = common.get_up_down_data()
 
     # 去掉时分秒
     today = datetime.now()
     ymd = today.strftime('%Y-%m-%d')
     d = datetime.strptime(ymd, '%Y-%m-%d')
     s = int(time.mktime(d.timetuple()))
+
+    # 获取上一个交易日的净值, 计算今天的净值
+    previous = db.session.query(InvestYield).filter(InvestYield.date < s).first()
+    if previous is None:
+        raise Exception('没找到前一个交易日的记录')
+    cb_net_value = previous.cb_net_value + cb_day_yield
+    hs_net_value = previous.hs_net_value + hs_day_yield
+
     invest_yield = db.session.query(InvestYield).filter(InvestYield.date == s).first()
 
     if invest_yield is None:
         invest_yield = InvestYield()
         invest_yield.date = s
         invest_yield.date_string = ymd
+
         invest_yield.all_yield = all_yield
         invest_yield.day_yield = day_yield
+
+        invest_yield.cb_day_yield = cb_day_yield
+        invest_yield.hs_day_yield = hs_day_yield
+
+        invest_yield.cb_net_value = cb_net_value
+        invest_yield.hs_net_value = hs_net_value
         db.session.add(invest_yield)
     else:
         invest_yield.all_yield = all_yield
         invest_yield.day_yield = day_yield
+
+        invest_yield.cb_day_yield = cb_day_yield
+        invest_yield.hs_day_yield = hs_day_yield
+
+        invest_yield.cb_net_value = cb_net_value
+        invest_yield.hs_net_value = hs_net_value
 
     db.session.commit()
 
