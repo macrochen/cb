@@ -51,7 +51,14 @@ class InvestYield(db.Model):
     date = db.Column(db.Integer)
     date_string = db.Column(db.String(20))
     all_yield = db.Column(db.Float)
+
     day_yield = db.Column(db.Float)
+    cb_day_yield = db.Column(db.Float)
+    hs_day_yield = db.Column(db.Float)
+
+    my_net_value = db.Column(db.Float)
+    cb_net_value = db.Column(db.Float)
+    hs_net_value = db.Column(db.Float)
 
 
 class TradeSummary(db.Model):

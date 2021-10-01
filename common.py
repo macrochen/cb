@@ -159,6 +159,32 @@ def update_cb_sum_data():
 
     driver.close()
 
+def get_up_down_data():
+
+    driver = webdriver.Chrome()
+
+    driver.implicitly_wait(10)
+
+    url = "https://www.ninwin.cn/index.php?m=cb&c=idx"
+
+    # fixme 需要把chromedriver放到/usr/local/bin目录下
+    driver.get(url)
+
+    div = driver.find_elements_by_xpath("//div[contains(@style,'font-size: 12px;color: gray;margin: 10px 20px;clear: both')]")[0]
+
+    # 最新涨跌：可转债等权：1.57%，上证转债：0.87%，正股等权：2.22%，沪深300：0.67%，中证500：1.33%说明快照'
+    s = div.text
+    cb_value = re.findall(r"可转债等权：(-?\d+\.?\d*)%", s)
+    if len(cb_value) != 1:
+        raise Exception("没有找到可转债等权:" + s)
+
+    hs_value = re.findall(r"沪深300：(-?\d+\.?\d*)%", s)
+    if len(hs_value) != 1:
+        raise Exception("没有找到沪深300:" + s)
+
+    driver.close()
+    return float(cb_value[0]), float(hs_value[0])
+
 
 def generate_pie_html(dict_rows, key, value):
     data = []
@@ -643,4 +669,4 @@ def rebuild_bond_code(bond_code):
     return market + bond_code
 
 if __name__ == "__main__":
-    update_cb_sum_data()
+    get_up_down_data()
