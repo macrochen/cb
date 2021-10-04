@@ -419,7 +419,7 @@ def generate_table(type, cur, html, need_title=True, field_names=None, rows=None
     table = from_db(cur, field_names, rows)
 
     if len(table._rows) == 0:
-        return html
+        return table, html
 
     if tables is not None:
         tables[type] = table

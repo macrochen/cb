@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
+import os
+
 from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import trade_utils
-from config import db
 
+db = SQLAlchemy()
+
+
+def init_db(app):
+    db.init_app(app)
+    return db
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)

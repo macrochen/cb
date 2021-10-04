@@ -1,23 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
 import sqlite3
-import threading
-import time
-from datetime import datetime
 
-import schedule
 from flask import render_template, request, url_for, redirect, flash, send_from_directory, session
+from flask_login import LoginManager
 from flask_login import login_user, login_required, logout_user
-
-import trade_utils
-import view_my_select
-import view_my_yield
-from config import app, db
-from models import User, ChangedBond, HoldBond, ChangedBondSelect, InvestYield
-
 from prettytable import from_db_cursor
-
-from apscheduler.schedulers.background import BackgroundScheduler
 
 import cb_jsl
 import cb_ninwen
@@ -27,24 +15,31 @@ import stock_10jqka
 import stock_eastmoney
 import stock_xueqiu
 import view_market
-import view_my_strategy
 import view_my_account
+import view_my_select
+import view_my_strategy
+import view_my_yield
 import view_up_down
+from jobs import do_update_bond_yield
+from models import User, ChangedBond, HoldBond, ChangedBondSelect, db
+from flask import Blueprint
 
-from flask_login import LoginManager
+cb = Blueprint('cb', __name__)
 
-login_manager = LoginManager(app)  # 实例化扩展类
+login_manager = LoginManager()
+
 
 @login_manager.user_loader
 def load_user(user_id):  # 创建用户加载回调函数，接受用户 ID 作为参数
     user = User.query.get(int(user_id))  # 用 ID 作为 User 模型的主键查询对应的用户
     return user  # 返回用户对象
 
-@app.route('/')
+
+@cb.route('/')
 def index():
     return render_template("index.html")
 
-@app.route('/login.html', methods=['POST'])
+@cb.route('/login.html', methods=['POST'])
 def login():
     username = request.form['username']
     password = request.form['password']
@@ -61,16 +56,16 @@ def login():
     return render_template('index.html')
 
 
-@app.route('/logout.html')
+@cb.route('/logout.html')
 def logout():
     logout_user()
 
     return render_template('index.html')
 
 
-@app.route('/edit_hold_bond.html')
-@app.route('/edit_hold_bond_by_id.html/<id>/')
-@app.route('/edit_hold_bond.html/<bond_code>/')
+@cb.route('/edit_hold_bond.html')
+@cb.route('/edit_hold_bond_by_id.html/<id>/')
+@cb.route('/edit_hold_bond.html/<bond_code>/')
 @login_required
 def edit_hold_bond(id='', bond_code=''):
     bond = None
@@ -88,7 +83,7 @@ def edit_hold_bond(id='', bond_code=''):
     return render_template("edit_hold_bond.html", bond=bond)
 
 
-@app.route('/find_bond_by.html', methods=['GET'])
+@cb.route('/find_bond_by.html', methods=['GET'])
 @login_required
 def find_bond_by_code():
     bond_code = request.args.get("bond_code")
@@ -122,7 +117,7 @@ def find_bond_by_code():
         return dict(bond)
 
 
-@app.route('/view_my_select.html')
+@cb.route('/view_my_select.html')
 @login_required
 def my_select_view():
     user_id = session.get('_user_id')
@@ -130,8 +125,8 @@ def my_select_view():
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
-@app.route('/edit_changed_bond_select.html')
-@app.route('/edit_changed_bond_select.html/<bond_code>/')
+@cb.route('/edit_changed_bond_select.html')
+@cb.route('/edit_changed_bond_select.html/<bond_code>/')
 @login_required
 def edit_changed_bond_select(bond_code=''):
     bond = None
@@ -141,7 +136,7 @@ def edit_changed_bond_select(bond_code=''):
     return render_template("edit_changed_bond_select.html", bond=bond)
 
 
-@app.route('/find_changed_bond_select_by_code.html', methods=['GET'])
+@cb.route('/find_changed_bond_select_by_code.html', methods=['GET'])
 @login_required
 def find_changed_bond_select_by_code():
     bond_code = request.args.get("bond_code")
@@ -165,7 +160,7 @@ def find_changed_bond_select_by_code():
     else:
         return dict(bond)
 
-@app.route('/save_changed_bond_select.html', methods=['POST'])
+@cb.route('/save_changed_bond_select.html', methods=['POST'])
 @login_required
 def save_changed_bond_select():
     id = request.form['id']
@@ -202,7 +197,7 @@ def save_changed_bond_select():
     return render_template("edit_changed_bond_select.html", result='save is successful')
 
 
-@app.route('/save_hold_bond.html', methods=['POST'])
+@cb.route('/save_hold_bond.html', methods=['POST'])
 @login_required
 def save_hold_bond():
     id = request.form['id']
@@ -270,7 +265,7 @@ def save_hold_bond():
 
     return redirect(request.form['back_url'])
 
-@app.route('/save_trade_data.html', methods=['POST'])
+@cb.route('/save_trade_data.html', methods=['POST'])
 @login_required
 def save_trade_data():
     id = request.form['id']
@@ -342,15 +337,15 @@ def save_trade_data():
     return redirect(request.form['back_url'])
 
 
-@app.route('/sync_jsl_bond_data.html')
+@cb.route('/sync_jsl_bond_data.html')
 @login_required
 def sync_jsl_bond_data():
     return render_template("sync_jsl_bond_data.html")
 
 
-@app.route('/sync_trade_data.html/<id>/')
-@app.route('/new_sync_trade_data.html/<bond_code>/')
-@app.route('/new_sync_trade_data.html')
+@cb.route('/sync_trade_data.html/<id>/')
+@cb.route('/new_sync_trade_data.html/<bond_code>/')
+@cb.route('/new_sync_trade_data.html')
 @login_required
 def sync_trade_data(id='', bond_code=''):
     bond = None
@@ -362,14 +357,14 @@ def sync_trade_data(id='', bond_code=''):
     return render_template("sync_trade_data.html", bond=bond)
 
 
-@app.route('/view_up_down.html')
+@cb.route('/view_up_down.html')
 @login_required
 def up_down_view():
     user_id = session.get('_user_id')
     title, navbar, content = view_up_down.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
-@app.route('/view_my_strategy.html')
+@cb.route('/view_my_strategy.html')
 @login_required
 def my_strategy_view():
     user_id = session.get('_user_id')
@@ -378,14 +373,14 @@ def my_strategy_view():
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
-@app.route('/view_my_yield.html')
+@cb.route('/view_my_yield.html')
 @login_required
 def my_yield_view():
     title, navbar, content = view_my_yield.draw_my_view()
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
-@app.route('/view_my_account.html')
+@cb.route('/view_my_account.html')
 @login_required
 def my_account_view():
     user_id = session.get('_user_id')
@@ -393,7 +388,7 @@ def my_account_view():
     title, navbar, content = view_my_account.draw_my_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
-@app.route('/view_market.html')
+@cb.route('/view_market.html')
 def market_view():
     # current_user = None
     user_id = session.get('_user_id')
@@ -401,37 +396,37 @@ def market_view():
     title, navbar, content = view_market.draw_market_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
-@app.route('/jsl_update_data.html')
+@cb.route('/jsl_update_data.html')
 @login_required
 def jsl_update_data():
     return cb_jsl.fetch_data()
 
-@app.route('/cb_ninwen.html')
+@cb.route('/cb_ninwen.html')
 @login_required
 def ninwen_update_data():
     return cb_ninwen.fetch_data()
 
-@app.route('/cb_ninwen_detail.html')
+@cb.route('/cb_ninwen_detail.html')
 @login_required
 def ninwen_detail_update_data():
     return cb_ninwen_detail.fetch_data()
 
-@app.route('/stock_10jqka.html')
+@cb.route('/stock_10jqka.html')
 @login_required
 def stock_10jqka_update_data():
     return stock_10jqka.fetch_data()
 
-@app.route('/stock_eastmoney.html')
+@cb.route('/stock_eastmoney.html')
 @login_required
 def stock_eastmoney_update_data():
     return stock_eastmoney.fetch_data()
 
-@app.route('/stock_xueqiu.html')
+@cb.route('/stock_xueqiu.html')
 @login_required
 def stock_xueqiu_update_data():
     return stock_xueqiu.fetch_data()
 
-@app.route('/download_db_data.html')
+@cb.route('/download_db_data.html')
 @login_required
 def download_db_data():
     con = sqlite3.connect('db/cb.db3')
@@ -444,12 +439,12 @@ def download_db_data():
     directory = os.getcwd()  # 假设在当前目录
     return send_from_directory(directory, file_name, as_attachment=True)
 
-@app.route('/upload_db_data.html')
+@cb.route('/upload_db_data.html')
 @login_required
 def upload_db_data():
     return render_template("upload_db_data.html")
 
-@app.route('/save_db_data.html', methods=['POST'])
+@cb.route('/save_db_data.html', methods=['POST'])
 @login_required
 def save_db_data():
     # 删除整个db
@@ -464,7 +459,7 @@ def save_db_data():
     return 'OK'
 
 
-@app.route('/query_database.html', methods=['POST', 'GET'])
+@cb.route('/query_database.html', methods=['POST', 'GET'])
 @login_required
 def query_database():
     table_html = ''
@@ -491,13 +486,13 @@ def query_database():
     return render_template("query_database.html", table_html=table_html, sql_code=sql_code, table_height_style=table_height_style)
 
 
-@app.route('/update_database.html')
+@cb.route('/update_database.html')
 @login_required
 def update_database():
     return render_template("update_database.html")
 
 
-@app.route('/execute_sql.html', methods=['POST'])
+@cb.route('/execute_sql.html', methods=['POST'])
 @login_required
 def execute_sql():
     sql_code = request.form['sql_code']
@@ -513,95 +508,8 @@ def execute_sql():
     return 'OK'
 
 
-@app.route('/update_bond_yield.html')
+@cb.route('/update_bond_yield.html')
 @login_required
 def update_bond_yield():
-    # 检查是否交易日
-    if trade_utils.is_trade_date() is False:
-        return 'OK'
+    do_update_bond_yield()
 
-    # 先同步一下可转债数据
-    cb_ninwen.fetch_data()
-
-    # 获取最新收益率
-    day_yield, all_yield = common.calc_yield()
-
-    # 获取可转债等权, 沪深300涨跌幅信息 from: https://www.ninwin.cn/index.php?m=cb&c=idx
-    cb_day_yield, hs_day_yield = common.get_up_down_data()
-
-    # 去掉时分秒
-    today = datetime.now()
-    ymd = today.strftime('%Y-%m-%d')
-    d = datetime.strptime(ymd, '%Y-%m-%d')
-    s = int(time.mktime(d.timetuple()))
-
-    # 获取上一个交易日的净值, 计算今天的净值
-    previous = db.session.query(InvestYield).filter(InvestYield.date < s).first()
-    if previous is None:
-        raise Exception('没找到前一个交易日的记录')
-    cb_net_value = previous.cb_net_value + cb_day_yield
-    hs_net_value = previous.hs_net_value + hs_day_yield
-
-    invest_yield = db.session.query(InvestYield).filter(InvestYield.date == s).first()
-
-    if invest_yield is None:
-        invest_yield = InvestYield()
-        invest_yield.date = s
-        invest_yield.date_string = ymd
-
-        invest_yield.all_yield = all_yield
-        invest_yield.day_yield = day_yield
-
-        invest_yield.cb_day_yield = cb_day_yield
-        invest_yield.hs_day_yield = hs_day_yield
-
-        invest_yield.cb_net_value = cb_net_value
-        invest_yield.hs_net_value = hs_net_value
-        db.session.add(invest_yield)
-    else:
-        invest_yield.all_yield = all_yield
-        invest_yield.day_yield = day_yield
-
-        invest_yield.cb_day_yield = cb_day_yield
-        invest_yield.hs_day_yield = hs_day_yield
-
-        invest_yield.cb_net_value = cb_net_value
-        invest_yield.hs_net_value = hs_net_value
-
-    db.session.commit()
-
-    return 'OK'
-
-
-def sync_cb_data_job():
-    print("begin to sync data job...")
-    try:
-        # 检查是否交易日
-        if trade_utils.is_trade_date() is False:
-            return 'OK'
-
-        # 先同步一下可转债数据
-        cb_ninwen.fetch_data()
-    except Exception as e:
-        print('sync_cb_data_job is failure. ', e)
-
-
-def update_bond_yield_job():
-    print('begin to update yield job...')
-    try:
-        update_bond_yield()
-    except Exception as e:
-        print('update_bond_yield_job is failure', e)
-
-
-if __name__ == "__main__":
-
-    scheduler = BackgroundScheduler()
-    # 每天上午交易结束之后执行可转债数据同步
-    scheduler.add_job(sync_cb_data_job, 'cron', hour='11', minute='35')
-    # 每天下午交易结束之后执行可转债数据同步并更新收益率
-    scheduler.add_job(update_bond_yield_job, 'cron', hour='15', minute='35')
-    scheduler.start()
-
-    # app.run(port=8080, host="127.0.0.1")  # 生产环境使用, 调用run方法，设定端口号，启动服务
-    app.run(port=8080, host="127.0.0.1", debug=True, use_reloader=True)  #开发环境使用, 注意use_reloader=true会导致scheduler被调用两次
