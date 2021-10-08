@@ -6,7 +6,8 @@ import time
 
 import requests
 
-import common
+from utils import trade_utils
+from utils.db_utils import get_connect
 
 header = {
     "origin": "https://xueqiu.com",
@@ -64,7 +65,7 @@ def fetch_data():
 
     # 遍历可转债列表
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     stock_name = ''
     earnings = None
@@ -222,7 +223,7 @@ def getData(url):
     raise TimeoutError
 
 def getEarnings(stock_code):
-    stock_code = common.rebuild_stock_code(stock_code)
+    stock_code = trade_utils.rebuild_stock_code(stock_code)
 
     url = "https://stock.xueqiu.com/v5/stock/finance/cn/indicator.json?symbol=" + stock_code + "&type=all&is_detail=true&count=5&timestamp=" + str(int(round(time.time() * 1000)))
     # # response = requests.get(url=url)

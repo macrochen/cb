@@ -4,13 +4,14 @@
 
 import sqlite3
 
-import common
-
 # import matplotlib.pyplot as plt
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
 # 单选
+from utils import db_utils, html_utils
+from utils.db_utils import get_connect
+
 select = [
     "高收益",
     "回售",
@@ -31,7 +32,7 @@ tables = {}
 
 def draw_my_view(is_login_user):
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
     cur = con_file.cursor()
     try:
 
@@ -47,7 +48,7 @@ def draw_my_view(is_login_user):
     order by 转债价格 desc 
             """)
 
-        html = common.generate_table_html("强赎", cur, html, htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("强赎", cur, html, htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========我的回售=========
@@ -85,9 +86,9 @@ def draw_my_view(is_login_user):
     order by 回售收益率
             """)
 
-        html = common.generate_table_html("回售", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '回售年限', '回售收益率'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("回售", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '回售年限', '回售收益率'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========我的低余额策略=========
@@ -128,9 +129,9 @@ def draw_my_view(is_login_user):
     order by 转债价格
             """)
 
-        html = common.generate_table_html("低余额", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '正股涨跌'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("低余额", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '正股涨跌'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========我的低价高收益策略=========
@@ -167,9 +168,9 @@ def draw_my_view(is_login_user):
     ORDER by 性价比 desc
             """)
 
-        html = common.generate_table_html("高收益", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("高收益", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========我的双低策略=========
@@ -206,9 +207,9 @@ def draw_my_view(is_login_user):
         order by 双低值
                 """)
 
-        html = common.generate_table_html("双低", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("双低", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========我的双低轮动策略=========
@@ -245,9 +246,9 @@ def draw_my_view(is_login_user):
         order by 双低值
                 """)
 
-        html = common.generate_table_html("双低轮动", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("双低轮动", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========我的多因子策略=========
@@ -285,9 +286,9 @@ def draw_my_view(is_login_user):
         order by 双低值
                 """)
 
-        html = common.generate_table_html("多因子", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("多因子", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========我的打新策略=========
@@ -325,9 +326,9 @@ def draw_my_view(is_login_user):
     order by 转债价格
             """)
 
-        html = common.generate_table_html("打新", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("打新", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========我的网格策略=========
@@ -365,9 +366,9 @@ def draw_my_view(is_login_user):
     order by 转债价格
             """)
 
-        html = common.generate_table_html("网格", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("网格", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========我的基本面策略=========
@@ -407,9 +408,9 @@ def draw_my_view(is_login_user):
     order by 转债价格
         """)
 
-        html = common.generate_table_html("基本面", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("基本面", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========我的每周精选策略=========
@@ -430,7 +431,7 @@ def draw_my_view(is_login_user):
     order by 转债价格
             """)
 
-        html = common.generate_table_html("每周精选", cur, html, htmls=htmls, tables=tables)
+        html = html_utils.generate_table_html("每周精选", cur, html, htmls=htmls, tables=tables)
 
         # =========我的活性债策略=========
         cur.execute("""
@@ -468,9 +469,9 @@ def draw_my_view(is_login_user):
     order by 转债价格
             """)
 
-        html = common.generate_table_html("活性债", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("活性债", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
 
         # =========其他=========
@@ -509,9 +510,9 @@ def draw_my_view(is_login_user):
 order by 双低值
         """)
 
-        html = common.generate_table_html("其他", cur, html,
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
-                                          htmls=htmls, tables=tables,
+        html = html_utils.generate_table_html("其他", cur, html,
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                              htmls=htmls, tables=tables,
                                               is_login_user=is_login_user)
         # =========清仓建议=========
         cur.execute("""
@@ -534,10 +535,10 @@ order by 双低值
     order by cb_price2_id
         """)
 
-        html = common.generate_table_html("清仓建议", cur, html,
-                                   subtitle='(价格<100且溢价率>90%或100<价格<110且溢价率>60%或价格>130)',
-                                   remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
-                                   htmls=htmls, is_login_user=is_login_user)
+        html = html_utils.generate_table_html("清仓建议", cur, html,
+                                              subtitle='(价格<100且溢价率>90%或100<价格<110且溢价率>60%或价格>130)',
+                                              remark_fields_color=['盈亏', '转债价格', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                              htmls=htmls, is_login_user=is_login_user)
 
         # 数据汇总
 
@@ -575,7 +576,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
         money_rows = []
         for row in cur.fetchall():
             rows.append(row)
-            dict_row = common.get_dict_row(cur, row)
+            dict_row = db_utils.get_dict_row(cur, row)
             dict_rows.append(dict_row)
             asset_row = dict_row['市值']
             money_row = dict_row['投入金额']
@@ -598,18 +599,18 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
         total_now_yield = round(total_now_profit / total_money * 100, 2)
         new_rows.append(['合计', total_num, total_amount, round(total_money, 2), round(assets_money, 2), round(total_now_profit, 2), str(round(total_now_yield, 2))+'%', round(total_profit, 2), str(total_yield) + '%', '100%'])
 
-        pie_html = common.generate_pie_html(dict_rows, '策略', '投入金额')
+        pie_html = html_utils.generate_pie_html(dict_rows, '策略', '投入金额')
 
         type = "汇总"
-        sum_html = common.generate_table_html(type, cur, '', need_title=False, field_names=['投入占比'],
-                                       remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
-                                       ignore_fields=['投入金额'],
-                                       rows=new_rows, htmls={})
+        sum_html = html_utils.generate_table_html(type, cur, '', need_title=False, field_names=['投入占比'],
+                                                  remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
+                                                  ignore_fields=['投入金额'],
+                                                  rows=new_rows, htmls={})
 
-        common.add_nav_html_to_head(htmls, type, '<li><a href="/view_my_account.html">切换到按账户</a></li>')
+        html_utils.add_nav_html_to_head(htmls, type, '<li><a href="/view_my_account.html">切换到按账户</a></li>')
 
         # 用柱状图从大到小展示持有可转债涨跌幅情况
-        scatter_html = common.generate_scatter_html(tables, select)
+        scatter_html = html_utils.generate_scatter_html(tables, select)
 
         html = """
             <br/>

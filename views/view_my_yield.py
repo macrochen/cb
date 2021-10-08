@@ -1,17 +1,16 @@
 
 import sqlite3
 
-import common
-
-
 # import matplotlib.pyplot as plt
 #
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+from utils import db_utils, html_utils
+from utils.db_utils import get_connect
 
 
 def draw_my_view():
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
     cur = con_file.cursor()
     try:
 
@@ -35,19 +34,19 @@ order by date  desc   --limit 2
         """)
 
         # table_html = table.get_html_string()
-        table, table_html = common.generate_table(None, cur, html, need_title=False,
-                                                  remark_fields_color=['我的涨跌', '等权涨跌', '沪深300涨跌'],
-                                                  ignore_fields=['我的净值', '等权指数净值','沪深300净值'],
-                                                  htmls=htmls, table_width='800px')
+        table, table_html = html_utils.generate_table(None, cur, html, need_title=False,
+                                                      remark_fields_color=['我的涨跌', '等权涨跌', '沪深300涨跌'],
+                                                      ignore_fields=['我的净值', '等权指数净值','沪深300净值'],
+                                                      htmls=htmls, table_width='800px')
 
         rows = []
         dict_rows = []
         for row in table._rows:
             rows.append(row)
-            dict_row = common.get_dict_row(cur, row)
+            dict_row = db_utils.get_dict_row(cur, row)
             dict_rows.append(dict_row)
 
-        line_html = common.generate_line_html(dict_rows)
+        line_html = html_utils.generate_line_html(dict_rows)
 
         html = """
             <br/>

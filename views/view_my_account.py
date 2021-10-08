@@ -4,13 +4,14 @@
 
 import sqlite3
 
-import common
-
 # import matplotlib.pyplot as plt
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
 # 单选
+from utils import db_utils, html_utils
+from utils.db_utils import get_connect
+
 select = [
     "银河",
     "财通",
@@ -23,7 +24,7 @@ select = [
 
 def draw_my_view(is_login_user):
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
     cur = con_file.cursor()
     try:
 
@@ -80,7 +81,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by �
         money_rows = []
         for row in cur.fetchall():
             rows.append(row)
-            dict_row = common.get_dict_row(cur, row)
+            dict_row = db_utils.get_dict_row(cur, row)
             dict_rows.append(dict_row)
             asset_row = dict_row['市值']
             money_row = dict_row['投入金额']
@@ -103,18 +104,18 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by �
         total_now_yield = round(total_now_profit / total_money * 100, 2)
         new_rows.append(['合计', total_num, total_amount, round(total_money, 2), round(assets_money, 2), round(total_now_profit, 2), str(round(total_now_yield, 2))+'%', round(total_profit, 2), str(total_yield) + '%', '100%'])
 
-        pie_html = common.generate_pie_html(dict_rows, '账户', '投入金额')
+        pie_html = html_utils.generate_pie_html(dict_rows, '账户', '投入金额')
 
         type = "汇总"
-        sum_html = common.generate_table_html(type, cur, '', need_title=False, field_names=['投入占比'],
-                                       remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
-                                       rows=new_rows, htmls={}, ignore_fields=['投入金额'],
-                                              is_login_user=is_login_user)
+        sum_html = html_utils.generate_table_html(type, cur, '', need_title=False, field_names=['投入占比'],
+                                                  remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
+                                                  rows=new_rows, htmls={}, ignore_fields=['投入金额'],
+                                                  is_login_user=is_login_user)
 
-        common.add_nav_html_to_head(htmls, type, '<li><a href="/view_my_strategy.html">切换到按策略</a></li>')
+        html_utils.add_nav_html_to_head(htmls, type, '<li><a href="/view_my_strategy.html">切换到按策略</a></li>')
 
         # 用柱状图从大到小展示持有可转债涨跌幅情况
-        scatter_html = common.generate_scatter_html(tables, select)
+        scatter_html = html_utils.generate_scatter_html(tables, select)
 
         html = """
             <br/>
@@ -166,10 +167,10 @@ def generate_account_block(account, cur, html, htmls, tables, amount_field='h.ho
     and h.account = '""" + account + """'
     order by 数量, h.bond_code
         """)
-    return common.generate_table_html(account, cur, html, htmls=htmls, tables=tables,
-                                      remark_fields_color=['盈亏', '正股涨跌', '溢价率', '可转债涨跌'],
-                                      field_links={"成本": link_maker},
-                                      is_login_user=is_login_user)
+    return html_utils.generate_table_html(account, cur, html, htmls=htmls, tables=tables,
+                                          remark_fields_color=['盈亏', '正股涨跌', '溢价率', '可转债涨跌'],
+                                          field_links={"成本": link_maker},
+                                          is_login_user=is_login_user)
 
 
 def link_maker(data, record):

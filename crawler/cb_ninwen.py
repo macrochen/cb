@@ -6,6 +6,8 @@ import sqlite3
 import bs4
 import requests
 
+from utils.db_utils import get_connect
+
 header = {
     "Referer": "http://www.ninwin.cn/index.php?m=profile",
     'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
@@ -346,7 +348,7 @@ def createDb():
 
 def insertDb(rows):
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     try:
 

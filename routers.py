@@ -10,19 +10,11 @@ from flask_login import LoginManager
 from flask_login import login_user, login_required, logout_user
 from prettytable import from_db_cursor
 
-import cb_jsl
-import cb_ninwen
-import cb_ninwen_detail
-import common
-import stock_10jqka
-import stock_eastmoney
-import stock_xueqiu
-import view_market
-import view_my_account
-import view_my_select
-import view_my_strategy
-import view_my_yield
-import view_up_down
+import utils.trade_utils
+from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney
+from utils import html_utils
+from utils.db_utils import get_connect
+from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down
 from jobs import do_update_bond_yield
 from models import User, ChangedBond, HoldBond, ChangedBondSelect, db
 
@@ -370,7 +362,7 @@ def up_down_view():
 @login_required
 def my_strategy_view():
     user_id = session.get('_user_id')
-    common.calc_middle_info()
+    utils.trade_utils.calc_middle_info()
     title, navbar, content = view_my_strategy.draw_my_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -386,7 +378,7 @@ def my_yield_view():
 @login_required
 def my_account_view():
     user_id = session.get('_user_id')
-    common.calc_middle_info()
+    utils.trade_utils.calc_middle_info()
     title, navbar, content = view_my_account.draw_my_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -394,7 +386,7 @@ def my_account_view():
 def market_view():
     # current_user = None
     user_id = session.get('_user_id')
-    common.calc_middle_info()
+    utils.trade_utils.calc_middle_info()
     title, navbar, content = view_market.draw_market_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -431,7 +423,7 @@ def stock_xueqiu_update_data():
 @cb.route('/download_db_data.html')
 @login_required
 def download_db_data():
-    con = sqlite3.connect('db/cb.db3')
+    con = get_connect()
     today = datetime.now()
     ymd = today.strftime('%Y-%m-%d')
     file_name = 'dump/data_' + ymd + '.sql'
@@ -457,7 +449,7 @@ def save_db_data():
     file = request.files['file']
     s = file.read().decode('utf-8')
     # 灌入上传的数据
-    con = sqlite3.connect('db/cb.db3')
+    con = get_connect()
     con.executescript(s)
 
     return 'OK'
@@ -465,7 +457,7 @@ def save_db_data():
 
 @cb.route('/query_database.html', methods=['POST', 'GET'])
 @login_required
-def query_database():
+def query_database_view():
     table_html = ''
     sql_code = ''
     table_height_style = ''
@@ -485,7 +477,7 @@ def query_database():
         if len(table._rows) > 10:
             table_height_style = """style="height:500px" """
 
-        table_html = table.get_html_string()
+        table_html = html_utils.get_html_string()
 
     return render_template("query_database.html", table_html=table_html, sql_code=sql_code, table_height_style=table_height_style)
 
@@ -506,7 +498,7 @@ def execute_sql():
     if not sql_code.lower().strip().startswith('update') and not sql_code.lower().strip().startswith('insert'):
         raise Exception("仅允许update/insert操作")
 
-    con = sqlite3.connect('db/cb.db3')
+    con = get_connect()
     con.executescript(sql_code)
 
     return 'OK'

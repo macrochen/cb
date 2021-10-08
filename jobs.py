@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+import re
+import sqlite3
 import time
 from datetime import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from selenium import webdriver
 
-import cb_ninwen
-import common
-import trade_utils
+from crawler import cb_ninwen
+from utils import trade_utils
 from models import InvestYield, db
+from utils.db_utils import get_connect
 
 
 def init_job():
@@ -49,10 +52,10 @@ def do_update_bond_yield():
     cb_ninwen.fetch_data()
 
     # 获取最新收益率
-    day_yield, all_yield = common.calc_yield()
+    day_yield, all_yield = calc_yield()
 
     # 获取可转债等权, 沪深300涨跌幅信息 from: https://www.ninwin.cn/index.php?m=cb&c=idx
-    cb_day_yield, hs_day_yield = common.get_up_down_data()
+    cb_day_yield, hs_day_yield = get_up_down_data()
 
     # 去掉时分秒
     today = datetime.now()
@@ -96,3 +99,48 @@ def do_update_bond_yield():
     db.session.commit()
 
     return 'OK'
+
+
+def get_up_down_data():
+
+    driver = webdriver.Chrome()
+
+    driver.implicitly_wait(10)
+
+    url = "https://www.ninwin.cn/index.php?m=cb&c=idx"
+
+    # fixme 需要把chromedriver放到/usr/local/bin目录下
+    driver.get(url)
+
+    div = driver.find_elements_by_xpath("//div[contains(@style,'font-size: 12px;color: gray;margin: 10px 20px;clear: both')]")[0]
+
+    # 最新涨跌：可转债等权：1.57%，上证转债：0.87%，正股等权：2.22%，沪深300：0.67%，中证500：1.33%说明快照'
+    s = div.text
+    cb_value = re.findall(r"可转债等权：(-?\d+\.?\d*)%", s)
+    if len(cb_value) != 1:
+        raise Exception("没有找到可转债等权:" + s)
+
+    hs_value = re.findall(r"沪深300：(-?\d+\.?\d*)%", s)
+    if len(hs_value) != 1:
+        raise Exception("没有找到沪深300:" + s)
+
+    driver.close()
+    return float(cb_value[0]), float(hs_value[0])
+
+
+def calc_yield():
+    # 打开文件数据库
+    con_file = get_connect()
+    cur = con_file.cursor()
+    cur.execute("""
+SELECT    
+	round(sum(round((c.cb_price2_id/(1+c.cb_mov2_id) * c.cb_mov2_id)*h.hold_amount, 2)) /    sum(h.sum_buy-h.sum_sell)*100,2)  as '日收益率',
+	round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy - h.sum_sell) * 100, 2)  as 累积收益率
+from hold_bond h , changed_bond c 
+where h.bond_code = c.bond_code and hold_owner='me'
+        """)
+
+    row = cur.fetchone()
+    day_yield = row[0]
+    all_yield = row[1]
+    return day_yield, all_yield

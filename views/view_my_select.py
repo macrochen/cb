@@ -6,29 +6,28 @@
 
 import sqlite3
 
-import common
-
-
 # import matplotlib.pyplot as plt
 #
 #
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+from utils import db_utils, html_utils
+from utils.db_utils import get_connect
 
 
 def generate_table_html(cur, html, field_names=None, rows=None,
                         remark_fields_color=[], is_login_user=False, field_links={}):
-    table = common.from_db(cur, field_names, rows)
+    table = db_utils.from_db(cur, field_names, rows)
 
     if len(table._rows) == 0:
         return html
 
-    return table, html + common.get_html_string(table, remark_fields_color,
-                                         is_login_user=is_login_user, field_links=field_links)
+    return table, html + html_utils.get_html_string(table, remark_fields_color,
+                                                    is_login_user=is_login_user, field_links=field_links)
 
 
 def draw_view(is_login_user):
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
     cur = con_file.cursor()
     try:
 
@@ -55,7 +54,7 @@ def draw_view(is_login_user):
                                    remark_fields_color=['策略',  '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                    is_login_user=is_login_user, field_links={'备注': select_link_maker})
 
-        scatter_html = common.generate_scatter_html({'自选': table})
+        scatter_html = html_utils.generate_scatter_html({'自选': table})
 
         con_file.close()
 

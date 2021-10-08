@@ -8,6 +8,8 @@ import time
 import bs4
 from selenium import webdriver
 
+from utils.db_utils import get_connect
+
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
     "Referer": "http://www.ninwin.cn/index.php?m=profile",
@@ -288,7 +290,7 @@ def percentage2float(name, text):
 
 def insertDb(rows):
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     try:
 
@@ -316,7 +318,7 @@ def insertDb(rows):
 
 def do_fetch_data():
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
     try:
         # 遍历整个可转债列表, 拿到bond_num
         bond_cursor = con_file.execute("""SELECT data_id, bond_code, cb_name_id from changed_bond""")

@@ -10,10 +10,10 @@ from pyecharts import options as opts
 from pyecharts.charts import Scatter
 from pyecharts.commons.utils import JsCode
 
-import common
 
-# 求各种字段的中位数
-# select c.market_cap from (select row_number() over (order by market_cap asc) as num , * from changed_bond) c, (SELECT count(*)/2 as mid from changed_bond) m where c.num = m.mid
+import utils.trade_utils
+from utils import db_utils, html_utils
+from utils.db_utils import get_connect
 
 config = {'type': [
     '双低策略',
@@ -60,8 +60,8 @@ def generate_strategy_html(con_file,
                            type,
                            sub_title,
                            html,
-                           midY=common.MID_Y,  # 溢价率(或各种收益率)中位数
-                           midX=common.MID_X,  # 转债价格中位数
+                           midY=utils.trade_utils.MID_Y,  # 溢价率(或各种收益率)中位数
+                           midX=utils.trade_utils.MID_X,  # 转债价格中位数
                            labelY='转债溢价率(%)',
                            field_name='溢价率',
                            get_label=default_get_label,
@@ -81,7 +81,7 @@ def generate_strategy_html(con_file,
     y = []
     point_datas = []
     for row in table._rows:
-        record = common.get_record(table, row)
+        record = db_utils.get_record(table, row)
 
         x1 = record['转债价格']
         x.append(x1)
@@ -110,11 +110,11 @@ def generate_strategy_html(con_file,
         scatter_html = genrate_scatter_html(field_name, labelY, midX, midY, sub_title, type, point_datas, x, y)
 
     if add_nav_bar:
-        common.add_nav_html(htmls, type)
+        html_utils.add_nav_html(htmls, type)
 
     html += """
     <div id=\"""" + type + """\">
-        """ + scatter_html + common.get_html_string(table, remark_fields_color, is_login_user=use_personal_features, table_rows_size=6) + """
+        """ + scatter_html + html_utils.get_html_string(table, remark_fields_color, is_login_user=use_personal_features, table_rows_size=6) + """
     </div>
     """
 
@@ -194,7 +194,7 @@ def genrate_scatter_html(field_name, labelY, midX, midY, sub_title, type, point_
             )
         ),
     )
-    scatter_html = scatter.render_embed('template.html', common.env)
+    scatter_html = scatter.render_embed('template.html', html_utils.env)
     return "<br/>" + scatter_html
 
 
@@ -203,7 +203,7 @@ def draw_market_view(use_my_features):
 
 
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     html = """
     <br/><br/><br/><br/><br/><br/><br/>
@@ -474,9 +474,9 @@ def draw_market_view(use_my_features):
             """
 
             html = generate_strategy_html(con_file, sql, "高收益策略", "到期收益率前10", html, htmls=htmls,
-                                          labelY="到期收益率(%)", field_name='到期收益率', midY=common.MID_YIELD,
+                                          labelY="到期收益率(%)", field_name='到期收益率', midY=utils.trade_utils.MID_YIELD,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
-                                              use_personal_features=use_personal_features)
+                                          use_personal_features=use_personal_features)
 
         # =========活性债策略=========
         if "活性债策略" in config['type']:
@@ -507,8 +507,7 @@ def draw_market_view(use_my_features):
         round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
         round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
-        round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', e.theme as 题材概念, 
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
         rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
@@ -1470,7 +1469,7 @@ def generate_active_strategy_html(con_file, gn_c, gn_s, suffix, html, htmls, use
 
 
 if __name__ == "__main__":
-    common.calc_middle_info()
+    utils.trade_utils.calc_middle_info()
 
     draw_market_view(True)
     print("processing is successful")

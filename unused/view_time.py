@@ -12,7 +12,7 @@
 # con_file = None
 # try:
 #     # 打开文件数据库
-#     con_file = sqlite3.connect('../db/cb.db3')
+#     con_file = get_connect()
 #
 #     myCb = {}
 #

@@ -11,27 +11,26 @@ from pyecharts.charts import Bar
 from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType
 
-import common
-
-
 # import matplotlib.pyplot as plt
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+from utils import db_utils, html_utils
+from utils.db_utils import get_connect
 
 
 def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
                         color=None, remark_fields_color=[], is_login_user=False):
-    table = common.from_db(cur, field_names, rows)
+    table = db_utils.from_db(cur, field_names, rows)
 
     if len(table._rows) == 0:
         return html
 
-    return html + common.get_html_string(table, remark_fields_color, is_login_user=is_login_user)
+    return html + html_utils.get_html_string(table, remark_fields_color, is_login_user=is_login_user)
 
 
 def draw_view(is_login_user):
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
     cur = con_file.cursor()
     try:
 
@@ -321,7 +320,7 @@ def generate_bar_html(rows, title):
         ),
     )
 
-    bar_html = bar.render_embed('template.html', common.env)
+    bar_html = bar.render_embed('template.html', html_utils.env)
     return bar_html
 
 def generate_top_bar_html(rows, title):
@@ -393,5 +392,5 @@ def generate_top_bar_html(rows, title):
         ),
     )
 
-    bar_html = bar.render_embed('template.html', common.env)
+    bar_html = bar.render_embed('template.html', html_utils.env)
     return bar_html

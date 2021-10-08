@@ -7,6 +7,8 @@ import html5lib
 from lxml import etree
 import sqlite3
 
+from utils.db_utils import get_connect
+
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
     # "origin": "https://xueqiu.com",
@@ -17,7 +19,7 @@ header = {
 
 def createDb():
 
-    con = sqlite3.connect("../db/cb.db3")
+    con = sqlite3.connect("db/cb.db3")
     # 只执行一次
     con.executescript("""
         drop table if exists stock_report;
@@ -851,7 +853,7 @@ neteaseClickStat();
 
     # 遍历可转债列表
     # 打开文件数据库
-    con_file = sqlite3.connect('../db/cb.db3')
+    con_file = get_connect()
 
     try:
         # 查询可转债
