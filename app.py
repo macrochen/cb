@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 from flask import Flask
-from flask_login import LoginManager
-from flask_sqlalchemy import SQLAlchemy
 
 import config
 from jobs import init_job

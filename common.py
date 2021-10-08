@@ -1,18 +1,16 @@
 #一些公共方法
 import os
+import re
 import sqlite3
 
 from jinja2 import Environment, FileSystemLoader
 from prettytable import PrettyTable
-from pyecharts.charts import Pie, Bar
 from pyecharts import options as opts
-from pyecharts.globals import ThemeType
+from pyecharts.charts import Pie
 from pyecharts.charts import Scatter, Line
 from pyecharts.commons.utils import JsCode
-
+from pyecharts.globals import ThemeType
 from selenium import webdriver
-
-import re
 
 env = Environment(
             keep_trailing_newline=True,
@@ -359,7 +357,7 @@ def generate_scatter_html(tables, select=None):
             )
         ),
         legend_opts=opts.LegendOpts(
-            pos_bottom=5,
+            pos_bottom=-8,
             # selected_mode='single'
         ),
         toolbox_opts=opts.ToolboxOpts(feature={

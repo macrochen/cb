@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+
+from datetime import datetime
 import os
 import sqlite3
 
+from flask import Blueprint
 from flask import render_template, request, url_for, redirect, flash, send_from_directory, session
 from flask_login import LoginManager
 from flask_login import login_user, login_required, logout_user
@@ -22,7 +25,6 @@ import view_my_yield
 import view_up_down
 from jobs import do_update_bond_yield
 from models import User, ChangedBond, HoldBond, ChangedBondSelect, db
-from flask import Blueprint
 
 cb = Blueprint('cb', __name__)
 
@@ -430,7 +432,9 @@ def stock_xueqiu_update_data():
 @login_required
 def download_db_data():
     con = sqlite3.connect('db/cb.db3')
-    file_name = 'dump/data.sql'
+    today = datetime.now()
+    ymd = today.strftime('%Y-%m-%d')
+    file_name = 'dump/data_' + ymd + '.sql'
     with open(file_name, 'w') as f:
         for line in con.iterdump():
             f.write('%s\n' % line)

@@ -8,10 +8,11 @@ import sqlite3
 
 import common
 
-import matplotlib.pyplot as plt
 
-
-plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+# import matplotlib.pyplot as plt
+#
+#
+# plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
 
 def generate_table_html(cur, html, field_names=None, rows=None,
@@ -54,11 +55,11 @@ def draw_view(is_login_user):
                                    remark_fields_color=['策略',  '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                    is_login_user=is_login_user, field_links={'备注': select_link_maker})
 
-        scatter_html = common.generate_scatter_html({'所有': table})
+        scatter_html = common.generate_scatter_html({'自选': table})
 
         con_file.close()
 
-        return '我的可转债自选', '<li><a href="/">Home</a></li>', html + "<br/>" + scatter_html
+        return '我的可转债自选', '<li><a href="/">Home</a></li>', html + "<br/>" + scatter_html + '<br/><br/>'
 
     except Exception as e:
         con_file.close()

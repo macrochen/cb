@@ -1,12 +1,11 @@
 # 从同花顺抓正股的相关数据
 import datetime
+import re
+import sqlite3
 import time
 
-import sqlite3
-
-import common
 from selenium import webdriver
-import re
+
 driver = None
 
 

@@ -1,12 +1,13 @@
 #抓取宁稳网的数据(每天中午, 下午收盘更新, 非实时, 但是最全)
 
 import datetime
-import time
-import bs4
-import sqlite3
-
-from selenium import webdriver
 import re
+import sqlite3
+import time
+
+import bs4
+from selenium import webdriver
+
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
     "Referer": "http://www.ninwin.cn/index.php?m=profile",

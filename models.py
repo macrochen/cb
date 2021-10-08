@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy

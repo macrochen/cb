@@ -6,26 +6,17 @@
 
 import sqlite3
 
+from pyecharts import options as opts
+from pyecharts.charts import Bar
+from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType
 
-import cb_jsl
 import common
 
-import matplotlib.pyplot as plt
-from prettytable import PrettyTable
 
-import webbrowser
-import os
+# import matplotlib.pyplot as plt
 
-from pyecharts import options as opts
-from pyecharts.charts import Pie, Bar
-
-from pyecharts.charts import Scatter
-from pyecharts.commons.utils import JsCode
-
-from jinja2 import Environment, FileSystemLoader
-
-plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+# plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
 
 def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,

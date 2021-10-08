@@ -4,25 +4,11 @@
 
 import sqlite3
 
-from pyecharts.globals import ThemeType
-
 import common
 
-import matplotlib.pyplot as plt
-from prettytable import PrettyTable
+# import matplotlib.pyplot as plt
 
-import webbrowser
-import os
-
-from pyecharts import options as opts
-from pyecharts.charts import Pie
-
-from pyecharts.charts import Scatter
-from pyecharts.commons.utils import JsCode
-
-from jinja2 import Environment, FileSystemLoader
-
-plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+# plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
 # 单选
 select = [

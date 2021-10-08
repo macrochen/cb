@@ -3,19 +3,14 @@
 
 # 需导入要用到的库文件
 import sqlite3
-
-from pyecharts.charts import Scatter
-from pyecharts import options as opts
-from pyecharts.commons.utils import JsCode
-
-import common
-
 from random import choice
 
 from prettytable import from_db_cursor
+from pyecharts import options as opts
+from pyecharts.charts import Scatter
+from pyecharts.commons.utils import JsCode
 
-import webbrowser
-import os
+import common
 
 # 求各种字段的中位数
 # select c.market_cap from (select row_number() over (order by market_cap asc) as num , * from changed_bond) c, (SELECT count(*)/2 as mid from changed_bond) m where c.num = m.mid

@@ -1,6 +1,6 @@
 
 import urllib.request as request
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 def get_date_type():

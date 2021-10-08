@@ -1,12 +1,12 @@
 # 从东方财富抓正股的相关数据
 import datetime
 import re
+import sqlite3
 import time
 
-import sqlite3
+from selenium import webdriver
 
 import common
-from selenium import webdriver
 
 driver = None
 

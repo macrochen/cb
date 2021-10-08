@@ -1,10 +1,10 @@
 #抓取宁稳网的数据(每天中午, 下午收盘更新, 非实时, 但是最全)
 
 import datetime
-
-import requests
-import bs4
 import sqlite3
+
+import bs4
+import requests
 
 header = {
     "Referer": "http://www.ninwin.cn/index.php?m=profile",
