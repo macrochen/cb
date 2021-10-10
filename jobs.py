@@ -64,9 +64,10 @@ def do_update_bond_yield():
     s = int(time.mktime(d.timetuple()))
 
     # 获取上一个交易日的净值, 计算今天的净值
-    previous = db.session.query(InvestYield).filter(InvestYield.date < s).first()
+    previous = db.session.query(InvestYield).filter(InvestYield.date < s).order_by(InvestYield.date.desc()).first()
     if previous is None:
         raise Exception('没找到前一个交易日的记录')
+    my_net_value = previous.my_net_value + day_yield
     cb_net_value = previous.cb_net_value + cb_day_yield
     hs_net_value = previous.hs_net_value + hs_day_yield
 
@@ -83,6 +84,7 @@ def do_update_bond_yield():
         invest_yield.cb_day_yield = cb_day_yield
         invest_yield.hs_day_yield = hs_day_yield
 
+        invest_yield.my_net_value = my_net_value
         invest_yield.cb_net_value = cb_net_value
         invest_yield.hs_net_value = hs_net_value
         db.session.add(invest_yield)
@@ -93,6 +95,7 @@ def do_update_bond_yield():
         invest_yield.cb_day_yield = cb_day_yield
         invest_yield.hs_day_yield = hs_day_yield
 
+        invest_yield.my_net_value = my_net_value
         invest_yield.cb_net_value = cb_net_value
         invest_yield.hs_net_value = hs_net_value
 
@@ -144,3 +147,8 @@ where h.bond_code = c.bond_code and hold_owner='me'
     day_yield = row[0]
     all_yield = row[1]
     return day_yield, all_yield
+
+
+
+if __name__ == "__main__":
+    sync_cb_data_job()

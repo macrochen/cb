@@ -2,13 +2,23 @@ import os
 
 from jinja2 import Environment, FileSystemLoader
 from pyecharts import options as opts
-from pyecharts.charts import Pie, Line, Scatter
+from pyecharts.charts import Pie, Line, Scatter, TreeMap
 from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType
 
+from utils import db_utils
 from utils.trade_utils import MID_X, MID_Y
-from utils.db_utils import from_db, get_record
+from utils.db_utils import from_db, get_record, get_dict_row
 
+
+def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
+                        color=None, remark_fields_color=[], is_login_user=False):
+    table = db_utils.from_db(cur, field_names, rows)
+
+    if len(table._rows) == 0:
+        return html
+
+    return html + get_html_string(table, remark_fields_color, is_login_user=is_login_user)
 
 def generate_pie_html(dict_rows, key, value):
     data = []
@@ -26,7 +36,7 @@ def generate_pie_html(dict_rows, key, value):
 
 def generate_line_html(rows, select=None):
     # 用散点图展示
-    line = Line(opts.InitOpts(height='700px', width='1524px', theme=ThemeType.LIGHT))
+    line = Line(opts.InitOpts(height='700px', width='1424px', theme=ThemeType.LIGHT))
 
     x = []
     y1 = []
@@ -106,7 +116,7 @@ def generate_line_html(rows, select=None):
 
 def generate_scatter_html(tables, select=None):
     # 用散点图展示
-    scatter = Scatter(opts.InitOpts(height='700px', width='1624px', theme=ThemeType.LIGHT))
+    scatter = Scatter(opts.InitOpts(height='700px', width='1424px', theme=ThemeType.LIGHT))
 
     # x = []
     # y = []
@@ -183,7 +193,7 @@ def generate_scatter_html(tables, select=None):
             )
         ),
         legend_opts=opts.LegendOpts(
-            pos_bottom=-8,
+            pos_bottom=-5,
             # selected_mode='single'
         ),
         toolbox_opts=opts.ToolboxOpts(feature={
@@ -255,8 +265,8 @@ def generate_table(type, cur, html, need_title=True, field_names=None, rows=None
     if need_title:
         # 首行加两个换行, 避免被但导航栏遮挡
         title = """
-            <div id=\"""" + type + """\">""" + ('' if len(html) > 0 else '<br/><br/>') + """
-                <br><br><center><font size='4'><b> =========我的""" + type + """账户=========</b></font></center>""" \
+            <div id=\"""" + type + """\">""" + ('' if len(html) > 0 else '') + """
+                <br><br><center><font size='4'><b> =========""" + type + """=========</b></font></center>""" \
                + ('' if len(subtitle) == 0 else """<center> """ + subtitle + """</center>""") + """<br>"""
         title_suffix = """</div>"""
 
@@ -313,7 +323,7 @@ def generate_head_tail_html(field, is_login_user, record):
 
 
 def add_nav_html(htmls, type):
-    if type is not None:
+    if type is not None and htmls is not None:
         # 增加导航
         nav_html = htmls.get('nav', '')
         nav_html += get_sub_nav_html(type)

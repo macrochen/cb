@@ -4,19 +4,28 @@
 
 # https://blog.csdn.net/idomyway/article/details/82390040
 
+import sqlite3
+
 from pyecharts import options as opts
 from pyecharts.charts import Bar
 from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType
+
+# import matplotlib.pyplot as plt
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 from utils import db_utils, html_utils
 from utils.db_utils import get_connect
 
 
-# import matplotlib.pyplot as plt
+def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
+                        color=None, remark_fields_color=[], is_login_user=False):
+    table = db_utils.from_db(cur, field_names, rows)
 
+    if len(table._rows) == 0:
+        return html
 
+    return html + html_utils.get_html_string(table, remark_fields_color, is_login_user=is_login_user)
 
 
 def draw_view(is_login_user):
@@ -27,29 +36,31 @@ def draw_view(is_login_user):
 
         html = ''
 
-        # =========全网可转债涨跌TOP20柱状图=========
+        # =========我的转债涨跌TOP20柱状图=========
         cur.execute("""
-        select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
-         from (SELECT DISTINCT c. * from changed_bond c 
-          order by cb_mov2_id DESC limit 20)     
-        UNION  
-        select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
-         from (SELECT DISTINCT c. * from changed_bond c 
-           order by cb_mov2_id ASC limit 20) 
-        order by 涨跌 desc
-                            """)
+select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
+ from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
+ where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_mov2_id DESC limit 20)     
+UNION  
+select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
+ from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
+ where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 20) 
+order by 涨跌 desc
+                    """)
         rows = cur.fetchall()
-        html += '<br/><br/><br/>' + generate_bar_html(rows, '全网可转债涨跌TOP20')
+        html += '<br/><br/><br/><br/><br/>' + generate_bar_html(rows, '我持有的可转债涨跌TOP20')
+
+        # =========我的转债涨跌TOP20表格=========
 
         cur.execute("""
-SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
-  FROM (
-      SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称,cb_mov2_id, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, 
-        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
-        round(cb_mov_id * 100, 2) || '%' as 正股涨跌, remain_amount as '余额(亿元)', 
-        round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', cb_trade_amount_id as '成交额(百万)', 
-        round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
+        cb_price2_id as 转债价格, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)',round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏,   
+        round(cb_premium_id*100,2) as 溢价率, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
+        remain_amount as '余额(亿元)',round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
+        h.strategy_type as 策略, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        round(cb_price2_id + cb_premium_id * 100,2) as 双低值, 
+        round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
+        round(bt_yield*100,2) || '%' as 到期收益率,
         
         rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
         rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
@@ -71,31 +82,38 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
-
-    from (select *
-         from (SELECT DISTINCT c. * from changed_bond c 
-          order by cb_mov2_id DESC limit 10)     
-        UNION  
-        select *
-         from (SELECT DISTINCT c. * from changed_bond c 
-           order by cb_mov2_id ASC limit 10) ) c LEFT join stock_report s on c.stock_code = s.stock_code 
-    where c.enforce_get not in ('强赎中') or c.enforce_get is null ) d left join 
-        (select id as hold_id, bond_code, hold_price, hold_amount, strategy_type 
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
+    from (select * from (SELECT DISTINCT c. *, h.id from changed_bond c, (select * 
             from hold_bond where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
-             ) e 
-        on d.bond_code = e.bond_code	
-        ORDER by cb_mov2_id DESC
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+             ) h where  c.bond_code = h.bond_code  order by cb_mov2_id DESC limit 10)     
+UNION  
+select * from (SELECT DISTINCT c. *, h.id from changed_bond c, hold_bond h where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 10)) c, 
+stock_report s, (select * 
+            from hold_bond where id in (select id from hold_bond where id 
+                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+             ) h
+    WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code 
+    order  by cb_mov2_id desc
+            """)
+
+        html = generate_table_html("涨跌TOP10", cur, html, need_title=False,
+                                   remark_fields_color=['策略', '盈亏', '到期收益率', '溢价率', '可转债涨跌'],
+                                              is_login_user=is_login_user)
+
+        # =========我的转债价格TOP20柱状图=========
+        cur.execute("""
+select cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 100, 2) as 涨跌, round(cb_premium_id*100,2) || '%' as 溢价率
+ from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
+ where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_price2_id DESC limit 20)     
                     """)
 
-        html = html_utils.generate_table_html("全网涨跌TOP10", cur, html, need_title=False,
-                                   remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
-                                              is_login_user=is_login_user)
+        rows = cur.fetchall()
+        html += '<br/>' + generate_top_bar_html(rows, '我的可转债价格TOP20')
 
         con_file.close()
 
-        return '可转债涨跌排行', '<li><a href="/">Home</a></li>', html
+        return '我的可转债涨跌', '<li><a href="/">Home</a></li>', html
 
     except Exception as e:
         con_file.close()

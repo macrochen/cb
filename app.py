@@ -27,5 +27,5 @@ if __name__ == "__main__":
     app = create_app()
 
     # app.run()  # 生产环境使用, 调用run方法，设定端口号，启动服务
-    # app.run(port=8080, host="127.0.0.1")  # 生产环境使用, 调用run方法，设定端口号，启动服务
-    app.run(port=8080, host="127.0.0.1", debug=True, use_reloader=True)  #开发环境使用, 注意use_reloader=true会导致scheduler被调用两次
+    app.run(port=8080, host="127.0.0.1", debug=True)  #开发环境使用, use_reloader=False 没法修改重启, 不方便调试
+    # app.run(port=8080, host="127.0.0.1", debug=True, use_reloader=False)  #开发环境使用, 注意use_reloader=true会导致scheduler被调用两次

@@ -14,7 +14,8 @@ import utils.trade_utils
 from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney
 from utils import html_utils
 from utils.db_utils import get_connect
-from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down
+from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
+    view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map
 from jobs import do_update_bond_yield
 from models import User, ChangedBond, HoldBond, ChangedBondSelect, db
 
@@ -352,10 +353,47 @@ def sync_trade_data(id='', bond_code=''):
 
 
 @cb.route('/view_up_down.html')
-@login_required
 def up_down_view():
     user_id = session.get('_user_id')
     title, navbar, content = view_up_down.draw_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_tree_map.html')
+def tree_map_view():
+    industry = request.args.get("industry")
+    rise = request.args.get("rise")
+    user_id = session.get('_user_id')
+    title, navbar, content = view_tree_map.draw_view(user_id is not None, industry, rise)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_discount.html')
+def discount_view():
+    user_id = session.get('_user_id')
+    title, navbar, content = view_discount.draw_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_stock.html')
+def stock_view():
+    user_id = session.get('_user_id')
+    title, navbar, content = view_stock.draw_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_turnover.html')
+def turnover_view():
+    user_id = session.get('_user_id')
+    title, navbar, content = view_turnover.draw_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_my_up_down.html')
+@login_required
+def my_up_down_view():
+    user_id = session.get('_user_id')
+    title, navbar, content = view_my_up_down.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @cb.route('/view_my_strategy.html')
@@ -507,5 +545,5 @@ def execute_sql():
 @cb.route('/update_bond_yield.html')
 @login_required
 def update_bond_yield():
-    do_update_bond_yield()
+    return do_update_bond_yield()
 
