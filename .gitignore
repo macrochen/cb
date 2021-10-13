@@ -1,2 +1,4 @@
 /.idea/
 ~$cb.xlsx
+/unused/*
+/dump

@@ -14,15 +14,15 @@ from utils import db_utils, html_utils
 from utils.db_utils import get_connect
 
 
-def generate_table_html(cur, html, field_names=None, rows=None,
+def generate_table_html(cur, html, ext_field_names=None, rows=None,
                         remark_fields_color=[], is_login_user=False, field_links={}):
-    table = db_utils.from_db(cur, field_names, rows)
+    table = db_utils.from_db(cur, ext_field_names, rows)
 
-    if len(table._rows) == 0:
+    if table.rowcount == 0:
         return html
 
-    return table, html + html_utils.get_html_string(table, remark_fields_color,
-                                                    is_login_user=is_login_user, field_links=field_links)
+    return table, html + html_utils.build_table_html(table, remark_fields_color, ignore_fields=['持有数量', ],
+                                                     is_login_user=is_login_user, field_links=field_links)
 
 
 def draw_view(is_login_user):
@@ -35,7 +35,8 @@ def draw_view(is_login_user):
 
         # =========我的转债自选集=========
         cur.execute("""
-    SELECT b.id, h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
+    SELECT b.id, h.id as hold_id, h.hold_amount as 持有数量,
+        c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
         cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
          
@@ -54,7 +55,7 @@ def draw_view(is_login_user):
                                    remark_fields_color=['策略',  '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                    is_login_user=is_login_user, field_links={'备注': select_link_maker})
 
-        scatter_html = html_utils.generate_scatter_html({'自选': table})
+        scatter_html = html_utils.generate_scatter_html_with_one_table(table, use_personal_features=is_login_user)
 
         con_file.close()
 

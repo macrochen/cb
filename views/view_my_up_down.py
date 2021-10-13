@@ -16,16 +16,17 @@ from pyecharts.globals import ThemeType
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 from utils import db_utils, html_utils
 from utils.db_utils import get_connect
+from views import view_utils
 
 
-def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
+def generate_table_html(type, cur, html, need_title=True, ext_field_names=None, rows=None,
                         color=None, remark_fields_color=[], is_login_user=False):
-    table = db_utils.from_db(cur, field_names, rows)
+    table = db_utils.from_db(cur, ext_field_names, rows)
 
-    if len(table._rows) == 0:
+    if table.rowcount == 0:
         return html
 
-    return html + html_utils.get_html_string(table, remark_fields_color, is_login_user=is_login_user)
+    return html + html_utils.build_table_html(table, remark_fields_color, is_login_user=is_login_user)
 
 
 def draw_view(is_login_user):
@@ -113,7 +114,7 @@ select cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 10
 
         con_file.close()
 
-        return '我的可转债涨跌', '<li><a href="/">Home</a></li>', html
+        return '我的可转债涨跌', ''.join(view_utils.build_personal_nav_html_list('/view_my_up_down.html')), html
 
     except Exception as e:
         con_file.close()

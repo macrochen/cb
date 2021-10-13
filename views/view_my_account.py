@@ -11,6 +11,8 @@ import sqlite3
 # 单选
 from utils import db_utils, html_utils
 from utils.db_utils import get_connect
+from utils.html_utils import get_nav_html
+from views import view_utils
 
 select = [
     "银河",
@@ -29,21 +31,21 @@ def draw_my_view(is_login_user):
     try:
 
         html = ''
-        htmls = {}
         tables = {}
+        nav_html_list = view_utils.build_personal_nav_html_list('/view_my_account.html')
 
         # =========银河=========
         account = '银河'
-        html = generate_account_block(account, cur, html, htmls, tables, is_login_user=is_login_user)
+        html = generate_account_block(account, cur, html, nav_html_list, tables, is_login_user=is_login_user)
 
         # =========华宝=========
         #fixme 华宝证券的手和张要分开处理(如果是手, 要除以10)
         account = '华宝'
-        html = generate_account_block(account, cur, html, htmls, tables, 'case when h.hold_unit = 10 then  h.hold_amount/10 else  h.hold_amount END', is_login_user=is_login_user)
+        html = generate_account_block(account, cur, html, nav_html_list, tables, 10, is_login_user=is_login_user)
 
         # =========其他=========
         account = '其他'
-        html = generate_account_block(account, cur, html, htmls, tables, is_login_user=is_login_user)
+        html = generate_account_block(account, cur, html, nav_html_list, tables, is_login_user=is_login_user)
 
         # 数据汇总
 
@@ -106,32 +108,27 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by �
 
         pie_html = html_utils.generate_pie_html(dict_rows, '账户', '投入金额')
 
-        type = "汇总"
-        sum_html = html_utils.generate_table_html(type, cur, '', need_title=False, field_names=['投入占比'],
+        sum_html = html_utils.generate_table_html("汇总", cur, '', need_title=False, ext_field_names=['投入占比'],
                                                   remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
-                                                  rows=new_rows, htmls={}, ignore_fields=['投入金额'],
+                                                  rows=new_rows, ignore_fields=['投入金额'],
                                                   is_login_user=is_login_user)
 
-        html_utils.add_nav_html_to_head(htmls, type, '<li><a href="/view_my_strategy.html">切换到按策略</a></li>')
-
         # 用柱状图从大到小展示持有可转债涨跌幅情况
-        scatter_html = html_utils.generate_scatter_html(tables, select)
+        scatter_html = html_utils.generate_scatter_html_with_multi_tables(tables, select)
 
         html = """
             <br/>
             <br/>
             <br/>
             <br/>
-            <div id=\"""" + type + """\">
-                <center>
-                    """ + sum_html + pie_html + scatter_html + "<br/>"  + '<br/>' + """
-                </center>
-            </div>
+            <center>
+                """ + sum_html + pie_html + scatter_html + "<br/>"  + '<br/>' + """
+            </center>
         """ + html
 
         con_file.close()
 
-        return '我的账户', htmls['nav'], html
+        return '我的账户', ''.join(nav_html_list), html
 
     except Exception as e:
         con_file.close()
@@ -139,35 +136,44 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by �
         raise e
 
 
-
-def generate_account_block(account, cur, html, htmls, tables, amount_field='h.hold_amount', is_login_user=False):
+def generate_account_block(account, cur, html, nav_html_list, tables, unit=100, is_login_user=False):
     cur.execute("""
-   SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
-		--c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-		--h.account as 账户,  
-		""" + amount_field + """
-		--case when h.hold_unit = 10 then  h.hold_amount/10 else  h.hold_amount END as 数量,
-		--h.hold_amount
-		 as 数量, 
-		h.hold_price as '成本', round(c.cb_price2_id * h.hold_amount+h.sum_sell -h.sum_buy, 2) as 盈亏,
-		cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
-		--round((c.cb_price2_id * h.hold_amount - sum_buy)/sum_buy*100,2) || '%' as 收益率,
-		--remain_amount as '余额(亿元)', 
-        --round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',
-		round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
-		--round(bt_yield*100,2) || '%' as 到期收益率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, 
-        --round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
-        
-        --rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, 
-        h.strategy_type as 策略,
-		h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code 
-    and h.hold_owner = 'me' 
-    and h.account = '""" + account + """'
-    order by 数量, h.bond_code
-        """)
-    return html_utils.generate_table_html(account, cur, html, htmls=htmls, tables=tables,
+   SELECT h.id                                                              as hold_id,
+       c.data_id                                                         as nid,
+       c.bond_code,
+       c.stock_code,
+       c.cb_name_id                                                      as 名称,
+       --c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+       --h.account as 账户,  
+       case when h.hold_unit = ? then h.hold_amount / 10 else h.hold_amount END
+           --case when h.hold_unit = 10 then  h.hold_amount/10 else  h.hold_amount END as 数量,
+           --h.hold_amount
+                                                                         as 持有数量,
+       h.hold_price                                                      as '成本',
+       round(c.cb_price2_id * h.hold_amount + h.sum_sell - h.sum_buy, 2) as 盈亏,
+       cb_price2_id                                                      as 转债价格,
+       round(cb_premium_id * 100, 2) || '%'                              as 溢价率,
+       --round((c.cb_price2_id * h.hold_amount - sum_buy)/sum_buy*100,2) || '%' as 收益率,
+       --remain_amount as '余额(亿元)', 
+       --round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)',
+       round(cb_mov2_id * 100, 2) || '%'                                 as 可转债涨跌,
+       round(cb_mov_id * 100, 2) || '%'                                  as 正股涨跌,
+       --round(bt_yield*100,2) || '%' as 到期收益率, round(cb_price2_id + cb_premium_id * 100,2) as 双低值, 
+       --round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
+
+       --rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, 
+       h.strategy_type                                                   as 策略,
+       h.memo                                                            as 备注
+from changed_bond c,
+     stock_report s,
+     hold_bond h
+WHERE c.stock_code = s.stock_code
+  and c.bond_code = h.bond_code
+  and h.hold_owner = 'me'
+  and h.account = ?
+order by 持有数量, h.bond_code
+        """, (unit, account))
+    return html_utils.generate_table_html(account, cur, html, nav_html_list=nav_html_list, tables=tables,
                                           remark_fields_color=['盈亏', '正股涨跌', '溢价率', '可转债涨跌'],
                                           field_links={"成本": link_maker},
                                           is_login_user=is_login_user)

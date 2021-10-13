@@ -160,7 +160,7 @@
                         <option value="其他"{% if bond.account=='其他' %} selected="selected"{% endif %}>其他</option>
                     </select>
                     <div class="invalid-feedback">
-                        必须指定策略类型
+                        必须指定账户
                     </div>
                 </div>
 
@@ -177,6 +177,7 @@
                         <option value="基本面"{% if bond.strategy_type=='基本面' %} selected="selected"{% endif %}>基本面</option>
                         <option value="多因子"{% if bond.strategy_type=='多因子' %} selected="selected"{% endif %}>多因子</option>
                         <option value="双低轮动"{% if bond.strategy_type=='双低轮动' %} selected="selected"{% endif %}>双低轮动</option>
+                        <option value="猪肉概念"{% if bond and bond.strategy_type=='猪肉概念' %} selected="selected"{% endif %}>猪肉概念</option>
                         <option value="其他"{% if bond.strategy_type=='其他' %} selected="selected"{% endif %}>其他</option>
                     </select>
                     <div class="invalid-feedback">
@@ -193,7 +194,7 @@
             </center>
             <br/><br/>
             <div>
-                <b style="color: red">PS:如果需要在指定账户新建交易, 必须先指定账户, 再填写转债代码或转债名称</b>
+                <b style="color: red">PS:如果需要在指定账户新建交易(同一个转债不同的账户使用了不同策略, 比如很多转债同时存在打新和其他策略), 必须先指定账户, 再填写转债代码或转债名称</b>
             </div>
         </form>
     </div>
@@ -232,8 +233,8 @@
                     $("#id").val(data['id']);
                     $("#bond_code").val(data['bond_code']);
                     $("#bond_name").val(data['cb_name_id']);
-                    $("#hold_price").val(data['hold_price']);
-                    $("#hold_amount").val(data['hold_amount']);
+                    $("#trade_amount").attr('placeholder', data['hold_amount']);
+                    $("#trade_price").attr('placeholder', data['hold_price']);
                     if (data['account'] != null) {
                         $("#account").val(data['account']);
                     }

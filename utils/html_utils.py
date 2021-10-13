@@ -1,24 +1,32 @@
 import os
+from random import choice
 
 from jinja2 import Environment, FileSystemLoader
 from pyecharts import options as opts
-from pyecharts.charts import Pie, Line, Scatter, TreeMap
+from pyecharts.charts import Pie, Line, Scatter
 from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType
 
+import utils.trade_utils
 from utils import db_utils
+from utils.db_utils import from_db, get_record
 from utils.trade_utils import MID_X, MID_Y
-from utils.db_utils import from_db, get_record, get_dict_row
+
+colors = [
+        "#c23531",
+        "#61a0a8",
+        "#ca8622",
+        "#ef5b9c",
+        "#f47920",
+        "#2a5caa",
+        "#b2d235",
+        "#1d953f",
+        "#6950a1",
+    ]
 
 
-def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
-                        color=None, remark_fields_color=[], is_login_user=False):
-    table = db_utils.from_db(cur, field_names, rows)
+default_get_label = lambda row: row['名称'].replace('转债', '')
 
-    if len(table._rows) == 0:
-        return html
-
-    return html + get_html_string(table, remark_fields_color, is_login_user=is_login_user)
 
 def generate_pie_html(dict_rows, key, value):
     data = []
@@ -47,13 +55,13 @@ def generate_line_html(rows, select=None):
         x.append(row['时间'])
         # y.append([row['累积收益率'], row['日收益率']])
         y1.append(row['我的净值'])
-        y2.append(row['等权指数净值'])
+        y2.append(row['可转债指数净值'])
         y3.append(row['沪深300净值'])
 
     line.add_xaxis(x)
 
     line.add_yaxis("我的净值", y1)
-    line.add_yaxis("等权指数净值", y2)
+    line.add_yaxis("可转债指数净值", y2)
     line.add_yaxis("沪深300净值", y3)
 
     line.set_global_opts(
@@ -114,12 +122,150 @@ def generate_line_html(rows, select=None):
     return line_html
 
 
-def generate_scatter_html(tables, select=None):
+def generate_scatter_html_with_one_table(table, title=None, sub_title='',
+                                         draw_figure=True,
+                                         field_name='溢价率',
+                                         get_label=default_get_label,
+                                         label_y='转股溢价率(%)',
+                                         use_personal_features=False):
+    x = []
+    y = []
+    point_items = []
+    for row in table._rows:
+        record = db_utils.get_record(table, row)
+
+        x1 = record['转债价格']
+        x.append(x1)
+        y1 = record[field_name].replace('%', '')
+        amount = 0
+        if use_personal_features:
+            amount = record.get("持有数量", 0)
+            y.append([y1, get_label(record), amount])
+        else:
+            y.append([y1, get_label(record)])
+
+        if use_personal_features and record.get('hold_id') is not None:
+            point_items.append(opts.MarkPointItem(
+                coord=[x1, y1],
+                symbol_size=amount,
+                itemstyle_opts=opts.ItemStyleOpts(
+                    opacity=0.2
+                )
+            ))
+        else:
+            point_items.append(opts.MarkPointItem(
+                coord=[x1, y1],
+                itemstyle_opts=opts.ItemStyleOpts(color='#fff', border_color='#000')
+            ))
+
+    if draw_figure is False:
+        return ''
+
+    return create_scatter(title, sub_title, field_name, label_y, point_items, x, y)
+
+
+def get_hover_js_code(field_name='溢价率'):
+    hover_text = "function (params) {" \
+                    "return '价格:' + params.value[0] + '元<br/> " + \
+                        field_name + ":' + params.value[1] + '%'+ " \
+                        "( params.value[3] == null ? '' : " \
+                                     "('<br/>持有数量:' + params.value[3] + '张'));" \
+                 "}"
+    return JsCode(hover_text)
+
+
+def create_scatter(title, sub_title, field_name, label_y, point_items, x, y):
+    scatter = Scatter(opts.InitOpts(height='700px', width='1424px'))
+    scatter.add_xaxis(xaxis_data=x)
+    scatter.add_yaxis(
+        series_name="",
+        y_axis=y,
+        color=choice(colors),
+        label_opts=opts.LabelOpts(
+            position='bottom',
+            # distance=20,
+            formatter=JsCode(
+                "function(params){return params.value[2];}"
+            )
+        ),
+        # tooltip_opts=opts.TooltipOpts(
+        #     formatter=JsCode(
+        #         "function (params) {" \
+        #         "return '价格:' + params.value[0] + '元<br/> " + \
+        #         field_name + ":' + params.value[1] + '%'+ " \
+        #                      "( params.value[3] == null ? '' : " \
+        #                      "('<br/>持有数量:' + params.value[3] + '张'));" \
+        #                      "}"
+        #     )
+        # ),
+        markline_opts=opts.MarkLineOpts(
+            linestyle_opts=opts.LineStyleOpts(type_='dashed'),
+            is_silent=True,
+            label_opts=opts.LabelOpts(
+                position='end',
+                formatter=JsCode(
+                    "function(params){return params.data['name'];}"
+                )
+            ),
+            data=[
+                opts.MarkLineItem(x=utils.trade_utils.MID_X, name='中位数('+str(utils.trade_utils.MID_X)+'元)'),
+                opts.MarkLineItem(y=utils.trade_utils.MID_Y, name='中位数('+str(utils.trade_utils.MID_Y)+'%)'),
+            ]
+        ),
+        markpoint_opts=opts.MarkPointOpts(
+            symbol='circle',
+            symbol_size=12,
+            data=point_items
+        )
+    )
+    if title is not None and title.strip(' ') != '':
+        title = "=========" + title + "========="
+
+    scatter.set_global_opts(
+        title_opts=opts.TitleOpts(title=title, subtitle=sub_title, pos_left='center'),
+        tooltip_opts=opts.TooltipOpts(
+            formatter=get_hover_js_code(field_name)
+        ),
+        toolbox_opts=opts.ToolboxOpts(feature={
+            'dataZoom': {},
+        }
+        ),
+        xaxis_opts=opts.AxisOpts(
+            # data=None,
+            type_='value',
+            name='转债价格(元)',
+            name_gap=30,
+            is_scale=True,
+            name_location='middle',
+            splitline_opts=opts.SplitLineOpts(is_show=False),
+            axislabel_opts=opts.LabelOpts(formatter='{value}元'),
+            axisline_opts=opts.AxisLineOpts(
+                is_on_zero=False,
+                symbol=['none', 'arrow']
+            )
+        ),
+        yaxis_opts=opts.AxisOpts(
+            type_='value',
+            name=label_y,
+            name_rotate=90,
+            name_gap=35,
+            name_location='middle',
+            is_scale=True,
+            axislabel_opts=opts.LabelOpts(formatter='{value}%'),
+            splitline_opts=opts.SplitLineOpts(is_show=False),
+            axisline_opts=opts.AxisLineOpts(
+                is_on_zero=False,
+                symbol=['none', 'arrow']
+            )
+        ),
+    )
+    scatter_html = scatter.render_embed('template.html', env)
+    return "<br/>" + scatter_html
+
+
+def generate_scatter_html_with_multi_tables(tables, select=None):
     # 用散点图展示
     scatter = Scatter(opts.InitOpts(height='700px', width='1424px', theme=ThemeType.LIGHT))
-
-    # x = []
-    # y = []
 
     for label, table in tables.items():
         if select is not None and label not in select:
@@ -128,11 +274,21 @@ def generate_scatter_html(tables, select=None):
         x = []
         y = []
 
+        point_items = []
         rows = table._rows
         for row in rows:
             record = get_record(table, row)
-            x.append(record['转债价格'])
-            y.append([record['溢价率'].replace('%', '')*1, record['名称'].replace('转债', '')])
+            x1 = record['转债价格']
+            x.append(x1)
+            y1 = record['溢价率'].replace('%', '')*1
+            amount = record.get("持有数量", 0)
+            y.append([y1, record['名称'].replace('转债', ''), amount])
+            point_items.append(opts.MarkPointItem(
+                coord=[x1, y1],
+                symbol_size=amount,
+                itemstyle_opts=opts.ItemStyleOpts(
+                    opacity=0.2)
+            ))
 
         scatter.add_xaxis(x)
 
@@ -173,12 +329,22 @@ def generate_scatter_html(tables, select=None):
             #         {'type': 'min', 'name': 'Min'}
             #     ]
             # ),
+            markpoint_opts=opts.MarkPointOpts(
+                symbol='circle',
+                data=point_items
+            ),
             markline_opts=opts.MarkLineOpts(
                 linestyle_opts=opts.LineStyleOpts(type_='dashed'),
                 is_silent=True,
+                label_opts=opts.LabelOpts(
+                    position='end',
+                    formatter=JsCode(
+                        "function(params){return params.data['name'];}"
+                    )
+                ),
                 data=[
-                    opts.MarkLineItem(x=MID_X, name='转债价格中位数'),
-                    opts.MarkLineItem(y=MID_Y, name='转债溢价率中位数'),
+                    opts.MarkLineItem(x=utils.trade_utils.MID_X, name='中位数('+str(utils.trade_utils.MID_X)+'元)'),
+                    opts.MarkLineItem(y=utils.trade_utils.MID_Y, name='中位数('+str(utils.trade_utils.MID_Y)+'%)'),
                 ]
             )
         )
@@ -188,9 +354,7 @@ def generate_scatter_html(tables, select=None):
     scatter.set_global_opts(
         title_opts=opts.TitleOpts(title="可转债分布情况", pos_left='center'),
         tooltip_opts=opts.TooltipOpts(
-            formatter=JsCode(
-                "function (params) {return '价格:' + params.value[0] + '元<br/> 溢价率:' + params.value[1] + '%';}"
-            )
+            formatter=get_hover_js_code()
         ),
         legend_opts=opts.LegendOpts(
             pos_bottom=-5,
@@ -239,49 +403,49 @@ def generate_scatter_html(tables, select=None):
     return scatter_html
 
 
-def generate_table(type, cur, html, need_title=True, field_names=None, rows=None,
-                   remark_fields_color=[],
-                   htmls={},
-                   tables=None,
-                   subtitle='',
-                   ignore_fields=[],
-                   field_links={},
-                   is_login_user=False,
-                   table_width=None
-                   ):
+def generate_table_html_with_data(type, cur, html, need_title=True, ext_field_names=None, rows=None,
+                                  remark_fields_color=[],
+                                  nav_html_list=None,
+                                  tables=None,
+                                  subtitle='',
+                                  ignore_fields=[],
+                                  field_links={},
+                                  is_login_user=False,
+                                  table_width=None
+                                  ):
 
-    table = from_db(cur, field_names, rows)
+    table = from_db(cur, ext_field_names, rows)
 
-    if len(table._rows) == 0:
+    if table.rowcount == 0:
         return table, html
 
     if tables is not None:
         tables[type] = table
 
-    add_nav_html(htmls, type)
+    add_nav_html(nav_html_list, type)
 
     title = ''
     title_suffix = ''
     if need_title:
         # 首行加两个换行, 避免被但导航栏遮挡
         title = """
-            <div id=\"""" + type + """\">""" + ('' if len(html) > 0 else '') + """
+            <div id=\"""" + type + """\">""" + """
                 <br><br><center><font size='4'><b> =========""" + type + """=========</b></font></center>""" \
                + ('' if len(subtitle) == 0 else """<center> """ + subtitle + """</center>""") + """<br>"""
         title_suffix = """</div>"""
 
-    return table, html + title + get_html_string(table, remark_fields_color, ignore_fields, is_login_user, field_links, table_width=table_width) + title_suffix
+    return table, html + title + build_table_html(table, remark_fields_color, ignore_fields, is_login_user, field_links, table_width=table_width) + title_suffix
 
 
-def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
+def generate_table_html(type, cur, html, need_title=True, ext_field_names=None, rows=None,
                         remark_fields_color=[],
-                        htmls={},
+                        nav_html_list=None,
                         tables=None,
                         subtitle='',
                         ignore_fields=[],
                         field_links={},
                         is_login_user=False):
-    table, html = generate_table(type, cur, html, need_title, field_names, rows, remark_fields_color, htmls, tables, subtitle, ignore_fields, field_links, is_login_user)
+    table, html = generate_table_html_with_data(type, cur, html, need_title, ext_field_names, rows, remark_fields_color, nav_html_list, tables, subtitle, ignore_fields, field_links, is_login_user)
     return html
 
 
@@ -322,20 +486,9 @@ def generate_head_tail_html(field, is_login_user, record):
     return prefix, prefix_append, suffix
 
 
-def add_nav_html(htmls, type):
-    if type is not None and htmls is not None:
-        # 增加导航
-        nav_html = htmls.get('nav', '')
-        nav_html += get_sub_nav_html(type)
-        htmls['nav'] = nav_html
-
-
-def add_nav_html_to_head(htmls, type, prefix_nav = ''):
-    # 'nav': '<li><a href="/">Home</a></li>'
-    # 增加导航
-    nav_html = htmls.get('nav', '')
-    nav_html = '<li><a href="/">Home</a></li>' + prefix_nav + get_sub_nav_html(type) + nav_html
-    htmls['nav'] = nav_html
+def add_nav_html(nav_html_list, type):
+    if type is not None and nav_html_list is not None:
+        nav_html_list.append(get_nav_html(type))
 
 
 def add_sub_nav_html(htmls, title, s):
@@ -353,16 +506,16 @@ def add_sub_nav_html(htmls, title, s):
     htmls['nav'] = nav_html
 
 
-def get_sub_nav_html(type):
+def get_nav_html(type):
     return '<li><a href="#' + type + '">' + type + '</a></li>'
 
 
-def get_html_string(table, remark_fields_color=[],
-                    ignore_fields=[], is_login_user=False,
-                    field_links={},
-                    table_rows_size=10,
-                    table_width=None
-                    ):
+def build_table_html(table, remark_fields_color=[],
+                     ignore_fields=[], is_login_user=False,
+                     field_links={},
+                     table_rows_size=10,
+                     table_width=None
+                     ):
     options = table._get_options({})
     rows = table._get_rows(options)
     table_height_style_content = ''
@@ -374,7 +527,7 @@ def get_html_string(table, remark_fields_color=[],
 
     table_height_style = """style=" """ + table_height_style_content + """ " """
 
-    ignore_fields.extend(['nid', 'id', 'hold_id', 'bond_code', 'stock_code', '持有', '持有成本', '持有数量', 'cb_mov2_id'])
+    ignore_fields.extend(['nid', 'id', 'hold_id', 'bond_code', 'stock_code', '持有', '持有成本', 'cb_mov2_id', '_sign'])
     lines = []
     linebreak = "<br>"
 

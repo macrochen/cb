@@ -8,6 +8,7 @@
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 from utils.db_utils import get_connect
+from views import view_utils
 from views.view_market import generate_strategy_html
 
 
@@ -81,7 +82,7 @@ def draw_view(is_login_user):
 
         con_file.close()
 
-        return '正股涨幅排行', '<li><a href="/">Home</a></li>', html
+        return '正股涨幅排行', view_utils.build_analysis_nav_html('/view_stock.html'), html
 
     except Exception as e:
         con_file.close()

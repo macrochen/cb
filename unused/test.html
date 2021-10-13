@@ -394,8 +394,13 @@
     display: none;
 	  color:#FF0000;
 	  color:#2E8B57;
-	  color: rgb(255, 100, 100);
-	  color: rgb(7, 200, 7);
+	  color:#fff;
+	  color: #cb4545;
+	  color: rgb(153,0,51);
+	  color: rgb(255,0,85);
+      color: rgb(0,204,68);
+      color: rgb(0,229,76);
+      color: rgb(0,255,85);
 	  color: rgb(26, 196, 26);
 	  color: rgb(54, 203, 54);
 	  color: rgb(83, 212, 83);
@@ -406,38 +411,61 @@
  </head>
  <body>
 
-<div>
-	<table>
-		这是表格内容
-	</table>
+<!--<div>-->
+<!--	<table>-->
+<!--		这是表格内容-->
+<!--	</table>-->
 
-	<div class="detail_click">
-	    展开
-	</div>
+<!--	<div class="detail_click">-->
+<!--	    展开-->
+<!--	</div>-->
 
-	<div class="detail_content">
-	 这是详情
-	</div>
-</div>
-
-
-
-<div>
-	<table>
-		这是表格内容
-	</table>
-
-	<div class="detail_click">
-	    展开
-	</div>
-
-	<div class="detail_content">
-	 这是详情
-	</div>
-</div>
+<!--	<div class="detail_content">-->
+<!--	 这是详情-->
+<!--	</div>-->
+<!--</div>-->
 
 
+
+<!--<div>-->
+<!--	<table>-->
+<!--		这是表格内容-->
+<!--	</table>-->
+
+<!--	<div class="detail_click">-->
+<!--	    展开-->
+<!--	</div>-->
+
+<!--	<div class="detail_content">-->
+<!--	 这是详情-->
+<!--	</div>-->
+<!--</div>-->
+
+<label for="h">h:<input type="text" id = 'h'>
+<label for="s">s:<input type="text" id = 's'>
+<label for="v">v:<input type="text" id = 'v'>
+<!--<div id = 'color_block67' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+<div id = 'color_block1' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+<!--<div id = 'color_block12' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+<div id = 'color_block2' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+<!--<div id = 'color_block23' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+<div id = 'color_block3' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+<!--<div id = 'color_block34' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+<div id = 'color_block4' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+<!--<div id = 'color_block45' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+<div id = 'color_block5' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+<!--<div id = 'color_block56' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+<div id = 'color_block6' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+
+
+<div id = 'color_block11' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+<div id = 'color_block22' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+<div id = 'color_block33' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+<div id = 'color_block44' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+<div id = 'color_block55' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+<div id = 'color_block66' style="width: 100px;height: 100px; border: 1px solid black;"></div>
 <script type="text/javascript">
+
 	  $('.detail_click').click(function(){
         //$(this) 为 detail_click 实体
         $(this).next().slideToggle('1000',function(){
@@ -449,7 +477,77 @@
 
 		});
     })
-	  window.location.url = 'http://www.taobao.com' + encodeURIComponent()
+
+
+            $("#h").bind("input propertychange",function (event) {
+                doChange(event)
+            });
+            $("#s").bind("input propertychange",function (event) {
+                doChange(event)
+            });
+            $("#v").bind("input propertychange",function (event) {
+                doChange(event)
+            });
+
+            function doChange(event){
+            	rgb = hsv2rgb($("#h").val(), $("#s").val(), $("#v").val())
+				// alert(rgb)
+              $('#color_block').css('background-color', rgb)
+            }
+
+            $('#color_block1').css('background-color', hsv2rgb(700,1, 0.5))
+            // $('#color_block12').css('background-color', hsv2rgb(700,1, 0.55))
+            $('#color_block2').css('background-color', hsv2rgb(700,1, 0.6))
+            // $('#color_block23').css('background-color', hsv2rgb(700,1, 0.65))
+            $('#color_block3').css('background-color', hsv2rgb(700,1, 0.7))
+            // $('#color_block34').css('background-color', hsv2rgb(700,1, 0.75))
+            $('#color_block4').css('background-color', hsv2rgb(700,1, 0.8))
+            // $('#color_block45').css('background-color', hsv2rgb(700,1, 0.85))
+            $('#color_block5').css('background-color', hsv2rgb(700,1, 0.9))
+            // $('#color_block56').css('background-color', hsv2rgb(700,1, 0.95))
+            // $('#color_block6').css('background-color', hsv2rgb(700,1, 1))
+            // $('#color_block67').css('background-color', hsv2rgb(700,1, 0.45))
+
+            $('#color_block11').css('background-color', hsv2rgb(500,1, 0.5))
+            $('#color_block22').css('background-color', hsv2rgb(500,1, 0.6))
+            $('#color_block33').css('background-color', hsv2rgb(500,1, 0.7))
+            $('#color_block44').css('background-color', hsv2rgb(500,1, 0.8))
+            $('#color_block55').css('background-color', hsv2rgb(500,1, 0.9))
+            $('#color_block66').css('background-color', hsv2rgb(500,1, 1))
+
+	  function hsv2rgb(h, s, v){
+		// h = float(h)
+		// s = float(s)
+		// v = float(v)
+		h60 = h / 60.0
+		h60f = Math.round(h60, 2)
+		hi = Math.round(h60f, 0) % 6
+		f = h60 - h60f
+		p = v * (1 - s)
+		q = v * (1 - f * s)
+		t = v * (1 - (1 - f) * s)
+		r= g = b = 0
+		if (hi == 0){
+			r=v; g=t; b =  p
+		}
+		else if (hi == 1){
+			r=q; g=v; b = p
+		}
+		else if(hi == 2) {
+			r= p; g= v; b= t
+		}
+		else if (hi == 3) {
+			r= p; g= q; b= v
+		}
+		else if (hi == 4) {
+			r= t; g= p; b= v
+		}
+		else if (hi == 5) {
+			r= v; g= p; b= q
+		}
+    // r, g, b = int(r * 255), int(g * 255), int(b * 255)
+    	return "rgb("+ Math.round(r * 255,0) + "," + Math.round(g * 255,0) + "," + Math.round(b * 255, 0) +")"
+	  }
 </script>
 
  </body>

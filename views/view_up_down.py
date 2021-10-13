@@ -15,8 +15,7 @@ from utils.db_utils import get_connect
 
 
 # import matplotlib.pyplot as plt
-
-
+from views import view_utils
 
 
 def draw_view(is_login_user):
@@ -95,7 +94,7 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
 
         con_file.close()
 
-        return '可转债涨跌排行', '<li><a href="/">Home</a></li>', html
+        return '可转债涨跌排行', view_utils.build_analysis_nav_html('/view_up_down.html'), html
 
     except Exception as e:
         con_file.close()

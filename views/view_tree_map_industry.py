@@ -4,22 +4,13 @@
 
 # https://blog.csdn.net/idomyway/article/details/82390040
 
-import sqlite3
-
-from pyecharts import options as opts
-from pyecharts.charts import Bar, TreeMap
-from pyecharts.commons.utils import JsCode
-from pyecharts.globals import ThemeType
-
-# import matplotlib.pyplot as plt
-
-# plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
-from utils import db_utils, html_utils
-from utils.db_utils import get_connect, get_dict_row
-from utils.html_utils import env, generate_table_html
+from utils.db_utils import get_connect
+from utils.html_utils import generate_table_html_with_data, generate_scatter_html_with_one_table
+from utils.treemap_utils import generate_treemap_html
+from views import view_utils
 
 
-def draw_view(is_login_user, industry, rise):
+def draw_view(is_login_user, key, rise):
     # 打开文件数据库
     con_file = get_connect()
     cur = con_file.cursor()
@@ -28,7 +19,7 @@ def draw_view(is_login_user, industry, rise):
         html = ''
 
         cur.execute("""
-        select a.industry, round(b.涨跌幅 / a.个数*100, 4) as 涨跌, 余额
+        select a.industry, round(b.涨跌幅 / a.个数*100, 2) as 涨跌, 余额
 from (SELECT industry, count(industry) as 个数 from changed_bond group by industry) a,
      (SELECT industry, sum(cb_mov2_id) as 涨跌幅 from changed_bond group by industry) b,
      (SELECT industry, round(sum(remain_amount),2) as 余额 from changed_bond group by industry) c
@@ -37,9 +28,16 @@ where a.industry = b.industry
 order by 涨跌 desc
         """)
 
-        html += '<br/><br/><br/><br/>' + generate_treemap_html(cur, '=========可转债涨跌行业分布=========')
+        html += '<br/><br/><br/>' + \
+                generate_treemap_html(cur,
+                                      '=========可转债涨跌行业分布=========',
+                                      'industry',
+                                      '余额',
+                                      '/view_tree_map_industry.html',
+                                      area_data_name='余额',
+                                      area_data_unit='亿元',)
 
-        if industry is not None and industry.strip(' ') != '' and rise is not None:
+        if key is not None and key.strip(' ') != '' and rise is not None:
             rise = float(rise)
             up = 0
             down = 0
@@ -51,11 +49,12 @@ order by 涨跌 desc
             cur.execute("""
             SELECT DISTINCT d.*,
                 e.strategy_type                                        as 策略,
-                case when e.hold_id is not null then '✔️️' else '' END as 持有,
+                e.hold_id,
                 e.hold_price                                           as 持有成本,
                 e.hold_amount                                          as 持有数量
 FROM (
          SELECT c.data_id                                                                                       as nid,
+                case when cb_mov2_id > 0 then 1 when cb_mov2_id = 0 then 0 ELSE -1 end                          as _sign,
                 c.bond_code,
                 c.stock_code,
                 c.cb_name_id                                                                                    as 名称,
@@ -110,13 +109,13 @@ FROM (
 
          from (select *
                from (SELECT DISTINCT c.*
-                     from changed_bond c WHERE industry like ?
+                     from changed_bond c WHERE industry = ?
                      order by cb_mov2_id DESC
                      limit ?) 
                UNION
                select *
                from (SELECT DISTINCT c.*
-                     from changed_bond c WHERE industry like ?
+                     from changed_bond c WHERE industry = ?
                      order by cb_mov2_id ASC
                      limit ?)) c
                   LEFT join stock_report s on c.stock_code = s.stock_code
@@ -134,16 +133,25 @@ FROM (
                                  group by bond_code))
      ) e
      on d.bond_code = e.bond_code
-order by abs(cb_mov2_id) DESC
-                                """, (industry, up, industry, down))
+order by _sign desc, abs(cb_mov2_id) DESC
+                                """, (key, up, key, down))
 
-            html += generate_table_html(industry + '行业', cur, '', need_title=True,
+            table, table_html = generate_table_html_with_data('', cur, '', need_title=False,
                                        remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                        is_login_user=is_login_user)
+            html += "<div id='cb_detail_list'>"
+            html += generate_scatter_html_with_one_table(table,
+                                                         title=key + '行业可转债分布',
+                                                         sub_title='仅展示涨/跌幅top10的可转债',
+                                                         use_personal_features=is_login_user)
+            html += table_html
+            html += '</div>'
 
         con_file.close()
 
-        return '可转债涨跌分布', '<li><a href="/">Home</a></li>', html
+        return '可转债涨跌分布', \
+               view_utils.build_analysis_nav_html('/view_tree_map_industry.html'), \
+               html
 
     except Exception as e:
         con_file.close()
@@ -151,115 +159,3 @@ order by abs(cb_mov2_id) DESC
         raise e
 
 
-def generate_treemap_html(cur, title):
-    data, item_opts = [], []
-    min_rise = 100
-    max_rise = -100
-    for row in cur.fetchall():
-        item = get_dict_row(cur, row)
-        rise_value = item['涨跌']
-
-        if rise_value > max_rise:
-            max_rise = rise_value
-
-        if rise_value < min_rise:
-            min_rise = rise_value
-
-        if rise_value > 0:
-            rise = '\n+{}%'.format(rise_value)
-            rich = {'name': {'fontSize': 14, 'color': '#000'},
-                    '涨跌': {'fontSize': 14, 'fontWeight': 'bolder', "align": "center", 'color': '#FF0000'}}
-            tree_item = opts.TreeMapItemStyleOpts(color_alpha=1, color='rgb(255,0,0)', border_color='#fff')
-        else:
-            rise = '\n{}%'.format(rise_value)
-            rich = {'name': {'fontSize': 14, 'color': '#000'},
-                    '涨跌': {'fontSize': 14, 'fontWeight': 'bolder', "align": "center", 'color': '#2E8B57'}}
-            tree_item = opts.TreeMapItemStyleOpts(color_alpha=1, color='rgb(60,179,113)', border_color='#fff')
-        data.append(opts.TreeItem(name=item['industry'],
-                                  # value 包含持仓占比和涨跌幅两项数据
-                                  value=[item['余额'], rise_value],
-                                  label_opts=opts.LabelOpts(position='insideBottomLeft',
-                                                            formatter='{name|{b}}{rise|%s}' % rise, rich=rich)))
-        item_opts.append(tree_item)
-
-    tool_js = """function (param) 
-    {   const color = param.value[1] > 0 ? '#FF0000' : '#2E8B57';
-        const detail_style = `color:${color};`;
-        const msgContent = `<div style='width:fit-content;height:fit-content;'>
-            ${param.name}<br/>
-            余额：&nbsp<span style='color:'#fff';'>&nbsp${param.value[0]}&nbsp亿元&nbsp&nbsp</span><br/>
-            涨跌：&nbsp<span style='${detail_style};'>&nbsp${param.value[1]}&nbsp%&nbsp&nbsp</span><br/>
-        <div>`;
-    return msgContent}
-    """
-
-    tp = TreeMap(init_opts=opts.InitOpts(theme='white',
-                                         width='1424px',
-                                         height='700px',
-                                         chart_id='cb_tree_map'
-                                         ))
-    tp.add_js_funcs("""
-        chart_cb_tree_map.on('click', function(params){
-            // alert(params)
-            window.location.replace('/view_tree_map.html?industry=' + encodeURIComponent(params['data']['name']) + '&rise=' + params['data']['value'][1] + '#'+encodeURIComponent(params['data']['name']+'行业'))
-        })
-    """)
-    tp.add('ALL',
-           data,
-           roam=False,
-           node_click='link',
-           width='90%',
-           breadcrumb_opts=opts.TreeMapBreadcrumbOpts(is_show=False),
-           levels=[
-               opts.TreeMapLevelsOpts(
-                   treemap_itemstyle_opts=opts.TreeMapItemStyleOpts(gap_width=1, stroke_width=1, stroke_color='#fff'),
-                   color_mapping_by='value',
-
-               )
-           ],
-           tooltip_opts=opts.TooltipOpts(is_show=True, formatter=JsCode(tool_js),
-                                         textstyle_opts=opts.TextStyleOpts(font_size=14)),
-           color_mapping_by='value',
-           )
-    tp.set_global_opts(title_opts=opts.TitleOpts(title=title, pos_left='center'),
-                       legend_opts=opts.LegendOpts(is_show=False),
-                       visualmap_opts=opts.VisualMapOpts(is_show=False,
-                                                         type_='color',
-                                                         min_=min_rise,
-                                                         max_=max_rise,
-                                                         range_color=[
-                                                                      'green',
-                                                                      'rgb(50, 220, 50)',
-                                                                      'rgb(90, 220, 90)',
-                                                                      'rgb(120, 220, 120)',
-                                                                      'rgb(150, 220, 150)',
-
-                                                                      'rgb(255, 200, 200)',
-                                                                      'rgb(255, 150, 150)',
-                                                                      'rgb(255, 100, 100)',
-                                                                      'rgb(255, 50, 50)',
-                                                                      'rgb(255, 0, 0)',
-                                                                      ],
-                                                         # 指定使用的数据维度
-                                                         dimension=1,
-                                                         is_piecewise=True,
-                                                         pieces=[
-                                                             {'min': min_rise, 'max': min_rise/5*4},
-                                                             {'min': min_rise/5*4, 'max': min_rise/5*3},
-                                                             {'min': min_rise/5*3, 'max': min_rise/5*2},
-                                                             {'min': min_rise/5*2, 'max': min_rise/5},
-                                                             {'min': min_rise/5, 'max': 0},
-
-                                                             {'min': 0, 'max': max_rise/5},
-                                                             {'min': max_rise/5, 'max': max_rise/5*2},
-                                                             {'min': max_rise/5*2, 'max': max_rise/5*3},
-                                                             {'min': max_rise/5*3, 'max': max_rise/5*4},
-                                                             {'min': max_rise/5*4, 'max': max_rise},
-                                                         ]
-                                                         ),
-                       )
-
-    return tp.render_embed('template.html', env)
-
-# def on_click():
-#     alert('haha')

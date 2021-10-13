@@ -3,12 +3,12 @@ import sqlite3
 from prettytable import PrettyTable
 
 
-def from_db(cursor, field_names, rows, **kwargs):
+def from_db(cursor, ext_field_names=None, rows=None, **kwargs):
     if cursor.description:
         table = PrettyTable(**kwargs)
         table.field_names = [col[0] for col in cursor.description]
-        if field_names is not None:
-            table.field_names.extend(field_names)
+        if ext_field_names is not None:
+            table.field_names.extend(ext_field_names)
         if rows is None:
             rows = cursor.fetchall()
         for row in rows:

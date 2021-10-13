@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import sys
 from datetime import datetime
 import os
 import sqlite3
@@ -15,7 +15,7 @@ from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xue
 from utils import html_utils
 from utils.db_utils import get_connect
 from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
-    view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map
+    view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_tree_map_price, view_tree_map_premium
 from jobs import do_update_bond_yield
 from models import User, ChangedBond, HoldBond, ChangedBondSelect, db
 
@@ -50,6 +50,10 @@ def login():
 
     return render_template('index.html')
 
+@cb.route('/sign.html')
+def sign():
+    return render_template('index.html', sign=True)
+
 
 @cb.route('/logout.html')
 def logout():
@@ -57,7 +61,7 @@ def logout():
 
     return render_template('index.html')
 
-
+#fixme 废弃掉, 用sync_trade_data代替
 @cb.route('/edit_hold_bond.html')
 @cb.route('/edit_hold_bond_by_id.html/<id>/')
 @cb.route('/edit_hold_bond.html/<bond_code>/')
@@ -73,6 +77,8 @@ def edit_hold_bond(id='', bond_code=''):
         # 没有持有过, 转添加操作
         if bond is None:
             bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
+            # 先关闭session, 在修改model, 否则会触发update
+            db.session.close()
             bond.id = ''
 
     return render_template("edit_hold_bond.html", bond=bond)
@@ -104,8 +110,10 @@ def find_bond_by_code():
         elif bond_name != '':
             bond = ChangedBond.query.filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).first()
 
-        bond.id = None
         if bond is not None:
+            # 先关闭session, 在修改model, 否则会触发update
+            db.session.close()
+            bond.id = ''
             return dict(bond)
         raise Exception('not find bond by code: ' + bond_code)
     else:
@@ -142,12 +150,16 @@ def find_changed_bond_select_by_code():
         if bond is None:
             bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
             if bond is not None:
+                # 先关闭session, 在修改model, 否则会触发update
+                db.session.close()
                 bond.id = ''
     elif bond_name != '':
         bond = db.session.query(ChangedBondSelect).filter(ChangedBondSelect.cb_name_id.like('%' + bond_name + '%')).first()
         if bond is None:
             bond = db.session.query(ChangedBond).filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).first()
             if bond is not None:
+                # 先关闭session, 在修改model, 否则会触发update
+                db.session.close()
                 bond.id = ''
 
     if bond is None:
@@ -192,6 +204,7 @@ def save_changed_bond_select():
     return render_template("edit_changed_bond_select.html", result='save is successful')
 
 
+#fixme 废弃掉, 用sync_trade_data代替
 @cb.route('/save_hold_bond.html', methods=['POST'])
 @login_required
 def save_hold_bond():
@@ -234,7 +247,10 @@ def save_hold_bond():
 
     hold_bond.hold_price = float(hold_price)
     # 重置一下累积金额信息, 避免下次持仓价格计算错误
-    if not is_new:
+    if is_new:
+        # 持仓金额同时增加
+        hold_bond.sum_buy += hold_bond.hold_price * hold_bond.hold_amount
+    else:
         # 增加数量
         delta = float(hold_price) - hold_bond.hold_price
         # 持仓金额同时增加
@@ -259,6 +275,7 @@ def save_hold_bond():
     db.session.commit()
 
     return redirect(request.form['back_url'])
+
 
 @cb.route('/save_trade_data.html', methods=['POST'])
 @login_required
@@ -348,6 +365,9 @@ def sync_trade_data(id='', bond_code=''):
         bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
     elif bond_code != '':
         bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
+        # 先关闭session, 在修改model, 否则会触发update
+        db.session.close()
+        bond.id = ''
 
     return render_template("sync_trade_data.html", bond=bond)
 
@@ -359,18 +379,58 @@ def up_down_view():
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
-@cb.route('/view_tree_map.html')
-def tree_map_view():
-    industry = request.args.get("industry")
+@cb.route('/view_tree_map_industry.html')
+def industry_tree_map_view():
+    key = request.args.get("key")
     rise = request.args.get("rise")
     user_id = session.get('_user_id')
-    title, navbar, content = view_tree_map.draw_view(user_id is not None, industry, rise)
+    title, navbar, content = view_tree_map_industry.draw_view(user_id is not None, key, rise)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_tree_map_price.html')
+def price_tree_map_view():
+    key = request.args.get("key")
+    end, start = parse_range_value(key, '元')
+
+    rise = request.args.get("rise")
+    user_id = session.get('_user_id')
+    title, navbar, content = view_tree_map_price.draw_view(user_id is not None, key, start, end, rise)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_tree_map_premium.html')
+def premium_tree_map_view():
+    key = request.args.get("key")
+    end, start = parse_range_value(key, '%')
+    rise = request.args.get("rise")
+    user_id = session.get('_user_id')
+    title, navbar, content = view_tree_map_premium.draw_view(user_id is not None, key, start, end, rise)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+def parse_range_value(key, suffix):
+    start = None
+    end = None
+    if key is not None and key.strip(' ') != '':
+        key = key.replace(suffix, '')
+        if key.find('~') >= 1:
+            ss = key.split('~')
+            start = int(ss[0])
+            end = int(ss[1])
+        elif key.find('<=') > 0:
+            start = -sys.maxsize
+            end = int(key.replace('<=', ''))
+        else:
+            start = int(key.replace('>', ''))
+            end = sys.maxsize
+    return end, start
 
 
 @cb.route('/view_discount.html')
 def discount_view():
     user_id = session.get('_user_id')
+    utils.trade_utils.calc_mid_data()
     title, navbar, content = view_discount.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -378,6 +438,7 @@ def discount_view():
 @cb.route('/view_stock.html')
 def stock_view():
     user_id = session.get('_user_id')
+    utils.trade_utils.calc_mid_data()
     title, navbar, content = view_stock.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -385,6 +446,7 @@ def stock_view():
 @cb.route('/view_turnover.html')
 def turnover_view():
     user_id = session.get('_user_id')
+    utils.trade_utils.calc_mid_data()
     title, navbar, content = view_turnover.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -393,6 +455,7 @@ def turnover_view():
 @login_required
 def my_up_down_view():
     user_id = session.get('_user_id')
+    utils.trade_utils.calc_mid_data()
     title, navbar, content = view_my_up_down.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -400,7 +463,7 @@ def my_up_down_view():
 @login_required
 def my_strategy_view():
     user_id = session.get('_user_id')
-    utils.trade_utils.calc_middle_info()
+    utils.trade_utils.calc_mid_data()
     title, navbar, content = view_my_strategy.draw_my_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -416,7 +479,7 @@ def my_yield_view():
 @login_required
 def my_account_view():
     user_id = session.get('_user_id')
-    utils.trade_utils.calc_middle_info()
+    utils.trade_utils.calc_mid_data()
     title, navbar, content = view_my_account.draw_my_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -424,7 +487,7 @@ def my_account_view():
 def market_view():
     # current_user = None
     user_id = session.get('_user_id')
-    utils.trade_utils.calc_middle_info()
+    utils.trade_utils.calc_mid_data()
     title, navbar, content = view_market.draw_market_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
@@ -512,10 +575,10 @@ def query_database_view():
         cur.execute(sql_code)
         table = from_db_cursor(cur)
 
-        if len(table._rows) > 10:
+        if table.rowcount > 10:
             table_height_style = """style="height:500px" """
 
-        table_html = html_utils.get_html_string()
+        table_html = html_utils.build_table_html()
 
     return render_template("query_database.html", table_html=table_html, sql_code=sql_code, table_height_style=table_height_style)
 

@@ -82,7 +82,7 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
 
 
 
-.home_banner { background: url(/static/img/bgm.png) top center no-repeat; background-size: cover; }
+.home_banner { background: url(/static/img/bgm.jpg) top center no-repeat; background-size: cover; }
 
 .form-signin {width: 100%;max-width: 330px;padding: 15px;margin: 0 auto;}
 .form-signin .checkbox {font-weight: 400;}
@@ -102,12 +102,14 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
         </div>
         <div class="collapse navbar-collapse" id="navbar-menu">
             <ul class="nav navbar-nav" data-in="fadeInDown" data-out="fadeOutUp">
-                <li><a href="#">Home</a></li>
+                <li><a href="/">Home</a></li>
                 <li><a href="/view_market.html">可转债策略</a></li>
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">可转债排行</a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">可转债统计分析</a>
                     <ul class="dropdown-menu">
-                      <li><a href="/view_tree_map.html">可转债涨跌分布</a></li>
+                      <li><a href="/view_tree_map_industry.html">可转债涨跌行业分布</a></li>
+                      <li><a href="/view_tree_map_price.html">可转债涨跌价格分布</a></li>
+                      <li><a href="/view_tree_map_premium.html">可转债涨跌溢价率分布</a></li>
                       <li><a href="/view_up_down.html">可转债涨跌排行</a></li>
                         <li><a href="/view_discount.html">溢价率折价排行</a></li>
                         <li><a href="/view_stock.html">正股涨幅排行</a></li>
@@ -129,7 +131,7 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                       <li><a href="/view_my_strategy.html">按策略统计</a></li>
                       <li><a href="/view_my_account.html">按账户统计</a></li>
                         <li><a href="/new_sync_trade_data.html">同步交易数据</a></li>
-                        <li><a href="/edit_hold_bond.html">更新持仓数据</a></li>
+<!--                        <li><a href="/edit_hold_bond.html">更新持仓数据</a></li>-->
                         <li><a href="/view_my_up_down.html">可转债涨跌排行</a></li>
                         <li><a href="/view_my_yield.html">我的收益率</a></li>
                         <li><a href="#" onclick="process_wrapper('/update_bond_yield.html');return false">更新可转债收益率</a></li>
@@ -176,19 +178,17 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                 </li>
 
 
-                <li><a href="/logout.html">退出</a></li>
-<!--                <li><a href="#" onclick="-->
-<!--                    doCallback('OK', 'success');-->
-<!--                    return false-->
-<!--                ">Test</a></li>-->
+                <li><a href="/logout.html">退&nbsp;&nbsp;&nbsp;&nbsp;出</a></li>
+                {% else %}
+                <li><a href="/sign.html">登&nbsp;&nbsp;&nbsp;&nbsp;录</a></li>
                 {% endif %}
 
             </ul>
         </div>
     </nav>
-{% if current_user is undefined or not current_user.is_authenticated %}
+{% if current_user is undefined or not current_user.is_authenticated and sign%}
     <main role="main">
-        <form class="form-signin" action="/login.html" method="post">
+        <form class="form-signin" action="/login.html" method="post" style="color: white">
           <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
           <label for="inputUsername" class="sr-only">UserName</label>
           <input type="text" id="inputUsername" name="username" class="form-control" placeholder="UserName" required autofocus><br/>
@@ -199,9 +199,41 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
               <input type="checkbox" value="remember-me"> Remember me
             </label>
           </div>
-          <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+          <button class="btn btn-lg btn-primary btn-block" type="submit" style="background-color: #4cae4c">Sign in</button>
         </form>
     </main>
+{% else %}
+    <div style="text-align: center;color: white;height: 200px;width: 300px;display: block;margin: 0 auto;font-size: 15px">
+        <table border="0" style="text-align: left">
+            <thead>
+            <tr>
+                <td colspan="2" style="text-align: center;font-size: 16px;font-weight: bold">常访问网址列表</td>
+            </tr>
+            </thead>
+            <tbody style="height: 150px">
+            <tr>
+                <td>&nbsp;&nbsp;1&nbsp;&nbsp;</td>
+                <td>&nbsp;&nbsp;<a href = 'https://www.jisilu.cn/data/cbnew/cb_index/' target = '_blank' style="color: white">集思录可转债等权指数统计信息</a>&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;&nbsp;2</td>
+                <td>&nbsp;&nbsp;<a href = 'http://www.ninwin.cn/index.php?m=cb&c=idx' target = '_blank' style="color: white">宁稳网可转债等权指数统计信息</a></td>
+            </tr>
+            <tr>
+                <td>&nbsp;&nbsp;3</td>
+                <td>&nbsp;&nbsp;<a href = 'https://xueqiu.com/P/ZH1332574' target = '_blank' style="color: white">yyb凌波可转债轮动策略</a></td>
+            </tr>
+            <tr>
+                <td>&nbsp;&nbsp;4</td>
+                <td>&nbsp;&nbsp;<a href = 'https://ww2.ezhai.net.cn/#/basedata_v1_1' target = '_blank' style="color: white">pxling多因子策略数据</a></td>
+            </tr>
+            </tbody>
+        </table>
+
+
+
+
+    </div>
 {% endif %}
 
     <!-- Modal HTML -->

@@ -76,14 +76,14 @@ def rebuild_bond_code(bond_code):
     return market + bond_code
 
 
-def calc_middle_info():
+def calc_mid_data():
 
     # 打开文件数据库
     con_file = get_connect()
     cur = con_file.cursor()
     cur.execute("""
 SELECT mid_price, mid_premium from (
-    SELECT  AVG(cb_price2_id) as mid_price, row_number() OVER () as rn
+    SELECT  AVG(cb_price2_id)  as mid_price, row_number() OVER () as rn
     FROM (SELECT cb_price2_id
           FROM changed_bond
           ORDER BY cb_price2_id
@@ -91,7 +91,7 @@ SELECT mid_price, mid_premium from (
           OFFSET (SELECT (COUNT(*) - 1) / 2
                   FROM changed_bond))) a
 left join(
-    SELECT AVG(cb_premium_id) as mid_premium, row_number() OVER () as rn
+    SELECT AVG(cb_premium_id)*100 as mid_premium, row_number() OVER () as rn
     FROM (SELECT cb_premium_id
           FROM changed_bond
           ORDER BY cb_premium_id
@@ -101,7 +101,7 @@ left join(
 on a.rn = b.rn
     
     """)
-
+    global MID_X, MID_Y
     row = cur.fetchone()
     MID_X = row[0]
     MID_Y = row[1]
