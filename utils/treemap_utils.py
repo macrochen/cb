@@ -31,12 +31,12 @@ def hsv2rgb(h, s, v):
 
 
 def red_hsv2rgb(v):
-    r, g, b = hsv2rgb(700, 1, 1 - v)
+    r, g, b = hsv2rgb(700, 0.8, 1 - v)
     return "rgb(" + r + ',' + g + ',' + b + ')'
 
 
 def green_hsv2rgb(v):
-    r, g, b = hsv2rgb(500, 1, 0.4 + v)
+    r, g, b = hsv2rgb(500, 0.5, 0.4 + v)
     return "rgb(" + r + ',' + g + ',' + b + ')'
 
 
