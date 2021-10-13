@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+    <head>
+    <!--网站编码格式，UTF-8 国际编码，GBK或 gb2312 中文编码-->
+        <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+        <meta name="Keywords" content="关键词一，关键词二">
+        <meta name="Description" content="网站描述内容">
+        <meta name="Author" content="Yvette Lau">
+        <title>Document</title>
+        <!--css js 文件的引入-->
+        <style>
+            #leftFrame{display:block;}
+        </style>
+    </head>
+    <body>
+<!--        <div><img src = "img/photo1.jpg" width="500px"/></div>-->
+        <iframe src="https://www.jisilu.cn/data/cbnew/cb_list/" height= "200px" name="leftFrame" scrolling="No"  noresize="noresize"  id="leftFrame"></iframe>
+<!--        <div><img src = "img/photo2.jpg"  width="500px"/></div>-->
+<!--        <div><img src = "img/photo3.jpg" width="500px" /></div>-->
+        <p id = "buttom">detail</p>
+    </body>
+</html>
+<script>
+    window.onload = function(){
+        var iframe = document.querySelector("#leftFrame");
+        // var bot = iframe.contentWindow.document.querySelector("#bot");
+        // var top = iframe.contentWindow.document.querySelector("#top");
+
+        // top.onclick = function(){
+        //     document.body.scrollTop = 0;
+        // };
+    };
+    document.getElementById('buttom').onclick = function(){
+            // alert(iframe.ownerDocument.documentElement.innerText)
+        alert(window.frames['leftFrame'])
+            // alert(document.getElementById("leftFrame").contentWindow)
+        };
+
+    javascript:(function() {var xhr = new XMLHttpRequest (); xhr.open("GET",'https://www.jisilu.cn/data/cbnew/cb_list/',false);xhr.send(null);var c = document.createElement("input");c.setAttribute('value',xhr.responseText);document.body.appendChild(c);c.select();window.getSelection().toString();document.execCommand('copy');alert('copy ok')})()
+    javascript:(function() {var s = document.documentElement.innerText;var c = document.createElement("input");c.setAttribute('value',s);document.body.appendChild(c);c.select();window.getSelection().toString();document.execCommand('copy');alert('copy ok')})()
+
+    javascript:(function() {alert('s')})()
+</script>

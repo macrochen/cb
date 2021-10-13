@@ -1,19 +1,20 @@
 # 从同花顺抓正股的相关数据
 import datetime
+import re
+import sqlite3
 import time
 
-import sqlite3
-
-import common
 from selenium import webdriver
-import re
+
+from utils.db_utils import get_connect
+
 driver = None
 
 
 def update_stock_sum():
     # 遍历可转债列表
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     try:
         # 查询可转债

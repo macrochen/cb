@@ -6,68 +6,36 @@
 
 import sqlite3
 
+from pyecharts import options as opts
+from pyecharts.charts import Bar
+from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType
 
-import cb_jsl
-import common
+# import matplotlib.pyplot as plt
 
-import matplotlib.pyplot as plt
-from prettytable import PrettyTable
-
-import webbrowser
-import os
-
-from pyecharts import options as opts
-from pyecharts.charts import Pie, Bar
-
-from pyecharts.charts import Scatter
-from pyecharts.commons.utils import JsCode
-
-from jinja2 import Environment, FileSystemLoader
-
-plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+# plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+from utils import db_utils, html_utils
+from utils.db_utils import get_connect
+from views import view_utils
 
 
-def generate_table_html(type, cur, html, need_title=True, field_names=None, rows=None,
-                        color=None, remark_fields_color=[], link_fields={}):
-    table = from_db(cur, field_names, rows)
+def generate_table_html(type, cur, html, need_title=True, ext_field_names=None, rows=None,
+                        color=None, remark_fields_color=[], is_login_user=False):
+    table = db_utils.from_db(cur, ext_field_names, rows)
 
-    if len(table._rows) == 0:
+    if table.rowcount == 0:
         return html
 
-    return html + common.get_html_string(table, remark_fields_color,link_fields)
-
-def from_db(cursor, field_names, rows, **kwargs):
-    if cursor.description:
-        table = PrettyTable(**kwargs)
-        table.field_names = [col[0] for col in cursor.description]
-        if field_names is not None:
-            table.field_names.extend(field_names)
-        if rows is None:
-            rows = cursor.fetchall()
-        for row in rows:
-            table.add_row(row)
-        return table
+    return html + html_utils.build_table_html(table, remark_fields_color, is_login_user=is_login_user)
 
 
-
-def draw_view(need_show_figure, need_open_page):
+def draw_view(is_login_user):
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
     cur = con_file.cursor()
     try:
 
         html = ''
-
-        # =========我的转债价格TOP20柱状图=========
-        cur.execute("""
-select cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 100, 2) as 涨跌, round(cb_premium_id*100,2) || '%' as 溢价率
- from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
- where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_price2_id DESC limit 20)     
-                    """)
-
-        rows = cur.fetchall()
-        html += '<br/><br/><br/><br/><br/>' + generate_top_bar_html(rows, '我的可转债价格TOP20')
 
         # =========我的转债涨跌TOP20柱状图=========
         cur.execute("""
@@ -81,12 +49,12 @@ select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id 
 order by 涨跌 desc
                     """)
         rows = cur.fetchall()
-        html += '<br/>' + generate_bar_html(rows, '我持有的可转债涨跌TOP20')
+        html += '<br/><br/><br/><br/><br/>' + generate_bar_html(rows, '我持有的可转债涨跌TOP20')
 
         # =========我的转债涨跌TOP20表格=========
 
         cur.execute("""
-    SELECT h.id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
         cb_price2_id as 转债价格, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)',round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏,   
         round(cb_premium_id*100,2) as 溢价率, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         remain_amount as '余额(亿元)',round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
@@ -130,75 +98,23 @@ stock_report s, (select *
     order  by cb_mov2_id desc
             """)
 
-        html = generate_table_html("涨跌TOP10", cur, html, need_title=False, remark_fields_color=['策略', '盈亏', '到期收益率', '溢价率', '可转债涨跌'], link_fields={'成本(量)': common.make_link})
+        html = generate_table_html("涨跌TOP10", cur, html, need_title=False,
+                                   remark_fields_color=['策略', '盈亏', '到期收益率', '溢价率', '可转债涨跌'],
+                                              is_login_user=is_login_user)
 
-        # =========全网可转债涨跌TOP20柱状图=========
-
+        # =========我的转债价格TOP20柱状图=========
         cur.execute("""
-        select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
-         from (SELECT DISTINCT c. * from changed_bond c 
-          order by cb_mov2_id DESC limit 20)     
-        UNION  
-        select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
-         from (SELECT DISTINCT c. * from changed_bond c 
-           order by cb_mov2_id ASC limit 20) 
-        order by 涨跌 desc
-                            """)
-        rows = cur.fetchall()
-        html += '<br/>' + generate_bar_html(rows, '全网可转债涨跌TOP20')
-
-        cur.execute("""
-SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
-  FROM (
-      SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称,cb_mov2_id, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, 
-        cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率,
-        round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', remain_amount as '余额(亿元)', cb_trade_amount_id as '成交额(百万)', round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
-        round(cb_price2_id + cb_premium_id * 100, 2) as 双低值, round(bt_yield*100,2) || '%' as 到期收益率,
-        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
-        
-        rank_gross_rate ||'【' || level_gross_rate || '】' as 毛利率排名,rank_net_margin ||'【' || level_net_margin || '】' as 净利润排名,
-        rank_net_profit_ratio ||'【' || level_net_profit_ratio || '】'  as 利润率排名, rank_roe ||'【' || level_roe || '】' as ROE排名,
-        rank_pe ||'【' || level_pe || '】' as PE排名, rank_pb ||'【' || level_pb || '】' as PB排名,
-        rank_net_asset ||'【' || level_net_asset || '】' as 净资产排名, rank_market_cap ||'【' || level_market_cap || '】' as 市值排名,
-        stock_total as 综合评分, 
-        
-        round(s.revenue,2) as '营收(亿元)',s.yoy_revenue_rate || '%' as '营收同比',
-        gross_rate||'|' || avg_gross_rate as '毛利率|行业均值',  
-        round(s.net,2)||'|' || avg_net_margin as '净利润|均值(亿元)', s.yoy_net_rate || '%' as '净利润同比', 
-        s.margin ||'|' || avg_net_profit_ratio as '利润率|行业均值', s.yoy_margin_rate || '%' as '利润率同比', 
-        s.roe ||'|' || avg_roe as 'ROE|行业均值', s.yoy_roe_rate || '%' as 'ROE同比', 
-        round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', 
-        s.pe||'|' || avg_pe as 'PE(动)|均值',  
-        c.stock_pb||'|' || avg_pb as 'PB|行业均值', 
-        net_asset||'|' || avg_net_asset as '净资产|行业均值', 
-        market_cap||'|' || avg_market_cap as '市值|均值(亿元)', 
-                
-        fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
-        trade_suggest as 操作建议,
-        
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度
-
-    from (select *
-         from (SELECT DISTINCT c. * from changed_bond c 
-          order by cb_mov2_id DESC limit 10)     
-        UNION  
-        select *
-         from (SELECT DISTINCT c. * from changed_bond c 
-           order by cb_mov2_id ASC limit 10) ) c LEFT join stock_report s on c.stock_code = s.stock_code 
-    where c.enforce_get not in ('强赎中') or c.enforce_get is null ) d left join 
-        (select id as hold_id, bond_code, hold_price, hold_amount, strategy_type 
-            from hold_bond where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 
-             ) e 
-        on d.bond_code = e.bond_code	
-        ORDER by cb_mov2_id DESC
+select cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 100, 2) as 涨跌, round(cb_premium_id*100,2) || '%' as 溢价率
+ from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
+ where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_price2_id DESC limit 20)     
                     """)
 
-        html = generate_table_html("全网涨跌TOP10", cur, html, need_title=False, remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌'])
+        rows = cur.fetchall()
+        html += '<br/>' + generate_top_bar_html(rows, '我的可转债价格TOP20')
 
         con_file.close()
 
-        return '可转债涨跌', '<li><a href="/">Home</a></li>', html
+        return '我的可转债涨跌', ''.join(view_utils.build_personal_nav_html_list('/view_my_up_down.html')), html
 
     except Exception as e:
         con_file.close()
@@ -339,7 +255,7 @@ def generate_bar_html(rows, title):
         ),
     )
 
-    bar_html = bar.render_embed('template.html', common.env)
+    bar_html = bar.render_embed('template.html', html_utils.env)
     return bar_html
 
 def generate_top_bar_html(rows, title):
@@ -411,14 +327,5 @@ def generate_top_bar_html(rows, title):
         ),
     )
 
-    bar_html = bar.render_embed('template.html', common.env)
+    bar_html = bar.render_embed('template.html', html_utils.env)
     return bar_html
-
-
-if __name__ == "__main__":
-    # 展示之前先更新一下数据
-    cb_jsl.fetch_data()
-    # draw_my_view(True, True)
-    print("fetch data is successful")
-    draw_view(False, True)
-    print("draw view is successful")

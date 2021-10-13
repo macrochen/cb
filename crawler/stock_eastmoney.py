@@ -1,12 +1,13 @@
 # 从东方财富抓正股的相关数据
 import datetime
 import re
+import sqlite3
 import time
 
-import sqlite3
-
-import common
 from selenium import webdriver
+
+from utils import trade_utils
+from utils.db_utils import get_connect
 
 driver = None
 
@@ -15,7 +16,7 @@ driver = None
 def do_update_stock_sum():
     # 遍历可转债列表
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     try:
         # 查询可转债
@@ -131,7 +132,7 @@ def update_theme_config():
     # 关闭数据库
 
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     try:
         # 删除已有的数据
@@ -211,7 +212,7 @@ def update_theme_config():
 def update_stock_theme():
     # 遍历可转债列表
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     try:
         # 查询可转债
@@ -252,7 +253,7 @@ def update_stock_theme():
 def modify_data_unit_error():
     # 遍历可转债列表
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     try:
 
@@ -344,7 +345,7 @@ def fetch_theme_data(count, days):
 # http://f10.eastmoney.com/f10_v2/CoreConception.aspx?code=sz002472
 def fetch_stock_theme(stock_code):
 
-    stock_code = common.rebuild_stock_code(stock_code)
+    stock_code = trade_utils.rebuild_stock_code(stock_code)
 
     url = "http://f10.eastmoney.com/f10_v2/CoreConception.aspx?code=" + stock_code
 
@@ -527,7 +528,7 @@ def change_data_unit(s, default_change=default_clean_text):
 
 
 def get_stock_sum(stock_code):
-    stock_code = common.rebuild_stock_code(stock_code)
+    stock_code = trade_utils.rebuild_stock_code(stock_code)
 
     url = "http://quote.eastmoney.com/" + stock_code + '.html'
 

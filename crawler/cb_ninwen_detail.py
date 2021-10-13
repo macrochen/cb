@@ -1,49 +1,59 @@
 #抓取宁稳网的数据(每天中午, 下午收盘更新, 非实时, 但是最全)
 
 import datetime
-
-import requests
-import bs4
+import re
 import sqlite3
+import time
 
+import bs4
+from selenium import webdriver
+
+from utils.db_utils import get_connect
+
+userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
     "Referer": "http://www.ninwin.cn/index.php?m=profile",
-    'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
-    # 'Cookie': "csrf_token=8919ea04925831e8; __51cke__=; P0s_winduser=RaqSRnBfFwDoLZv5tGFqXXLD4fXwVZQynHEOTJOsq1fzXIiXiCJW%2FWYIGis%3D; P0s_cbQuestion=1; __tins__4771153=%7B%22sid%22%3A%201631088120422%2C%20%22vd%22%3A%207%2C%20%22expires%22%3A%201631089976917%7D; __51laig__=234; PHPSESSID=jpl3tag9rff4l4mtdndsm36n44; P0s_visitor=Ncd58ncEEFs83Y9d2knG3OnEWpLyZm3YRPK8yFD6ja5fvV52; P0s_lastvisit=242%091631159109%09%2Findex.php%3Fm%3DmyAdmin%26c%3Dlog"
+    'User-Agent': userAgent,
+    'Cookie': "csrf_token=4d924a8e39c98eee; __51cke__=; P0s_Pw_verify_code=lNwst736TYc%3D; P0s_winduser=RaqSRnBfFwDoLZv5tGFqXXLD4fXwVZQynHEOTJOsq1fzXIiXiCJW%2FWYIGis%3D; P0s_visitor=Cmse9dUtYW7cclzpENrqCj4gRIGuNSePKoJ%2Bng6EdKzPslngncrLoDtmlqg%3D; __tins__4771153=%7B%22sid%22%3A%201615874339009%2C%20%22vd%22%3A%204%2C%20%22expires%22%3A%201615876387793%7D; __51laig__=98; P0s_lastvisit=269%091615874605%09%2Findex.php%3Fm%3DmyAdmin%26c%3Dlog"
 }
 
+driver = None
+def getContent(bond_num):
+    url = "http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + str(bond_num)
 
-def getContent():
-    url = "http://www.ninwin.cn/index.php?m=cb&a=cb_all&show_cb_only=Y&show_listed_only=Y"
+    driver.get(url)
 
-    cookies = {}
-    s = "csrf_token=8919ea04925831e8; __51cke__=; P0s_winduser=RaqSRnBfFwDoLZv5tGFqXXLD4fXwVZQynHEOTJOsq1fzXIiXiCJW%2FWYIGis%3D; P0s_cbQuestion=1; __tins__4771153=%7B%22sid%22%3A%201631088120422%2C%20%22vd%22%3A%207%2C%20%22expires%22%3A%201631089976917%7D; __51laig__=234; PHPSESSID=jpl3tag9rff4l4mtdndsm36n44; P0s_visitor=Ncd58ncEEFs83Y9d2knG3OnEWpLyZm3YRPK8yFD6ja5fvV52; P0s_lastvisit=242%091631159109%09%2Findex.php%3Fm%3DmyAdmin%26c%3Dlog"
-    for ss in s.split(";"):
-        name, value = ss.strip().split("=", 1)
-        cookies[name] = value
+    row = {}
 
-    response = requests.get(url, headers=header, cookies=cookies)
-    code = response.status_code
-    if code != 200:
-        print("获取数据失败， 状态码：" + code)
+    table = driver.find_element_by_class_name("content_tab")
+    s = table.text
 
-    soup = bs4.BeautifulSoup(response.text, "html5lib")
-    table = soup.find_all('table')[1]
-    attr_id = table.attrs['id']
-    if 'cb_hq' not in attr_id:
-        print("table元素找的不对。id必须为cb_hq，实为：" + attr_id)
-        return
-    # 所有数据行 <tr>
-    trs = list(table.tbody.children)
+    r = re.findall(r"各期利息：(\d+\.?\d*，\d+\.?\d*，\d+\.?\d*，\d+\.?\d*，\d+\.?\d*，\d+\.?\d*)\n", s)
+    if len(r) == 1:
+        ss = r[0].split('，')
+        if len(ss) == 6:
+            row['interest'] = ','.join(ss)
 
-    if len(trs) == 0:
-        print("未获取到数据。")
+    r = re.findall(r"下修条件：连续(\d+)个交易日中至少(\d+)个交易日收盘价格低于当期转股价格的(\d+)%\n", s)
+    if len(r) == 1:
+        row["down_revise_term"] = ','.join(r[0])
 
-    rows = buildRows(trs)
+    r = re.findall(r"强赎条件：连续(\d+)个交易日中至少(\d+)个交易日收盘价格不低于当期转股价格的(\d+)%，或者余额小于(\d+)万元\n", s)
+    if len(r) == 1:
+        row["enforce_get_term"] = ','.join(r[0])
 
-    # print(rows)
+    r = re.findall(r"回售条件：最后(\d+)年，连续(\d+)个交易日收盘价格低于当期转股价格的(\d+)%\n", s)
+    if len(r) == 1:
+        row["buy_back_term"] = ','.join(r[0])
 
-    return rows
+    r = re.findall(r"(担保：.*)\n", s)
+    if len(r) == 1:
+        if r[0] in ['担保：', '担保：无', '担保：未提供担保。', '担保：不提供担保。', '担保：不提供担保', '担保：本次发行的可转债未提供担保。', '担保：无担保']:
+            row["ensure"] = '无'
+        else:
+            row["ensure"] = '无'
+
+    return row
 
 
 def buildRows(trs):
@@ -157,9 +167,9 @@ def buildRow(row, td):
     elif 'cb_mov2_id' in cls:
         # fixme 涨跌幅和日内套利无法区分
         if 'cb_mov2_id' in row:
-            row['cb_mov3_id'] = percentage2float(row['cb_name_id'], 'cb_mov3_id', text)
+            row['cb_mov3_id'] = percentage2float('cb_mov3_id', text)
         else:
-            row['cb_mov2_id'] = percentage2float(row['cb_name_id'], 'cb_mov2_id', text)
+            row['cb_mov2_id'] = percentage2float('cb_mov2_id', text)
     # stock_price_id
     elif 'stock_price_id' in cls:
         # remain_amount
@@ -169,13 +179,13 @@ def buildRow(row, td):
             row['stock_price_id'] = text
     # cb_mov_id
     elif 'cb_mov_id' in cls:
-        row['cb_mov_id'] = percentage2float(row['cb_name_id'], 'cb_mov_id', text)
+        row['cb_mov_id'] = percentage2float('cb_mov_id', text)
     # cb_strike_id
     elif 'cb_strike_id' in cls:
         row['cb_strike_id'] = text
     # cb_premium_id
     elif 'cb_premium_id' in cls:
-        row['cb_premium_id'] = percentage2float(row['cb_name_id'], 'cb_premium_id', text)
+        row['cb_premium_id'] = percentage2float('cb_premium_id', text)
     # cb_value_id
     elif 'cb_value_id' in cls:
         # fixme 依赖字段顺序（转股价值，ma20乖离率）
@@ -188,7 +198,7 @@ def buildRow(row, td):
         elif not 'cb_value_id' in row:
             row['cb_value_id'] = text
         else:
-            row['cb_ma20_deviate'] = percentage2float(row['cb_name_id'], 'cb_ma20_deviate', text)
+            row['cb_ma20_deviate'] = percentage2float('cb_ma20_deviate', text)
     # cb_t_id
     elif 'cb_t_id' in cls:
         # bond_t1
@@ -206,15 +216,15 @@ def buildRow(row, td):
     elif 'cb_trade_amount_id' in cls:
         # fixme 转债成交额和换手率无法区分
         if 'cb_trade_amount_id' in row:
-            row['cb_trade_amount2_id'] = percentage2float(row['cb_name_id'], 'cb_trade_amount2_id', text)
+            row['cb_trade_amount2_id'] = percentage2float('cb_trade_amount2_id', text)
         else:
             row['cb_trade_amount_id'] = text
     # cb_to_share
     elif 'cb_to_share' in cls:
-        row['cb_to_share'] = percentage2float(row['cb_name_id'], 'cb_to_share', text)
+        row['cb_to_share'] = percentage2float('cb_to_share', text)
     # cb_to_share_shares
     elif 'cb_to_share_shares' in cls:
-        row['cb_to_share_shares'] = percentage2float(row['cb_name_id'], 'cb_to_share_shares', text)
+        row['cb_to_share_shares'] = percentage2float('cb_to_share_shares', text)
     # market_cap
     elif 'market_cap' in cls:
         row['market_cap'] = text
@@ -235,22 +245,22 @@ def buildRow(row, td):
             print("存在未知的class为cb_elasticity_id的td， 内容为：" + td)
     # BT_yield
     elif 'BT_yield' in cls:
-        row['BT_yield'] = percentage2float(row['cb_name_id'], 'BT_yield', text)
+        row['BT_yield'] = percentage2float('BT_yield', text)
     # AT_yield
     elif 'AT_yield' in cls:
-        row['AT_yield'] = percentage2float(row['cb_name_id'], 'AT_yield', text)
+        row['AT_yield'] = percentage2float('AT_yield', text)
     # BT_red
     elif 'BT_red' in cls:
-        row['BT_red'] = percentage2float(row['cb_name_id'], 'BT_red', text)
+        row['BT_red'] = percentage2float('BT_red', text)
     # AT_red
     elif 'AT_red' in cls:
-        row['AT_red'] = percentage2float(row['cb_name_id'], 'AT_red', text)
+        row['AT_red'] = percentage2float('AT_red', text)
     # rating
     elif 'rating' in cls:
         row['rating'] = text
     # discount_rate
     elif 'discount_rate' in cls:
-        row['discount_rate'] = percentage2float(row['cb_name_id'], 'discount_rate', text)
+        row['discount_rate'] = percentage2float('discount_rate', text)
     # cb_wa_id
     elif 'cb_wa_id' in cls:
         # fixme 新式双低， 老式双低
@@ -265,88 +275,22 @@ def buildRow(row, td):
 
 
 # 百分比转换成小数
-def percentage2float(bond_name, name, text):
+def percentage2float(name, text):
     if text.endswith("%"):
         # 去掉千分位
         if text.find(","):
             text = text.replace(",", "")
         return round(float(text.strip("%")) / 100, 5)
     else:
-        print("没有找到对应的值。 name：" + name + ' in bond: ' + bond_name)
+        print("没有找到对应的值。 name：" + name)
         return None
 
 
-def createDb():
-    # 使用:memory:标识打开的是内存数据库
-    # con = sqlite3.connect(":memory:")
-
-    con = sqlite3.connect("db/cb.db3")
-    # cur = con.cursor()
-    # 使用executescript可以执行多个脚本
-    con.executescript("""
-        drop table if exists changed_bond;
-        create table if not exists changed_bond(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cb_num_id int NOT NULL,
-            bond_code text NOT NULL, 
-            cb_name_id text NOT NULL,
-            bond_date_id text NOT NULL,
-            stock_code text NOT NULL,
-            stock_name text NOT NULL,
-            industry text NOT NULL,
-            sub_industry text NOT NULL,
-            cb_price2_id real NOT NULL,
-            cb_mov2_id real NOT NULL,
-            cb_mov3_id real NOT NULL,
-            stock_price_id real NOT NULL,
-            cb_mov_id real NOT NULL,
-            cb_price3_id real NOT NULL,
-            cb_strike_id real NOT NULL,
-            cb_premium_id real NOT NULL,
-            cb_value_id real NOT NULL,
-            cb_t_id text NOT NULL,
-            bond_t1 text NOT NULL,
-            red_t text NOT NULL,
-            remain_amount real NOT NULL,
-            cb_trade_amount_id real NOT NULL,
-            cb_trade_amount2_id real NOT NULL,
-            cb_to_share real NOT NULL,
-            cb_to_share_shares real NOT NULL,
-            market_cap real NOT NULL,
-            stock_pb real NOT NULL,
-            BT_yield real NOT NULL,
-            AT_yield real NOT NULL,
-            BT_red real,
-            AT_red real,
-            npv_red real NOT NULL,
-            npv_value real NOT NULL,
-            rating text NOT NULL,
-            discount_rate real NOT NULL,
-            elasticity real NOT NULL,
-            cb_ol_value real NOT NULL,
-            cb_ol_rank int NOT NULL,
-            cb_nl_value real NOT NULL,
-            cb_nl_rank int NOT NULL,
-            cb_ma20_deviate real NOT NULL,
-            cb_hot int NOT NULL,
-            duration real,
-            enforce_get text,
-            buy_back int,
-            down_revise int,
-            data_id INTEGER
-            )""")
-
-    # 打印数据表数据
-    # cur.execute("select * from changed_bond")
-    # print(cur.fetchall())
-
-    con.commit()
-    con.close()
 
 
 def insertDb(rows):
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     try:
 
@@ -371,15 +315,74 @@ def insertDb(rows):
         # cur_file.close()
         con_file.close()
         print("db操作出现异常", e)
+
+def do_fetch_data():
+    # 打开文件数据库
+    con_file = get_connect()
+    try:
+        # 遍历整个可转债列表, 拿到bond_num
+        bond_cursor = con_file.execute("""SELECT data_id, bond_code, cb_name_id from changed_bond""")
+        i = 0
+        j = 0
+        for bond_row in bond_cursor:
+            num_id = bond_row[0]
+            bond_code = bond_row[1]
+            bond_name = bond_row[2]
+
+            bond_ex_cursor = con_file.execute("""SELECT id, bond_name from changed_bond_extend where bond_num = ?""", (num_id,))
+            ex_list = list(bond_ex_cursor)
+            if len(ex_list) == 0:
+                # 检查是否存在extend信息, 没有则去抓数据
+                row = getContent(num_id)
+                # 插入数据
+                con_file.execute("""insert into changed_bond_extend(bond_num, bond_code, 
+                interest, ensure, enforce_get_term, buy_back_term, down_revise_term)
+                                        values(?,?,?,?,?,?,?)""",
+                                 (num_id, bond_code,
+                                  row.get('interest'),
+                                  row.get('ensure'),
+                                  row.get('enforce_get_term'),
+                                  row.get('buy_back_term'),
+                                  row.get('down_revise_term'),
+                                  )
+                                 )
+                print("insert " + bond_name + " is successful. count:" + str(i + 1))
+                i += 1
+                # 暂停5s再执行， 避免被网站屏蔽掉
+                time.sleep(5)
+            elif ex_list[0][1] is None:
+                con_file.execute("""update changed_bond_extend set bond_name = ? where bond_num = ?""",
+                                 (bond_name, num_id)
+                                 )
+                print("update " + bond_name + " is successful. count:" + str(j + 1))
+                j += 1
+    except Exception as e:
+        # con_file.close()
+        print("db操作出现异常" + str(e), e)
         raise e
+    except TimeoutError as e:
+        print("网络超时, 请手工重试")
+        raise e
+    finally:
+        con_file.commit()
+        con_file.close()
 
 def fetch_data():
-    createDb()
-    rows = getContent()
-    insertDb(rows)
+    options = webdriver.ChromeOptions()
+    options.add_argument('user-agent="' + userAgent + '"')
+    options.add_argument('Referer="http://www.ninwin.cn/index.php?m=profile"')
+
+    driver = webdriver.Chrome(options=options)
+
+    driver.implicitly_wait(10)
+    do_fetch_data()
+
+    driver.close()
+
+    print("可转债数据抓取更新完成")
+
     return 'OK'
 
 if __name__ == "__main__":
-    fetch_data()
 
-    print("可转债数据抓取更新完成")
+    fetch_data()

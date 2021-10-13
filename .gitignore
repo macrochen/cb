@@ -2,3 +2,5 @@
 ~$cb.xlsx
 __pycache__
 /view/view*
+/unused/*
+/dump

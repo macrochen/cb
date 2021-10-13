@@ -2,13 +2,33 @@
 
 import os
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy  # 导入扩展类
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+class Config:
+    # SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
+    SECRET_KEY = 'super secret key'
+    SESSION_TYPE = 'filesystem'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, 'db/cb.db3')
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
+
+    @staticmethod
+    def init_app(app):
+        pass
 
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////' + os.path.join(app.root_path, 'db/cb.db3')
-app.secret_key = 'super secret key'
-app.config['SESSION_TYPE'] = 'filesystem'
+class DevelopmentConfig(Config):
+    ENV = 'development'
+    DEBUG = True
+    # SERVER_NAME = '127.0.0.1:8080'
 
-db = SQLAlchemy(app)  # 初始化扩展，传入程序实例 app
+
+class ProductionConfig(Config):
+    ENV = 'production'
+    DEBUG = False
+
+
+config = {
+    'development': DevelopmentConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig
+}

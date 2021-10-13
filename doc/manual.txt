@@ -1,0 +1,15 @@
+生成requirements.txt文件命令:
+pipreqs . --force
+
+参考资料:
+
+virtualenv - 廖雪峰的官方网站 (bad)
+https://www.liaoxuefeng.com/wiki/1016959663602400/1019273143120480
+
+Pipenv：新一代Python项目环境与依赖管理工具 - 掘金
+https://juejin.cn/post/6844903620933238798
+
+
+安装pip
+python - ImportError: No module named pip - Stack Overflow
+https://stackoverflow.com/questions/18363022/importerror-no-module-named-pip

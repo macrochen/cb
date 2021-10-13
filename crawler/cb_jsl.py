@@ -1,9 +1,12 @@
 #抓取集思录的数据(实时, 仅部分实时数据)
 
 import json
-import time
-import requests
 import sqlite3
+import time
+
+import requests
+
+from utils.db_utils import get_connect
 
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
@@ -107,7 +110,7 @@ def percentage2float(cell, name, default_value=0):
 
 def update_db(rows):
     # 打开文件数据库
-    con_file = sqlite3.connect('db/cb.db3')
+    con_file = get_connect()
 
     try:
 
