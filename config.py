@@ -19,6 +19,7 @@ class Config:
 class DevelopmentConfig(Config):
     ENV = 'development'
     DEBUG = True
+    SQLALCHEMY_ECHO = True
     # SERVER_NAME = '127.0.0.1:8080'
 
 

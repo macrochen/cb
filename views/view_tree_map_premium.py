@@ -4,25 +4,19 @@
 
 # https://blog.csdn.net/idomyway/article/details/82390040
 
-from pyecharts import options as opts
-from pyecharts.charts import TreeMap
-from pyecharts.commons.utils import JsCode
-
-from utils.db_utils import get_connect, get_dict_row
-from utils.html_utils import env, generate_table_html_with_data, generate_scatter_html_with_one_table
-from utils.treemap_utils import calc_range, generate_treemap_html
+from utils.db_utils import get_cursor
+from utils.echarts_html_utils import generate_scatter_html_with_one_table
+from utils.table_html_utils import generate_table_html_with_data
+from utils.treemap_utils import generate_treemap_html
 from views import view_utils
 
 
 def draw_view(is_login_user, key, start, end, rise):
-    # 打开文件数据库
-    con_file = get_connect()
-    cur = con_file.cursor()
     try:
 
         html = ''
 
-        cur.execute("""
+        cur = get_cursor("""
                 select i as 溢价率区间, round(s_m / c_i*100, 2) as 涨跌,  c_i as 数量
 from (select DISTINCT(_interval) as i, count(_interval) as c_i, sum(cb_mov2_id) as s_m
       from (SELECT cb_premium_id,
@@ -70,7 +64,7 @@ from (select DISTINCT(_interval) as i, count(_interval) as c_i, sum(cb_mov2_id) 
             else:
                 down = 10
 
-            cur.execute("""
+            cur = get_cursor("""
             SELECT DISTINCT d.*,
                 e.strategy_type                                        as 策略,
                 e.hold_id,
@@ -171,14 +165,11 @@ order by _sign desc, abs(cb_mov2_id) DESC
             html += table_html
             html += '</div>'
 
-        con_file.close()
-
         return '可转债涨跌分布', \
                view_utils.build_analysis_nav_html('/view_tree_map_premium.html'), \
                html
 
     except Exception as e:
-        con_file.close()
         print("processing is failure. ", e)
         raise e
 

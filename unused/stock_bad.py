@@ -1,13 +1,11 @@
 # 从网易财经抓取数据
+import sqlite3
 import time
 
-import requests
 import bs4
-import html5lib
-from lxml import etree
-import sqlite3
+import requests
 
-from utils.db_utils import get_connect
+from utils.db_utils import get_cursor
 
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
@@ -852,13 +850,11 @@ neteaseClickStat();
     # print(ss)
 
     # 遍历可转债列表
-    # 打开文件数据库
-    con_file = get_connect()
 
     try:
         # 查询可转债
 
-        bond_cursor = con_file.execute("""
+        bond_cursor = get_cursor("""
             SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond
         """)
 
@@ -869,7 +865,7 @@ neteaseClickStat();
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
-            stock_cursor = con_file.execute("SELECT bond_code, stock_code, last_date from stock_report where bond_code = " + bond_code)
+            stock_cursor = get_cursor("SELECT bond_code, stock_code, last_date from stock_report where bond_code = " + bond_code)
 
             earnings = getEarnings(stock_code)
 
@@ -877,7 +873,7 @@ neteaseClickStat();
             # 还没添加股票信息
             if len(stocks) == 0:
                 # 新增
-                con_file.execute("""insert into stock_report(bond_code,cb_name_id,stock_code,stock_name,
+                get_cursor("""insert into stock_report(bond_code,cb_name_id,stock_code,stock_name,
                             last_date,
                             revenue,qoq_revenue_rate,yoy_revenue_rate,
                             net,qoq_net_rate,yoy_net_rate,
@@ -913,7 +909,7 @@ neteaseClickStat();
             else:
                 last_date = stocks[0][2]
                 if last_date != earnings.lastDate:
-                    con_file.execute("""update stock_report
+                    get_cursor("""update stock_report
                                 set last_date = ?,
                                 revenue = ?,qoq_revenue_rate = ?,yoy_revenue_rate = ?,
                                 net = ?,qoq_net_rate = ?,yoy_net_rate = ?,
@@ -955,11 +951,7 @@ neteaseClickStat();
         print("共处理" + str(i) + "条记录")
 
     except Exception as e:
-        con_file.close()
         print("db操作出现异常" + e, e)
-    finally:
-        con_file.commit()
-        con_file.close()
 
 
 def getEarnings(stock_code):

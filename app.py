@@ -24,7 +24,9 @@ def init_router(app):
     app.register_blueprint(cb)
 
 if __name__ == "__main__":
-    app = create_app()
+    # development 开发环境
+    # production 生产环境
+    app = create_app("development")
 
     # app.run()  # 生产环境使用, 调用run方法，设定端口号，启动服务
     app.run(port=8080, host="127.0.0.1", debug=True)  #开发环境使用, use_reloader=true, 方便频繁修改自动重启

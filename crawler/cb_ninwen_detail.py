@@ -2,13 +2,12 @@
 
 import datetime
 import re
-import sqlite3
 import time
 
 import bs4
 from selenium import webdriver
 
-from utils.db_utils import get_connect
+from utils.db_utils import get_cursor
 
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
@@ -290,13 +289,12 @@ def percentage2float(name, text):
 
 def insertDb(rows):
     # 打开文件数据库
-    con_file = get_connect()
 
     try:
 
         for row in rows:
             # execute执行脚本
-            con_file.execute("""insert into changed_bond(cb_num_id,bond_code,cb_name_id,bond_date_id,stock_code,stock_name,industry,sub_industry,cb_price2_id,cb_mov2_id,cb_mov3_id,stock_price_id,cb_mov_id,cb_price3_id,cb_strike_id,cb_premium_id,cb_value_id,cb_t_id,bond_t1,red_t,remain_amount,cb_trade_amount_id,cb_trade_amount2_id,cb_to_share,cb_to_share_shares,market_cap,stock_pb,BT_yield,AT_yield,BT_red,AT_red,npv_red,npv_value,rating,discount_rate,elasticity,cb_ol_value,cb_ol_rank,cb_nl_value,cb_nl_rank,cb_ma20_deviate,cb_hot,duration,enforce_get,buy_back,down_revise,data_id)
+            get_cursor("""insert into changed_bond(cb_num_id,bond_code,cb_name_id,bond_date_id,stock_code,stock_name,industry,sub_industry,cb_price2_id,cb_mov2_id,cb_mov3_id,stock_price_id,cb_mov_id,cb_price3_id,cb_strike_id,cb_premium_id,cb_value_id,cb_t_id,bond_t1,red_t,remain_amount,cb_trade_amount_id,cb_trade_amount2_id,cb_to_share,cb_to_share_shares,market_cap,stock_pb,BT_yield,AT_yield,BT_red,AT_red,npv_red,npv_value,rating,discount_rate,elasticity,cb_ol_value,cb_ol_rank,cb_nl_value,cb_nl_rank,cb_ma20_deviate,cb_hot,duration,enforce_get,buy_back,down_revise,data_id)
                              values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                              (row["cb_num_id"], row["bond_code"], row["cb_name_id"], row["bond_date_id"], row["stock_code"],
                               row["stock_name"], row["industry"], row["sub_industry"], row["cb_price2_id"],
@@ -309,19 +307,15 @@ def insertDb(rows):
                               row["cb_ol_value"], row["cb_ol_rank"], row["cb_nl_value"], row["cb_nl_rank"],
                               row["cb_ma20_deviate"], row["cb_hot"], row["duration"], row.get("enforce_get"), row.get("buy_back"), row.get("down_revise"), row['data_id'])
                              )
-        con_file.commit()
-        con_file.close()
     except Exception as e:
         # cur_file.close()
-        con_file.close()
         print("db操作出现异常", e)
 
 def do_fetch_data():
     # 打开文件数据库
-    con_file = get_connect()
     try:
         # 遍历整个可转债列表, 拿到bond_num
-        bond_cursor = con_file.execute("""SELECT data_id, bond_code, cb_name_id from changed_bond""")
+        bond_cursor = get_cursor("""SELECT data_id, bond_code, cb_name_id from changed_bond""")
         i = 0
         j = 0
         for bond_row in bond_cursor:
@@ -329,13 +323,13 @@ def do_fetch_data():
             bond_code = bond_row[1]
             bond_name = bond_row[2]
 
-            bond_ex_cursor = con_file.execute("""SELECT id, bond_name from changed_bond_extend where bond_num = ?""", (num_id,))
+            bond_ex_cursor = get_cursor("""SELECT id, bond_name from changed_bond_extend where bond_num = ?""", (num_id,))
             ex_list = list(bond_ex_cursor)
             if len(ex_list) == 0:
                 # 检查是否存在extend信息, 没有则去抓数据
                 row = getContent(num_id)
                 # 插入数据
-                con_file.execute("""insert into changed_bond_extend(bond_num, bond_code, 
+                get_cursor("""insert into changed_bond_extend(bond_num, bond_code, 
                 interest, ensure, enforce_get_term, buy_back_term, down_revise_term)
                                         values(?,?,?,?,?,?,?)""",
                                  (num_id, bond_code,
@@ -351,21 +345,17 @@ def do_fetch_data():
                 # 暂停5s再执行， 避免被网站屏蔽掉
                 time.sleep(5)
             elif ex_list[0][1] is None:
-                con_file.execute("""update changed_bond_extend set bond_name = ? where bond_num = ?""",
+                get_cursor("""update changed_bond_extend set bond_name = ? where bond_num = ?""",
                                  (bond_name, num_id)
                                  )
                 print("update " + bond_name + " is successful. count:" + str(j + 1))
                 j += 1
     except Exception as e:
-        # con_file.close()
         print("db操作出现异常" + str(e), e)
         raise e
     except TimeoutError as e:
         print("网络超时, 请手工重试")
         raise e
-    finally:
-        con_file.commit()
-        con_file.close()
 
 def fetch_data():
     options = webdriver.ChromeOptions()

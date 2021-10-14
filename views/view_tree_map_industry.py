@@ -4,21 +4,19 @@
 
 # https://blog.csdn.net/idomyway/article/details/82390040
 
-from utils.db_utils import get_connect
-from utils.html_utils import generate_table_html_with_data, generate_scatter_html_with_one_table
+from utils.db_utils import get_cursor
+from utils.echarts_html_utils import generate_scatter_html_with_one_table
+from utils.table_html_utils import generate_table_html_with_data
 from utils.treemap_utils import generate_treemap_html
 from views import view_utils
 
 
 def draw_view(is_login_user, key, rise):
-    # 打开文件数据库
-    con_file = get_connect()
-    cur = con_file.cursor()
     try:
 
         html = ''
 
-        cur.execute("""
+        cur = get_cursor("""
         select a.industry, round(b.涨跌幅 / a.个数*100, 2) as 涨跌, 余额
 from (SELECT industry, count(industry) as 个数 from changed_bond group by industry) a,
      (SELECT industry, sum(cb_mov2_id) as 涨跌幅 from changed_bond group by industry) b,
@@ -46,7 +44,7 @@ order by 涨跌 desc
             else:
                 down = 10
 
-            cur.execute("""
+            cur = get_cursor("""
             SELECT DISTINCT d.*,
                 e.strategy_type                                        as 策略,
                 e.hold_id,
@@ -147,14 +145,11 @@ order by _sign desc, abs(cb_mov2_id) DESC
             html += table_html
             html += '</div>'
 
-        con_file.close()
-
         return '可转债涨跌分布', \
                view_utils.build_analysis_nav_html('/view_tree_map_industry.html'), \
                html
 
     except Exception as e:
-        con_file.close()
         print("processing is failure. ", e)
         raise e
 

@@ -90,9 +90,6 @@
             .lh-condensed { line-height: 1.25; }
         </style>
         <script>
-            {% if result %}
-                alert("{{ result }}")
-            {% endif %}
         </script>
     </head>
     <body>
@@ -139,18 +136,9 @@
                 <div class="col-md-6 mb-3">
                     <label for="strategy_type">策&nbsp;&nbsp;&nbsp;略</label>
                     <select class="custom-select d-block w-100" id="strategy_type" name="strategy_type" style="height: 35px">
-                        <option value="">Choose...</option>
-                        <option value="回售"{% if bond and bond.strategy_type=='回售' %} selected="selected"{% endif %}>回售</option>
-                        <option value="双低"{% if bond and bond.strategy_type=='双低' %} selected="selected"{% endif %}>双低</option>
-                        <option value="低余额"{% if bond and bond.strategy_type=='低余额' %} selected="selected"{% endif %}>低余额</option>
-                        <option value="高收益"{% if bond and bond.strategy_type=='高收益' %} selected="selected"{% endif %}>高收益</option>
-                        <option value="网格"{% if bond and bond.strategy_type=='网格' %} selected="selected"{% endif %}>网格</option>
-                        <option value="打新"{% if bond and bond.strategy_type=='打新' %} selected="selected"{% endif %}>打新</option>
-                        <option value="基本面"{% if bond and bond.strategy_type=='基本面' %} selected="selected"{% endif %}>基本面</option>
-                        <option value="多因子"{% if bond and bond.strategy_type=='多因子' %} selected="selected"{% endif %}>多因子</option>
-                        <option value="双低轮动"{% if bond and bond.strategy_type=='双低轮动' %} selected="selected"{% endif %}>双低轮动</option>
-                        <option value="猪肉概念"{% if bond and bond.strategy_type=='猪肉概念' %} selected="selected"{% endif %}>猪肉概念</option>
-                        <option value="其他"{% if bond and bond.strategy_type=='其他' %} selected="selected"{% endif %}>其他</option>
+                        {% autoescape false %}
+                            {{ strategy_options }}
+                        {% endautoescape %}
                     </select>
                 </div>
             </div>
@@ -214,6 +202,7 @@
           })();
 
         </script>
+    {% include 'slice_hints_dialog.html' %}
     </body>
 </html>
         

@@ -5,7 +5,6 @@
 # https://blog.csdn.net/idomyway/article/details/82390040
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
-from utils.db_utils import get_connect
 from views import view_utils
 from views.view_market import generate_strategy_html
 
@@ -14,9 +13,6 @@ from views.view_market import generate_strategy_html
 
 
 def draw_view(is_login_user):
-    # 打开文件数据库
-    con_file = get_connect()
-    cur = con_file.cursor()
     try:
 
         html = ''
@@ -77,17 +73,13 @@ def draw_view(is_login_user):
                 ) e 
               on d.bond_code = e.bond_code
                   """
-        html = '<br><br><br>' + generate_strategy_html(con_file, sql, "溢价率折价排行", "低溢价率top5", html,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
-                                          use_personal_features=is_login_user
-                                                              )
-
-        con_file.close()
+        html = '<br><br><br>' + generate_strategy_html(sql, "溢价率折价排行", "低溢价率top5", html,
+                                                       remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                                       use_personal_features=is_login_user)
 
         return '溢价率折价排行', view_utils.build_analysis_nav_html('/view_discount.html'), html
 
     except Exception as e:
-        con_file.close()
         print("processing is failure. ", e)
         raise e
 

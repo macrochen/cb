@@ -2,16 +2,15 @@
 
 # https://gallery.pyecharts.org/#/README
 
-import sqlite3
-
 # import matplotlib.pyplot as plt
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
 # 单选
-from utils import db_utils, html_utils
-from utils.db_utils import get_connect
-from utils.html_utils import get_nav_html
+import utils.echarts_html_utils
+import utils.table_html_utils
+from utils import db_utils
+from utils.db_utils import get_cursor
 from views import view_utils
 
 select = [
@@ -26,8 +25,6 @@ select = [
 
 def draw_my_view(is_login_user):
     # 打开文件数据库
-    con_file = get_connect()
-    cur = con_file.cursor()
     try:
 
         html = ''
@@ -36,22 +33,22 @@ def draw_my_view(is_login_user):
 
         # =========银河=========
         account = '银河'
-        html = generate_account_block(account, cur, html, nav_html_list, tables, is_login_user=is_login_user)
+        html = generate_account_block(account, html, nav_html_list, tables, is_login_user=is_login_user)
 
         # =========华宝=========
         #fixme 华宝证券的手和张要分开处理(如果是手, 要除以10)
         account = '华宝'
-        html = generate_account_block(account, cur, html, nav_html_list, tables, 10, is_login_user=is_login_user)
+        html = generate_account_block(account, html, nav_html_list, tables, 10, is_login_user=is_login_user)
 
         # =========其他=========
         account = '其他'
-        html = generate_account_block(account, cur, html, nav_html_list, tables, is_login_user=is_login_user)
+        html = generate_account_block(account, html, nav_html_list, tables, is_login_user=is_login_user)
 
         # 数据汇总
 
         # 用来画统计图的数据
 
-        cur.execute("""
+        cur = get_cursor("""
 SELECT account as 账户, 
      
     count(h.bond_code) as 个数, 
@@ -106,15 +103,15 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by �
         total_now_yield = round(total_now_profit / total_money * 100, 2)
         new_rows.append(['合计', total_num, total_amount, round(total_money, 2), round(assets_money, 2), round(total_now_profit, 2), str(round(total_now_yield, 2))+'%', round(total_profit, 2), str(total_yield) + '%', '100%'])
 
-        pie_html = html_utils.generate_pie_html(dict_rows, '账户', '投入金额')
+        pie_html = utils.echarts_html_utils.generate_pie_html(dict_rows, '账户', '投入金额')
 
-        sum_html = html_utils.generate_table_html("汇总", cur, '', need_title=False, ext_field_names=['投入占比'],
-                                                  remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
-                                                  rows=new_rows, ignore_fields=['投入金额'],
-                                                  is_login_user=is_login_user)
+        sum_html = utils.table_html_utils.generate_table_html("汇总", cur, '', need_title=False, ext_field_names=['投入占比'],
+                                                              remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
+                                                              rows=new_rows, ignore_fields=['投入金额'],
+                                                              is_login_user=is_login_user)
 
         # 用柱状图从大到小展示持有可转债涨跌幅情况
-        scatter_html = html_utils.generate_scatter_html_with_multi_tables(tables, select)
+        scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select)
 
         html = """
             <br/>
@@ -126,18 +123,15 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by �
             </center>
         """ + html
 
-        con_file.close()
-
         return '我的账户', ''.join(nav_html_list), html
 
     except Exception as e:
-        con_file.close()
         print("processing is failure. ", e)
         raise e
 
 
-def generate_account_block(account, cur, html, nav_html_list, tables, unit=100, is_login_user=False):
-    cur.execute("""
+def generate_account_block(account, html, nav_html_list, tables, unit=100, is_login_user=False):
+    cur = get_cursor("""
    SELECT h.id                                                              as hold_id,
        c.data_id                                                         as nid,
        c.bond_code,
@@ -150,7 +144,8 @@ def generate_account_block(account, cur, html, nav_html_list, tables, unit=100, 
            --h.hold_amount
                                                                          as 持有数量,
        h.hold_price                                                      as '成本',
-       round(c.cb_price2_id * h.hold_amount + h.sum_sell - h.sum_buy, 2) as 盈亏,
+       round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) || '(' || round((c.cb_price2_id - h.hold_price) / c.cb_price2_id * 100, 2) || '%)' as 盈亏, 
+
        cb_price2_id                                                      as 转债价格,
        round(cb_premium_id * 100, 2) || '%'                              as 溢价率,
        --round((c.cb_price2_id * h.hold_amount - sum_buy)/sum_buy*100,2) || '%' as 收益率,
@@ -173,10 +168,10 @@ WHERE c.stock_code = s.stock_code
   and h.account = ?
 order by 持有数量, h.bond_code
         """, (unit, account))
-    return html_utils.generate_table_html(account, cur, html, nav_html_list=nav_html_list, tables=tables,
-                                          remark_fields_color=['盈亏', '正股涨跌', '溢价率', '可转债涨跌'],
-                                          field_links={"成本": link_maker},
-                                          is_login_user=is_login_user)
+    return utils.table_html_utils.generate_table_html(account, cur, html, nav_html_list=nav_html_list, tables=tables,
+                                                      remark_fields_color=['盈亏', '正股涨跌', '溢价率', '可转债涨跌'],
+                                                      field_links={"成本": link_maker},
+                                                      is_login_user=is_login_user)
 
 
 def link_maker(data, record):

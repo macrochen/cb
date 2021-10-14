@@ -1,12 +1,11 @@
-import sqlite3
 import urllib.request as request
 from datetime import datetime
 
-#https://www.jisilu.cn/data/cbnew/cb_index/
-#转股价格中位数
-#转股溢价率中位数
-#到期收益率中位数
-from utils.db_utils import get_connect
+# https://www.jisilu.cn/data/cbnew/cb_index/
+# 转股价格中位数
+# 转股溢价率中位数
+# 到期收益率中位数
+from utils.db_utils import get_cursor
 
 MID_X = 124.08
 MID_Y = 33.4
@@ -79,9 +78,7 @@ def rebuild_bond_code(bond_code):
 def calc_mid_data():
 
     # 打开文件数据库
-    con_file = get_connect()
-    cur = con_file.cursor()
-    cur.execute("""
+    cur = get_cursor("""
 SELECT mid_price, mid_premium from (
     SELECT  AVG(cb_price2_id)  as mid_price, row_number() OVER () as rn
     FROM (SELECT cb_price2_id
@@ -120,3 +117,29 @@ on a.rn = b.rn
 
     # return mid_y, mid_x #, mid_yield
 
+
+def get_ymd():
+    today = datetime.now()
+    ymd = today.strftime('%Y-%m-%d')
+    return ymd
+
+
+def calc_hold_price(hold_bond, direction, trade_amount, trade_price):
+    # 交易金额
+    trade_num = round(float(trade_price) * int(trade_amount), 3)
+    fee = calc_trade_fee(hold_bond.account, hold_bond.hold_unit == 10, trade_num)
+    # 持仓成本
+    cost_num = hold_bond.sum_buy - hold_bond.sum_sell + fee
+    if direction == 'buy':
+        hold_bond.hold_amount += int(trade_amount)
+        hold_bond.sum_buy += trade_num + fee
+        cost_num += trade_num
+    elif direction == 'sell':
+        hold_bond.hold_amount -= int(trade_amount)
+        hold_bond.sum_sell += trade_num - fee
+        cost_num -= trade_num
+    # 重新计算持有价格: 持仓成本/持仓数量
+    if hold_bond.hold_amount == 0:
+        hold_bond.hold_price = 0
+    else:
+        hold_bond.hold_price = round(cost_num / hold_bond.hold_amount, 3)

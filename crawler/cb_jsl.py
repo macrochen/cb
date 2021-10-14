@@ -1,12 +1,11 @@
 #抓取集思录的数据(实时, 仅部分实时数据)
 
 import json
-import sqlite3
 import time
 
 import requests
 
-from utils.db_utils import get_connect
+from utils.db_utils import get_cursor
 
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
@@ -109,14 +108,11 @@ def percentage2float(cell, name, default_value=0):
         return default_value
 
 def update_db(rows):
-    # 打开文件数据库
-    con_file = get_connect()
-
     try:
 
         for row in rows:
             # execute执行脚本
-           result = con_file.execute("""update changed_bond 
+           result = get_cursor("""update changed_bond 
                 set cb_price2_id = ?,
                 cb_mov2_id = ?,
                 cb_mov_id = ?,
@@ -137,13 +133,8 @@ def update_db(rows):
                 print("not update cb:" + row['cb_name_id'])
 
     except Exception as e:
-        # cur_file.close()
-        # con_file.close()
         print("db操作出现异常", e)
         raise e
-    finally:
-        con_file.commit()
-        con_file.close()
 
 def fetch_data():
     rows = get_content()

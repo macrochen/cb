@@ -4,8 +4,6 @@ from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from utils import trade_utils
-
 db = SQLAlchemy()
 
 
@@ -107,8 +105,9 @@ class ChangedBondSelect(db.Model):
     def __getitem__(self, item):
         return getattr(self, item)
 
+class BaseHoldBond(db.Model):
+    __abstract__ = True
 
-class HoldBond(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bond_code = db.Column(db.String(20))
     cb_name_id = db.Column(db.String(20))
@@ -119,7 +118,8 @@ class HoldBond(db.Model):
     strategy_type = db.Column(db.String(20))
     sum_buy = db.Column(db.Float, default=0.0)
     sum_sell = db.Column(db.Float, default=0.0)
-    memo = db.Column(db.String(1024), default='')
+    memo = db.Column(db.String(1024))
+    start_date = db.Column(db.String(20))
 
     def __init__(self):
         self.sum_sell = 0.0
@@ -129,27 +129,42 @@ class HoldBond(db.Model):
         self.memo = ''
 
     def keys(self):
-        return ('id', 'bond_code', 'cb_name_id', 'hold_price', 'hold_amount', 'account', 'strategy_type', 'memo')
+        return ('id', 'bond_code', 'cb_name_id', 'hold_price', 'hold_amount', 'account', 'strategy_type', 'sum_buy', 'sum_sell', 'memo', 'start_date')
+
+
+class HoldBond(BaseHoldBond):
+    modify_date = db.Column(db.String(20))
+
+    def keys(self):
+        my_keys = list(super().keys())
+        my_keys.append('modify_date')
+        return tuple(my_keys)
 
     def __getitem__(self, item):
         return getattr(self, item)
 
-    def calc_hold_price(self, direction, trade_amount, trade_price):
-        # 交易金额
-        trade_num = round(float(trade_price) * int(trade_amount), 3)
-        fee = trade_utils.calc_trade_fee(self.account, self.hold_unit == 10, trade_num)
-        # 持仓成本
-        cost_num = self.sum_buy - self.sum_sell + fee
-        if direction == 'buy':
-            self.hold_amount += int(trade_amount)
-            self.sum_buy += trade_num + fee
-            cost_num += trade_num
-        elif direction == 'sell':
-            self.hold_amount -= int(trade_amount)
-            self.sum_sell += trade_num - fee
-            cost_num -= trade_num
-        # 重新计算持有价格: 持仓成本/持仓数量
-        if self.hold_amount == 0:
-            self.hold_price = 0
-        else:
-            self.hold_price = round(cost_num / self.hold_amount, 3)
+
+class HoldBondHistory(BaseHoldBond):
+    end_date = db.Column(db.String(20))
+
+    def keys(self):
+        my_keys = list(super().keys())
+        my_keys.append('end_date')
+        return tuple(my_keys)
+
+    def copy(self, source):
+        for key, value in source.__dict__.items():
+            if key not in self.keys() or value is None:
+                continue
+            setattr(self, key, value)
+
+
+class Config(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    group = db.Column(db.String(20))
+    key = db.Column(db.String(100))
+    value = db.Column(db.String(2048))
+    ext_value = db.Column(db.String(2048))
+    desc = db.Column(db.String(2048))
+    is_delete = db.Column(db.Integer)
+    owner_id = db.Column(db.Integer)

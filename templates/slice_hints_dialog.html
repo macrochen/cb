@@ -1,0 +1,39 @@
+
+
+      {% if result %}
+        <!-- Modal HTML -->
+        <div id="myModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop='static'>
+            <div class="modal-dialog" style='width:300px;'>
+                <div class="modal-content">
+                    <div class="modal-body" id = 'dialog_body'>
+                        {{ result }}
+                    </div>
+                    <div class="modal-footer" style = 'text-align:center;justify-content: center'>
+                        <button type="button" class="btn btn-default" data-dismiss="modal" id = 'btn_close'>关闭
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                function alignModal(){
+                    var modalDialog = $(this).find(".modal-dialog");
+                    /* Applying the top margin on modal dialog to align it vertically center */
+                    modalDialog.css("margin-top", Math.max(0, ($(window).height() - modalDialog.height()) / 2));
+
+                }
+                // Align modal when it is displayed
+                $(".modal").on("shown.bs.modal", alignModal);
+
+                // Align modal when user resize the window
+                $(window).on("resize", function(){
+                    $(".modal:visible").each(alignModal);
+                });
+                $("#myModal").modal("show")
+            });
+            setTimeout(function (){$("#btn_close").focus()}, 10)
+        </script>
+      {% endif %}
