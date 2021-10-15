@@ -6,8 +6,8 @@ import time
 
 import requests
 
-from utils import trade_utils
-from utils.db_utils import get_connect
+from utils import trade_utils, db_utils
+from utils.db_utils import get_cursor
 
 header = {
     "origin": "https://xueqiu.com",
@@ -18,54 +18,50 @@ header = {
 
 def createDb():
 
-    con = sqlite3.connect("db/cb.db3")
-    # 只执行一次
-    con.executescript("""
-        drop table if exists stock_report;
-        create table if not exists stock_report(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            bond_code text NOT NULL, 
-            cb_name_id text NOT NULL,
-            
-            stock_code text NOT NULL,
-            stock_name text NOT NULL,
-            
-            last_date text NOT NULL,
-            
-            revenue real,
-            qoq_revenue_rate real,
-            yoy_revenue_rate real,
-            
-            net real,
-            qoq_net_rate real,
-            yoy_net_rate real,
-            
-            margin real,
-            qoq_margin_rate real,
-            yoy_margin_rate real,
-            
-            roe real,
-            qoq_roe_rate real,
-            yoy_roe_rate real,
-            
-            al_ratio real,
-            qoq_rl_ratio_rate real,
-            yoy_al_ratio_rate real,
-            
-            pe real
-            
-            )""")
+    with db_utils.get_connect() as con:
+        # 只执行一次
+        con.executescript("""
+            drop table if exists stock_report;
+            create table if not exists stock_report(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                bond_code text NOT NULL, 
+                cb_name_id text NOT NULL,
+                
+                stock_code text NOT NULL,
+                stock_name text NOT NULL,
+                
+                last_date text NOT NULL,
+                
+                revenue real,
+                qoq_revenue_rate real,
+                yoy_revenue_rate real,
+                
+                net real,
+                qoq_net_rate real,
+                yoy_net_rate real,
+                
+                margin real,
+                qoq_margin_rate real,
+                yoy_margin_rate real,
+                
+                roe real,
+                qoq_roe_rate real,
+                yoy_roe_rate real,
+                
+                al_ratio real,
+                qoq_rl_ratio_rate real,
+                yoy_al_ratio_rate real,
+                
+                pe real
+                
+                )""")
 
-    con.commit()
-    con.close()
     print("create db is successful")
 
 
 def fetch_data():
 
     # 遍历可转债列表
-    # 打开文件数据库
-    con_file = get_connect()
 
     stock_name = ''
     earnings = None
@@ -77,7 +73,7 @@ def fetch_data():
 
         # 查询可转债
 
-        bond_cursor = con_file.execute("""
+        bond_cursor = get_cursor("""
             SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond
         """)
 
@@ -86,14 +82,14 @@ def fetch_data():
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
-            stock_cursor = con_file.execute("SELECT last_date from stock_report where stock_code = '" + stock_code + "'")
+            stock_cursor = get_cursor("SELECT last_date from stock_report where stock_code = '" + stock_code + "'")
 
             stocks = list(stock_cursor)
             # 还没添加正股财务指标信息
             if len(stocks) == 0:
                 earnings = getEarnings(stock_code)
                 # 新增
-                con_file.execute("""insert into stock_report(stock_code,stock_name,
+                get_cursor("""insert into stock_report(stock_code,stock_name,
                             last_date,
                             revenue,qoq_revenue_rate,yoy_revenue_rate,
                             net,qoq_net_rate,yoy_net_rate,
@@ -137,7 +133,7 @@ def fetch_data():
 
                 if last_date != report_date:
                     earnings = getEarnings(stock_code)
-                    con_file.execute("""update stock_report
+                    get_cursor("""update stock_report
                                 set last_date = ?,
                                 revenue = ?,qoq_revenue_rate = ?,yoy_revenue_rate = ?,
                                 net = ?,qoq_net_rate = ?,yoy_net_rate = ?,
@@ -178,12 +174,8 @@ def fetch_data():
         print("共处理" + str(i) + "条记录")
 
     except Exception as e:
-        con_file.close()
         print("db操作出现异常" + str(e) + ', stock_code: ' + stock_code + ', stock_name:' + stock_name + ', earnings:' + str(earnings), e)
         raise e
-    finally:
-        con_file.commit()
-        con_file.close()
     return 'OK'
 
 

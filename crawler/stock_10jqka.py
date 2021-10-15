@@ -1,24 +1,21 @@
 # 从同花顺抓正股的相关数据
 import datetime
 import re
-import sqlite3
 import time
 
 from selenium import webdriver
 
-from utils.db_utils import get_connect
+from utils.db_utils import get_cursor
 
 driver = None
 
 
 def update_stock_sum():
     # 遍历可转债列表
-    # 打开文件数据库
-    con_file = get_connect()
 
     try:
         # 查询可转债
-        bond_cursor = con_file.execute("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
+        bond_cursor = get_cursor("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
         # 当前日月
         y = datetime.datetime.now().year
         m = datetime.datetime.now().month
@@ -32,7 +29,7 @@ def update_stock_sum():
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
-            stock_cursor = con_file.execute("""SELECT modify_date from stock_report where stock_code = ?""", [stock_code])
+            stock_cursor = get_cursor("""SELECT modify_date from stock_report where stock_code = ?""", [stock_code])
             stocks = list(stock_cursor)
             if len(stocks) == 0:
                 continue
@@ -43,7 +40,7 @@ def update_stock_sum():
 
             row = get_stock_sum(stock_code)
 
-            result = con_file.execute("""update stock_report set 
+            result = get_cursor("""update stock_report set 
                 stock_total = ?, 
                 stock_level = ?, 
                 trade_suggest = ?, 
@@ -76,16 +73,11 @@ def update_stock_sum():
         print("共处理" + str(i) + "条记录")
 
     except Exception as e:
-        # con_file.close()
         print("db操作出现异常" + str(e), e)
         raise e
     except TimeoutError as e:
         print("网络超时, 请手工重试")
         raise e
-
-    finally:
-        con_file.commit()
-        con_file.close()
 
 
 def get_sum_data(driver):

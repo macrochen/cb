@@ -7,16 +7,12 @@
 # import matplotlib.pyplot as plt
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
-from utils.db_utils import get_connect
 from views import view_utils
 from views.view_market import generate_strategy_html
 
 
 
 def draw_view(is_login_user):
-    # 打开文件数据库
-    con_file = get_connect()
-    cur = con_file.cursor()
     try:
 
         html = ''
@@ -74,18 +70,15 @@ def draw_view(is_login_user):
                  ) e 
             on d.bond_code = e.bond_code
                   """
-        html = '<br><br><br>' + generate_strategy_html(con_file, sql, "正股涨幅排行", "正股涨幅top20", html,
-                                      remark_fields_color=['正股涨跌', '到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)',
-                                                           '换手率(%)'],
-                                      use_personal_features=is_login_user
-                                      )
-
-        con_file.close()
+        html = '<br><br><br>' + generate_strategy_html(sql, "正股涨幅排行", "正股涨幅top20", html,
+                                                       remark_fields_color=['正股涨跌', '到期收益率', '溢价率', '转债价格', '可转债涨跌',
+                                                                            '余额(亿元)',
+                                                                            '换手率(%)'],
+                                                       use_personal_features=is_login_user)
 
         return '正股涨幅排行', view_utils.build_analysis_nav_html('/view_stock.html'), html
 
     except Exception as e:
-        con_file.close()
         print("processing is failure. ", e)
         raise e
 

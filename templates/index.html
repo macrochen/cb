@@ -212,19 +212,19 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
             </thead>
             <tbody style="height: 150px">
             <tr>
-                <td>&nbsp;&nbsp;1&nbsp;&nbsp;</td>
+                <td>&nbsp;&nbsp;1.&nbsp;&nbsp;</td>
                 <td>&nbsp;&nbsp;<a href = 'https://www.jisilu.cn/data/cbnew/cb_index/' target = '_blank' style="color: white">集思录可转债等权指数统计信息</a>&nbsp;&nbsp;</td>
             </tr>
             <tr>
-                <td>&nbsp;&nbsp;2</td>
+                <td>&nbsp;&nbsp;2.</td>
                 <td>&nbsp;&nbsp;<a href = 'http://www.ninwin.cn/index.php?m=cb&c=idx' target = '_blank' style="color: white">宁稳网可转债等权指数统计信息</a></td>
             </tr>
             <tr>
-                <td>&nbsp;&nbsp;3</td>
+                <td>&nbsp;&nbsp;3.</td>
                 <td>&nbsp;&nbsp;<a href = 'https://xueqiu.com/P/ZH1332574' target = '_blank' style="color: white">yyb凌波可转债轮动策略</a></td>
             </tr>
             <tr>
-                <td>&nbsp;&nbsp;4</td>
+                <td>&nbsp;&nbsp;4.</td>
                 <td>&nbsp;&nbsp;<a href = 'https://ww2.ezhai.net.cn/#/basedata_v1_1' target = '_blank' style="color: white">pxling多因子策略数据</a></td>
             </tr>
             </tbody>
@@ -244,7 +244,7 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                     操作成功
                 </div>
                 <div class="modal-footer" style = 'text-align:center'>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id = 'btn_close'>关闭
                     </button>
 
                 </div>
@@ -258,9 +258,9 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
         <div class="vertical-alignment-helper">
             <div class="modal-dialog vertical-align-center" role="document" style="width:300px">
                 <div class="modal-content">
-
-                    <div class="modal-body"><img src="/static/img/processing.gif">处理中, 请稍后...</div>
-
+                    <div class="modal-body">
+                        <img src="/static/img/processing.gif">处理中, 请稍后...
+                    </div>
                 </div>
             </div>
         </div>
@@ -314,6 +314,7 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
             $('#dialog_body').html('<p style=\'color: red\'>后端异常, 操作失败, 请检查!</p>')
         }
         $('#myModal').modal('show');
+        $('#btn_close').focus()
         document.body.style.cursor = ''
     }
 

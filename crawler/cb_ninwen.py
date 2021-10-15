@@ -6,7 +6,8 @@ import sqlite3
 import bs4
 import requests
 
-from utils.db_utils import get_connect
+from utils import db_utils
+from utils.db_utils import get_cursor
 
 header = {
     "Referer": "http://www.ninwin.cn/index.php?m=profile",
@@ -243,7 +244,12 @@ def buildRow(row, td):
         row['AT_yield'] = percentage2float(row['cb_name_id'], 'AT_yield', text)
     # BT_red
     elif 'BT_red' in cls:
-        row['BT_red'] = percentage2float(row['cb_name_id'], 'BT_red', text)
+        title = td.attrs['title']
+        # fixme 数据格式变了, 临时处理一下, 可能根据th来判断更合适
+        if title.find('税后回售收益率') == -1:
+            row['AT_red'] = percentage2float(row['cb_name_id'], 'BT_red', text)
+        else:
+            row['BT_red'] = percentage2float(row['cb_name_id'], 'BT_red', text)
     # AT_red
     elif 'AT_red' in cls:
         row['AT_red'] = percentage2float(row['cb_name_id'], 'AT_red', text)
@@ -269,9 +275,10 @@ def buildRow(row, td):
 # 百分比转换成小数
 def percentage2float(bond_name, name, text):
     if text.endswith("%"):
-        # 去掉千分位
-        if text.find(","):
-            text = text.replace(",", "")
+        # 去掉千分位, 去掉>, <符号
+        text = text.replace(',', '')
+        text = text.replace('>', '')
+        text = text.replace('<', '')
         return round(float(text.strip("%")) / 100, 5)
     else:
         print("没有找到对应的值。 name：" + name + ' in bond: ' + bond_name)
@@ -282,79 +289,70 @@ def createDb():
     # 使用:memory:标识打开的是内存数据库
     # con = sqlite3.connect(":memory:")
 
-    con = sqlite3.connect("db/cb.db3")
-    # cur = con.cursor()
-    # 使用executescript可以执行多个脚本
-    con.executescript("""
-        drop table if exists changed_bond;
-        create table if not exists changed_bond(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cb_num_id int NOT NULL,
-            bond_code text NOT NULL, 
-            cb_name_id text NOT NULL,
-            bond_date_id text NOT NULL,
-            stock_code text NOT NULL,
-            stock_name text NOT NULL,
-            industry text NOT NULL,
-            sub_industry text NOT NULL,
-            cb_price2_id real NOT NULL,
-            cb_mov2_id real NOT NULL,
-            cb_mov3_id real NOT NULL,
-            stock_price_id real NOT NULL,
-            cb_mov_id real NOT NULL,
-            cb_price3_id real NOT NULL,
-            cb_strike_id real NOT NULL,
-            cb_premium_id real NOT NULL,
-            cb_value_id real NOT NULL,
-            cb_t_id text NOT NULL,
-            bond_t1 text NOT NULL,
-            red_t text NOT NULL,
-            remain_amount real NOT NULL,
-            cb_trade_amount_id real NOT NULL,
-            cb_trade_amount2_id real NOT NULL,
-            cb_to_share real NOT NULL,
-            cb_to_share_shares real NOT NULL,
-            market_cap real NOT NULL,
-            stock_pb real NOT NULL,
-            BT_yield real NOT NULL,
-            AT_yield real NOT NULL,
-            BT_red real,
-            AT_red real,
-            npv_red real NOT NULL,
-            npv_value real NOT NULL,
-            rating text NOT NULL,
-            discount_rate real NOT NULL,
-            elasticity real NOT NULL,
-            cb_ol_value real NOT NULL,
-            cb_ol_rank int NOT NULL,
-            cb_nl_value real NOT NULL,
-            cb_nl_rank int NOT NULL,
-            cb_ma20_deviate real NOT NULL,
-            cb_hot int NOT NULL,
-            duration real,
-            enforce_get text,
-            buy_back int,
-            down_revise int,
-            data_id INTEGER
-            )""")
-
-    # 打印数据表数据
-    # cur.execute("select * from changed_bond")
-    # print(cur.fetchall())
-
-    con.commit()
-    con.close()
+    with db_utils.get_connect() as con:
+        # 使用executescript可以执行多个脚本
+        con.executescript("""
+            drop table if exists changed_bond;
+            create table if not exists changed_bond(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                cb_num_id int NOT NULL,
+                bond_code text NOT NULL, 
+                cb_name_id text NOT NULL,
+                bond_date_id text NOT NULL,
+                stock_code text NOT NULL,
+                stock_name text NOT NULL,
+                industry text NOT NULL,
+                sub_industry text NOT NULL,
+                cb_price2_id real NOT NULL,
+                cb_mov2_id real NOT NULL,
+                cb_mov3_id real NOT NULL,
+                stock_price_id real NOT NULL,
+                cb_mov_id real NOT NULL,
+                cb_price3_id real NOT NULL,
+                cb_strike_id real NOT NULL,
+                cb_premium_id real NOT NULL,
+                cb_value_id real NOT NULL,
+                cb_t_id text NOT NULL,
+                bond_t1 text NOT NULL,
+                red_t text NOT NULL,
+                remain_amount real NOT NULL,
+                cb_trade_amount_id real NOT NULL,
+                cb_trade_amount2_id real NOT NULL,
+                cb_to_share real NOT NULL,
+                cb_to_share_shares real NOT NULL,
+                market_cap real NOT NULL,
+                stock_pb real NOT NULL,
+                BT_yield real NOT NULL,
+                AT_yield real NOT NULL,
+                BT_red real,
+                AT_red real,
+                npv_red real NOT NULL,
+                npv_value real NOT NULL,
+                rating text NOT NULL,
+                discount_rate real NOT NULL,
+                elasticity real NOT NULL,
+                cb_ol_value real NOT NULL,
+                cb_ol_rank int NOT NULL,
+                cb_nl_value real NOT NULL,
+                cb_nl_rank int NOT NULL,
+                cb_ma20_deviate real NOT NULL,
+                cb_hot int NOT NULL,
+                duration real,
+                enforce_get text,
+                buy_back int,
+                down_revise int,
+                data_id INTEGER
+                )""")
 
 
 def insertDb(rows):
-    # 打开文件数据库
-    con_file = get_connect()
-
+    err_row = None
     try:
 
         for row in rows:
+            err_row = row
             # execute执行脚本
-            con_file.execute("""insert into changed_bond(cb_num_id,bond_code,cb_name_id,bond_date_id,stock_code,stock_name,industry,sub_industry,cb_price2_id,cb_mov2_id,cb_mov3_id,stock_price_id,cb_mov_id,cb_price3_id,cb_strike_id,cb_premium_id,cb_value_id,cb_t_id,bond_t1,red_t,remain_amount,cb_trade_amount_id,cb_trade_amount2_id,cb_to_share,cb_to_share_shares,market_cap,stock_pb,BT_yield,AT_yield,BT_red,AT_red,npv_red,npv_value,rating,discount_rate,elasticity,cb_ol_value,cb_ol_rank,cb_nl_value,cb_nl_rank,cb_ma20_deviate,cb_hot,duration,enforce_get,buy_back,down_revise,data_id)
+            get_cursor("""insert into changed_bond(cb_num_id,bond_code,cb_name_id,bond_date_id,stock_code,stock_name,industry,sub_industry,cb_price2_id,cb_mov2_id,cb_mov3_id,stock_price_id,cb_mov_id,cb_price3_id,cb_strike_id,cb_premium_id,cb_value_id,cb_t_id,bond_t1,red_t,remain_amount,cb_trade_amount_id,cb_trade_amount2_id,cb_to_share,cb_to_share_shares,market_cap,stock_pb,BT_yield,AT_yield,BT_red,AT_red,npv_red,npv_value,rating,discount_rate,elasticity,cb_ol_value,cb_ol_rank,cb_nl_value,cb_nl_rank,cb_ma20_deviate,cb_hot,duration,enforce_get,buy_back,down_revise,data_id)
                              values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                              (row["cb_num_id"], row["bond_code"], row["cb_name_id"], row["bond_date_id"], row["stock_code"],
                               row["stock_name"], row["industry"], row["sub_industry"], row["cb_price2_id"],
@@ -367,12 +365,9 @@ def insertDb(rows):
                               row["cb_ol_value"], row["cb_ol_rank"], row["cb_nl_value"], row["cb_nl_rank"],
                               row["cb_ma20_deviate"], row["cb_hot"], row["duration"], row.get("enforce_get"), row.get("buy_back"), row.get("down_revise"), row['data_id'])
                              )
-        con_file.commit()
-        con_file.close()
     except Exception as e:
         # cur_file.close()
-        con_file.close()
-        print("db操作出现异常", e)
+        print("db操作出现异常. err_row" + str(err_row), e)
         raise e
 
 def fetch_data():

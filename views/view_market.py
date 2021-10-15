@@ -2,83 +2,51 @@
 
 
 # 需导入要用到的库文件
+import json
 
 from prettytable import from_db_cursor
 
+import utils.table_html_utils
 import utils.trade_utils
+from models import db, Config
 from utils import html_utils
-from utils.db_utils import get_connect
-from utils.html_utils import default_get_label, generate_scatter_html_with_one_table
-
-config = {'type': [
-    '双低策略',
-    '高收益策略',
-    '回售策略',
-    # '活性债策略',
-    '低余额策略',
-    '低溢价率策略',
-    # '溢价率折价策略',
-    # '高收益率策略',
-    # '下修博弈策略',
-    # '广撒网策略',
-    '快到期保本策略',
-    '正股优选策略',
-    '高成长策略',
-    '股性策略',
-    # '换手率排行榜',
-    # '正股涨幅榜',
-    # '妖债策略',
-    # '抄作业',
-    # '非200不卖',
-    # '自选集',
-    '凌波双低轮动',
-],
-}
+from utils.echarts_html_utils import generate_scatter_html_with_one_table
+from utils.html_utils import default_get_label
 
 
-def generate_strategy_html(con_file,
-                           sql,
-                           type,
-                           sub_title,
-                           html,
-                           label_y='转股溢价率(%)',
-                           field_name='溢价率',
-                           get_label=default_get_label,
-                           nav_html_list=None,
-                           remark_fields_color=[],
-                           draw_figure=True,
-                           use_personal_features=False,
-                           ):
-
-    cur = con_file.cursor()
-    cur.execute(sql)
-
-    table = from_db_cursor(cur)
-    if table.rowcount == 0:
-        return ''
-
-    scatter_html = generate_scatter_html_with_one_table(table, type, sub_title, draw_figure, field_name, get_label, label_y,
-                                                        use_personal_features)
-
-    html_utils.add_nav_html(nav_html_list, type)
-
-    html += """
-    <div id=\"""" + type + """\">
-        """ + scatter_html + html_utils.build_table_html(table, remark_fields_color, ignore_fields=['持有数量'], is_login_user=use_personal_features, table_rows_size=6) + """
-    </div>
-    """
-
-    return html
+# config = {'type': [
+#     '双低策略',
+#     '高收益策略',
+#     '回售策略',
+#     # '活性债策略',
+#     '低余额策略',
+#     '低溢价率策略',
+#     # '溢价率折价策略',
+#     # '高收益率策略',
+#     # '下修博弈策略',
+#     # '广撒网策略',
+#     '快到期保本策略',
+#     '正股优选策略',
+#     '高成长策略',
+#     '股性策略',
+#     # '换手率排行榜',
+#     # '正股涨幅榜',
+#     # '妖债策略',
+#     # '抄作业',
+#     # '非200不卖',
+#     # '自选集',
+#     '凌波双低轮动',
+# ],
+# }
 
 
-def draw_market_view(use_my_features):
-    use_personal_features = use_my_features
+def draw_market_view(user_id):
+    use_personal_features = user_id is not None
+
+    strategy_list = get_strategy_list()
 
 
-    # 打开文件数据库
-    con_file = get_connect()
-
-    html = """<br/><br/><br/><br/>"""
+    html = """<br/><br/><br/><br/><br/><br/>"""
 
     nav_html_list = ['<li><a href="/">Home</a></li>']
     try:
@@ -98,11 +66,11 @@ def draw_market_view(use_my_features):
             """
         # 加几个换行避免顶部的菜单遮住title
         html += "<center>=========<font size=4><b>强赎可转债</b></font>=========</br></br></center>"
-        html = generate_strategy_html(con_file, sql, "强赎转债", "", html, nav_html_list=nav_html_list, draw_figure=False,
+        html = generate_strategy_html(sql, "强赎转债", "", html, nav_html_list=nav_html_list, draw_figure=False,
                                       use_personal_features=use_personal_features)
 
         # =========回售策略=========
-        if "回售策略" in config['type']:
+        if "回售策略" in strategy_list:
             sql = """
         SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
   FROM (
@@ -151,13 +119,13 @@ def draw_market_view(use_my_features):
              ) e 
         on d.bond_code = e.bond_code
             """
-            html = generate_strategy_html(con_file, sql, "回售策略", "回售年限<1年, 回收收益率>1%", html, nav_html_list=nav_html_list,
-                                          label_y="回售收益率(%)", field_name='回售收益率',
+            html = generate_strategy_html(sql, "回售策略", "回售年限<1年, 回收收益率>1%", html, label_y="回售收益率(%)",
+                                          field_name='回售收益率', nav_html_list=nav_html_list,
                                           remark_fields_color=['回售年限(年)', '回售收益率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========回售策略=========
-        if "下修博弈策略" in config['type']:
+        if "下修博弈策略" in strategy_list:
             sql = """
         SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
   FROM (
@@ -204,19 +172,19 @@ def draw_market_view(use_my_features):
              ) e 
         on d.bond_code = e.bond_code
             """
-            html = generate_strategy_html(con_file, sql, "下修博弈策略", "100面值以下为主", html, nav_html_list=nav_html_list,
-                                          label_y="到期收益率(%)", field_name='到期收益率', mid_y=0,
+            html = generate_strategy_html(sql, "下修博弈策略", "100面值以下为主", html, label_y="到期收益率(%)", field_name='到期收益率',
+                                          nav_html_list=nav_html_list,
                                           remark_fields_color=['溢价率', '到期收益率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========低余额策略=========
-        if "低余额策略" in config['type']:
+        if "低余额策略" in strategy_list:
             # 低价格
-            html = build_low_remain_block(con_file, html, nav_html_list, 'cb_price2_id', '低价格', use_personal_features)
+            html = build_low_remain_block(html, nav_html_list, 'cb_price2_id', '低价格', use_personal_features)
             # 低溢价
-            html = build_low_remain_block(con_file, html, nav_html_list, 'cb_premium_id', '低溢价', use_personal_features)
+            html = build_low_remain_block(html, nav_html_list, 'cb_premium_id', '低溢价', use_personal_features)
             # 双低
-            html = build_low_remain_block(con_file, html, nav_html_list, 'cb_price2_id+cb_premium_id*100', '双低', use_personal_features)
+            html = build_low_remain_block(html, nav_html_list, 'cb_price2_id+cb_premium_id*100', '双低', use_personal_features)
 
             # s = ''
             # s += common.get_sub_nav_html("低余额策略(低价格)")
@@ -227,7 +195,7 @@ def draw_market_view(use_my_features):
             # common.add_sub_nav_html(nav_html_list, title, s)
 
         # =========双低债=========
-        if "双低策略" in config['type']:
+        if "双低策略" in strategy_list:
             sql = """
         SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
   FROM (
@@ -275,13 +243,12 @@ def draw_market_view(use_my_features):
         
             """
             get_label = lambda row: row['名称'].replace('转债', '') + '(' + str(row['双低值']) + ')'
-            html = generate_strategy_html(con_file, sql, "双低策略", "双低值前10", html, nav_html_list=nav_html_list,
-                                          get_label=get_label,
+            html = generate_strategy_html(sql, "双低策略", "双低值前10", html, get_label=get_label, nav_html_list=nav_html_list,
                                           remark_fields_color=['溢价率', '转债价格', '可转债涨跌', '到期收益率', '双低值', '正股涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========高收益策略=========
-        if "高收益策略" in config['type']:
+        if "高收益策略" in strategy_list:
             sql = """
         SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
   FROM (
@@ -332,33 +299,33 @@ def draw_market_view(use_my_features):
         on d.bond_code = e.bond_code;
             """
 
-            html = generate_strategy_html(con_file, sql, "高收益策略", "到期收益率前10", html, nav_html_list=nav_html_list,
-                                          label_y="到期收益率(%)", field_name='到期收益率',
+            html = generate_strategy_html(sql, "高收益策略", "到期收益率前10", html, label_y="到期收益率(%)", field_name='到期收益率',
+                                          nav_html_list=nav_html_list,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========活性债策略=========
-        if "活性债策略" in config['type']:
+        if "活性债策略" in strategy_list:
             # 当日概念题材
-            gn_c, gn_s = generate_gn_slice(con_file, 'gn_custom')
-            html = generate_active_strategy_html(con_file, gn_c, gn_s, '自定义概念题材', html, nav_html_list, use_personal_features)
+            gn_c, gn_s = generate_gn_slice('gn_custom')
+            html = generate_active_strategy_html(gn_c, gn_s, '自定义概念题材', html, nav_html_list, use_personal_features)
 
             # 当日概念题材
-            gn_c, gn_s = generate_gn_slice(con_file, 'gn_1')
-            html = generate_active_strategy_html(con_file, gn_c, gn_s, '当日概念题材', html, nav_html_list, use_personal_features)
+            gn_c, gn_s = generate_gn_slice('gn_1')
+            html = generate_active_strategy_html(gn_c, gn_s, '当日概念题材', html, nav_html_list, use_personal_features)
 
             # 5日概念题材
-            gn_c, gn_s = generate_gn_slice(con_file, 'gn_5')
-            html = generate_active_strategy_html(con_file, gn_c, gn_s, '最近5日概念题材', html, nav_html_list, use_personal_features)
+            gn_c, gn_s = generate_gn_slice('gn_5')
+            html = generate_active_strategy_html(gn_c, gn_s, '最近5日概念题材', html, nav_html_list, use_personal_features)
 
             # 10日概念题材
-            gn_c, gn_s = generate_gn_slice(con_file, 'gn_10')
-            html = generate_active_strategy_html(con_file, gn_c, gn_s, '最近10日概念题材', html, nav_html_list, use_personal_features)
+            gn_c, gn_s = generate_gn_slice('gn_10')
+            html = generate_active_strategy_html(gn_c, gn_s, '最近10日概念题材', html, nav_html_list, use_personal_features)
 
 
 
             # =========快到期保本策略=========
-            if "快到期保本策略" in config['type']:
+            if "快到期保本策略" in strategy_list:
                 sql = """
           SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
         FROM (
@@ -416,12 +383,12 @@ def draw_market_view(use_my_features):
                 ) e 
               on d.bond_code = e.bond_code
                   """
-                html = generate_strategy_html(con_file, sql, "快到期保本策略", "税后到期收益率>0, 剩余年限<3", html, nav_html_list=nav_html_list,
+                html = generate_strategy_html(sql, "快到期保本策略", "税后到期收益率>0, 剩余年限<3", html, nav_html_list=nav_html_list,
                                               remark_fields_color=['税后到期收益率', '溢价率', '转债价格', '可转债涨跌', '剩余年限'],
-                                              use_personal_features = use_personal_features)
+                                              use_personal_features=use_personal_features)
 
             # =========低溢价率策略=========
-            if "低溢价率策略" in config['type']:
+            if "低溢价率策略" in strategy_list:
                 sql = """
           SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
         FROM (
@@ -471,12 +438,13 @@ def draw_market_view(use_my_features):
                 ) e 
               on d.bond_code = e.bond_code
                   """
-                html = generate_strategy_html(con_file, sql, "低溢价率策略", "溢价率<4%, 转债价格<140, 如果持有, 坚持不卖", html, nav_html_list=nav_html_list,
+                html = generate_strategy_html(sql, "低溢价率策略", "溢价率<4%, 转债价格<140, 如果持有, 坚持不卖", html,
+                                              nav_html_list=nav_html_list,
                                               remark_fields_color=['溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
-                                              use_personal_features = use_personal_features)
+                                              use_personal_features=use_personal_features)
 
         # =========广撒网策略=========
-        if "广撒网策略" in config['type']:
+        if "广撒网策略" in strategy_list:
             sql = """
       SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
     FROM (
@@ -532,12 +500,12 @@ def draw_market_view(use_my_features):
              ) e 
         on d.bond_code = e.bond_code
               """
-            html = generate_strategy_html(con_file, sql, "广撒网策略", "价格<105, 溢价率<20%, pb>1", html, nav_html_list=nav_html_list,
+            html = generate_strategy_html(sql, "广撒网策略", "价格<105, 溢价率<20%, pb>1", html, nav_html_list=nav_html_list,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========正股优选策略=========
-        if "正股优选策略" in config['type']:
+        if "正股优选策略" in strategy_list:
             sql = """
       SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
     FROM (
@@ -599,12 +567,13 @@ def draw_market_view(use_my_features):
              ) e 
         on d.bond_code = e.bond_code
               """
-            html = generate_strategy_html(con_file, sql, "正股优选策略", "正股综合评分>6, 转债价格<115, 双低值<130", html, nav_html_list=nav_html_list,
+            html = generate_strategy_html(sql, "正股优选策略", "正股综合评分>6, 转债价格<115, 双低值<130", html,
+                                          nav_html_list=nav_html_list,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========高成长策略=========
-        if "高成长策略" in config['type']:
+        if "高成长策略" in strategy_list:
             sql = """
       SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
     FROM (
@@ -655,12 +624,13 @@ def draw_market_view(use_my_features):
              ) e 
         on d.bond_code = e.bond_code
               """
-            html = generate_strategy_html(con_file, sql, "高成长策略", "利润率增长top20, 转债价格<115, 利润率>0", html, nav_html_list=nav_html_list,
+            html = generate_strategy_html(sql, "高成长策略", "利润率增长top20, 转债价格<115, 利润率>0", html,
+                                          nav_html_list=nav_html_list,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '利润率|行业均值', '利润率同比'],
                                           use_personal_features=use_personal_features)
 
         # =========股性策略=========
-        if "股性策略" in config['type']:
+        if "股性策略" in strategy_list:
             sql = """
      SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
     FROM (
@@ -712,12 +682,12 @@ def draw_market_view(use_my_features):
              ) e 
         on d.bond_code = e.bond_code
               """
-            html = generate_strategy_html(con_file, sql, "股性策略", "转债价格<115, 溢价率<10%, 用来筛选网格对象", html, nav_html_list=nav_html_list,
+            html = generate_strategy_html(sql, "股性策略", "转债价格<115, 溢价率<10%, 用来筛选网格对象", html, nav_html_list=nav_html_list,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
                                           use_personal_features=use_personal_features)
 
         # =========妖债策略=========
-        if "妖债策略" in config['type']:
+        if "妖债策略1" in strategy_list:
             sql = """
      SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
     FROM (
@@ -771,13 +741,14 @@ def draw_market_view(use_my_features):
              ) e 
         on d.bond_code = e.bond_code
               """
-            html = generate_strategy_html(con_file, sql, "妖债策略", "余额<3亿, 换手率>50%, 找底部长时间横盘, 刚刚放量上涨, 当大盘跌, 柚子没有攒钱的地方, 就会来短炒妖债", html, nav_html_list=nav_html_list,
+            html = generate_strategy_html(sql, "妖债策略", "余额<3亿, 换手率>50%, 找底部长时间横盘, 刚刚放量上涨, 当大盘跌, 柚子没有攒钱的地方, 就会来短炒妖债",
+                                          html, nav_html_list=nav_html_list,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
                                           use_personal_features=use_personal_features)
 
 
         # =========抄作业=========
-        if "抄作业" in config['type']:
+        if "抄作业" in strategy_list:
             sql = """
      SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
     FROM (
@@ -824,12 +795,12 @@ def draw_market_view(use_my_features):
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) e 
         on d.bond_code = e.bond_code"""
-            html = generate_strategy_html(con_file, sql, "抄作业", "收集近期大V们推荐", html, nav_html_list=nav_html_list,
+            html = generate_strategy_html(sql, "抄作业", "收集近期大V们推荐", html, nav_html_list=nav_html_list,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========自选集=========
-        if "自选集" in config['type']:
+        if "自选集" in strategy_list:
             sql = """
          SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
         FROM (
@@ -877,12 +848,12 @@ def draw_market_view(use_my_features):
                  ) e 
             on d.bond_code = e.bond_code"""
 
-            html = generate_strategy_html(con_file, sql, "自选集", "根据各种策略选出来准备买入的", html, nav_html_list=nav_html_list,
+            html = generate_strategy_html(sql, "自选集", "根据各种策略选出来准备买入的", html, nav_html_list=nav_html_list,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========非200不卖=========
-        if "非200不卖" in config['type']:
+        if "非200不卖" in strategy_list:
             sql = """
          SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
         FROM (
@@ -933,12 +904,12 @@ def draw_market_view(use_my_features):
                  ) e 
             on d.bond_code = e.bond_code"""
 
-            html = generate_strategy_html(con_file, sql, "非200不卖", "不到200元不卖", html, nav_html_list=nav_html_list,
+            html = generate_strategy_html(sql, "非200不卖", "不到200元不卖", html, nav_html_list=nav_html_list,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========凌波双低轮动=========
-        if "凌波双低轮动" in config['type']:
+        if "凌波双低轮动" in strategy_list:
             sql = """
          SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
         FROM (
@@ -989,21 +960,67 @@ def draw_market_view(use_my_features):
                  ) e 
             on d.bond_code = e.bond_code"""
 
-            html = generate_strategy_html(con_file, sql, "凌波双低轮动", "脉冲卖出标准:110元以下(价格120双低值125)，110-115元(价格125双低值130)，115-120元(价格130双低值135)，120-125元(价格135双低值140)", html, nav_html_list=nav_html_list,
+            html = generate_strategy_html(sql, "凌波双低轮动",
+                                          "脉冲卖出标准:110元以下(价格120双低值125)，110-115元(价格125双低值130)，115-120元(价格130双低值135)，120-125元(价格135双低值140)",
+                                          html, nav_html_list=nav_html_list,
                                           remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
                                           use_personal_features=use_personal_features)
 
-        con_file.close()
+            cfg_list = db.session.query(Config)\
+                .filter(Config.group == 'public_strategy_script_group',
+                        Config.is_delete == 0,
+                        Config.owner_id == user_id).all()
+            for cfg in cfg_list:
+                title = cfg.key
+                sql = cfg.value
+                s = cfg.ext_value
+                ss = json.loads(s)
+                sub_title = ss.get('sub_title', None)
+                remark_fields_color = ss.get('remark_fields_color', None)
+                html = generate_strategy_html(sql, title, sub_title, html,
+                                       nav_html_list=nav_html_list,
+                                       remark_fields_color=remark_fields_color,
+                                       use_personal_features=use_personal_features)
 
         return '市场策略', ''.join(nav_html_list), html
 
     except Exception as e:
-        con_file.close()
         print("processing is failure. " + str(e), e)
         raise e
 
 
-def build_low_remain_block(con_file, html, nav_html_list, sort_field, sub_strategy, use_personal_features=False):
+def get_strategy_list():
+    row = db.session.query(Config).filter(
+        Config.group == 'public_strategy_type_list', Config.key == 'strategy_type', Config.is_delete == 0).first()
+    strategy_list = json.loads(row.value)
+    return strategy_list
+
+
+def generate_strategy_html(sql, type, sub_title, html, label_y='转股溢价率(%)', field_name='溢价率',
+                           get_label=default_get_label, nav_html_list=None, remark_fields_color=[], draw_figure=True,
+                           use_personal_features=False):
+
+    cur = db.session.execute(sql)
+
+    table = from_db_cursor(cur.cursor)
+    if table.rowcount == 0:
+        return ''
+
+    scatter_html = generate_scatter_html_with_one_table(table, type, sub_title, draw_figure, field_name, get_label, label_y,
+                                                        use_personal_features)
+
+    html_utils.add_nav_html(nav_html_list, type)
+
+    html += """
+    <div id=\"""" + type + """\">
+        """ + scatter_html + utils.table_html_utils.build_table_html(table, remark_fields_color, ignore_fields=['持有数量'], is_login_user=use_personal_features, table_rows_size=6) + """
+    </div>
+    """
+
+    return html
+
+
+def build_low_remain_block(html, nav_html_list, sort_field, sub_strategy, use_personal_features=False):
     sql = """
     SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
   FROM (
@@ -1055,24 +1072,22 @@ def build_low_remain_block(con_file, html, nav_html_list, sort_field, sub_strate
         on d.bond_code = e.bond_code            
             """
     get_label = lambda row: row['名称'].replace('转债', '') + '(' + str(round(row['余额(亿元)'], 1)) + '亿)'
-    html = generate_strategy_html(con_file, sql, "低余额策略(" + sub_strategy + ")", "余额<3亿, " + sub_strategy + "top10",
-                                  html,
-                                  nav_html_list=nav_html_list,
-                                  get_label=get_label,
+    html = generate_strategy_html(sql, "低余额策略(" + sub_strategy + ")", "余额<3亿, " + sub_strategy + "top10", html,
+                                  get_label=get_label, nav_html_list=nav_html_list,
                                   remark_fields_color=['余额(亿元)', '溢价率', '转债价格', '可转债涨跌'],
                                   use_personal_features=use_personal_features)
     return html
 
 
-def generate_gn_slice(con_file, key):
+def generate_gn_slice(key):
     gn_sql = """
             select value from config where field_name='theme' and key='""" + key + """' order by order_index
             """
-    cur = con_file.cursor()
-    cur.execute(gn_sql)
+    result = db.session.execute(gn_sql)
     gn_s = ''
     gn_c = 'and ('
     i = 0
+    cur = result.cursor
     for row in cur.fetchall():
         if i == 0:
             i += 1
@@ -1086,7 +1101,7 @@ def generate_gn_slice(con_file, key):
     return gn_c, gn_s
 
 
-def generate_active_strategy_html(con_file, gn_c, gn_s, suffix, html, htmls, use_personal_features):
+def generate_active_strategy_html(gn_c, gn_s, suffix, html, htmls, use_personal_features):
     sql = """
       SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
     FROM (
@@ -1145,7 +1160,7 @@ def generate_active_strategy_html(con_file, gn_c, gn_s, suffix, html, htmls, use
             ) e 
           on d.bond_code = e.bond_code
           """
-    html = generate_strategy_html(con_file, sql, "活性债策略(" + suffix + ')',
+    html = generate_strategy_html(sql, "活性债策略(" + suffix + ')',
                                   "按照主题>风格>行业方向, " + suffix + "(" + gn_s + ")\n\n结合价格<130, 溢价率<30%, 余额<3亿, 换手率>50%选出最具性价比和爆发力标的",
                                   html, nav_html_list=htmls,
                                   remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],

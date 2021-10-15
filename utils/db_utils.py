@@ -1,6 +1,9 @@
 import sqlite3
+import threading
 
 from prettytable import PrettyTable
+
+from models import db
 
 
 def from_db(cursor, ext_field_names=None, rows=None, **kwargs):
@@ -27,5 +30,22 @@ def get_dict_row(cursor, row):
 
     raise Exception('not convert to dict row')
 
+
+local_con = {}
+
+
 def get_connect():
-    return sqlite3.connect('db/cb.db3')
+    # 避免同一个方法/线程多次调用时db被锁住
+    if local_con.get(threading.current_thread(), None) is None:
+        local_con[threading.current_thread()] = sqlite3.connect('db/cb.db3')
+    return local_con[threading.current_thread()]
+
+
+def get_cursor(sql, params=None):
+    # fixme SQLAlchemy 带参数的只支持dict格式的, 改动太大, 走原生连接
+    if params is not None:
+        with get_connect() as con:
+            return con.execute(sql, params)
+    else:
+        result = db.session.execute(sql)
+        return result.cursor

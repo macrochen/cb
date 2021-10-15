@@ -4,19 +4,19 @@
 
 # https://blog.csdn.net/idomyway/article/details/82390040
 
-import sqlite3
-
 from pyecharts import options as opts
 from pyecharts.charts import Bar
 from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType
 
-# import matplotlib.pyplot as plt
-
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+import utils.table_html_utils
 from utils import db_utils, html_utils
-from utils.db_utils import get_connect
+from utils.db_utils import get_cursor
 from views import view_utils
+
+
+# import matplotlib.pyplot as plt
 
 
 def generate_table_html(type, cur, html, need_title=True, ext_field_names=None, rows=None,
@@ -26,19 +26,16 @@ def generate_table_html(type, cur, html, need_title=True, ext_field_names=None, 
     if table.rowcount == 0:
         return html
 
-    return html + html_utils.build_table_html(table, remark_fields_color, is_login_user=is_login_user)
+    return html + utils.table_html_utils.build_table_html(table, remark_fields_color, is_login_user=is_login_user)
 
 
 def draw_view(is_login_user):
-    # 打开文件数据库
-    con_file = get_connect()
-    cur = con_file.cursor()
     try:
 
         html = ''
 
         # =========我的转债涨跌TOP20柱状图=========
-        cur.execute("""
+        cur = get_cursor("""
 select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
  from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
  where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_mov2_id DESC limit 20)     
@@ -53,9 +50,10 @@ order by 涨跌 desc
 
         # =========我的转债涨跌TOP20表格=========
 
-        cur.execute("""
+        cur = get_cursor("""
     SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
-        cb_price2_id as 转债价格, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)',round((c.cb_price2_id - h.hold_price)*h.hold_amount, 2) as 盈亏,   
+        cb_price2_id as 转债价格, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)',round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) || '(' || round((c.cb_price2_id - h.hold_price) / c.cb_price2_id * 100, 2) || '%)' as 盈亏, 
+   
         round(cb_premium_id*100,2) as 溢价率, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         remain_amount as '余额(亿元)',round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
         h.strategy_type as 策略, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
@@ -103,7 +101,7 @@ stock_report s, (select *
                                               is_login_user=is_login_user)
 
         # =========我的转债价格TOP20柱状图=========
-        cur.execute("""
+        cur = get_cursor("""
 select cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 100, 2) as 涨跌, round(cb_premium_id*100,2) || '%' as 溢价率
  from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
  where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_price2_id DESC limit 20)     
@@ -112,12 +110,9 @@ select cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 10
         rows = cur.fetchall()
         html += '<br/>' + generate_top_bar_html(rows, '我的可转债价格TOP20')
 
-        con_file.close()
-
         return '我的可转债涨跌', ''.join(view_utils.build_personal_nav_html_list('/view_my_up_down.html')), html
 
     except Exception as e:
-        con_file.close()
         print("processing is failure. ", e)
         raise e
 

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
+import os
 import sys
 from datetime import datetime
-import os
-import sqlite3
 
 from flask import Blueprint
 from flask import render_template, request, url_for, redirect, flash, send_from_directory, session
@@ -10,14 +9,17 @@ from flask_login import LoginManager
 from flask_login import login_user, login_required, logout_user
 from prettytable import from_db_cursor
 
+import utils.table_html_utils
 import utils.trade_utils
 from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney
-from utils import html_utils
-from utils.db_utils import get_connect
-from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
-    view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_tree_map_price, view_tree_map_premium
 from jobs import do_update_bond_yield
 from models import User, ChangedBond, HoldBond, ChangedBondSelect, db
+from utils import trade_utils
+from utils.db_utils import get_connect, get_cursor
+from utils.html_utils import get_strategy_options_html
+from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
+    view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_tree_map_price, \
+    view_tree_map_premium
 
 cb = Blueprint('cb', __name__)
 
@@ -77,7 +79,7 @@ def edit_hold_bond(id='', bond_code=''):
         # 没有持有过, 转添加操作
         if bond is None:
             bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
-            # 先关闭session, 在修改model, 否则会触发update
+            # 先关闭session, 再修改model, 否则会触发update
             db.session.close()
             bond.id = ''
 
@@ -111,7 +113,7 @@ def find_bond_by_code():
             bond = ChangedBond.query.filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).first()
 
         if bond is not None:
-            # 先关闭session, 在修改model, 否则会触发update
+            # 先关闭session, 再修改model, 否则会触发update
             db.session.close()
             bond.id = ''
             return dict(bond)
@@ -136,7 +138,12 @@ def edit_changed_bond_select(bond_code=''):
     if bond_code != '':
         bond = db.session.query(ChangedBondSelect).filter(ChangedBondSelect.bond_code == bond_code).first()
 
-    return render_template("edit_changed_bond_select.html", bond=bond)
+    type = None
+    if bond is not None:
+        type = bond.strategy_type
+    options = get_strategy_options_html(type)
+
+    return render_template("edit_changed_bond_select.html", bond=bond, strategy_options=options)
 
 
 @cb.route('/find_changed_bond_select_by_code.html', methods=['GET'])
@@ -150,7 +157,7 @@ def find_changed_bond_select_by_code():
         if bond is None:
             bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
             if bond is not None:
-                # 先关闭session, 在修改model, 否则会触发update
+                # 先关闭session, 再修改model, 否则会触发update
                 db.session.close()
                 bond.id = ''
     elif bond_name != '':
@@ -201,7 +208,9 @@ def save_changed_bond_select():
         db.session.add(changed_bond_select)
     db.session.commit()
 
-    return render_template("edit_changed_bond_select.html", result='save is successful')
+    options = get_strategy_options_html(None)
+
+    return render_template("edit_changed_bond_select.html", result='save is successful', strategy_options=options)
 
 
 #fixme 废弃掉, 用sync_trade_data代替
@@ -270,8 +279,14 @@ def save_hold_bond():
     if memo is not None and memo.strip(' ') != '':
         hold_bond.memo = memo
 
+    ymd = trade_utils.get_ymd()
     if is_new:
+        # 增加开始时间
+        hold_bond.start_date = ymd
         db.session.add(hold_bond)
+    else:
+        hold_bond.modify_date = ymd
+
     db.session.commit()
 
     return redirect(request.form['back_url'])
@@ -282,7 +297,8 @@ def save_hold_bond():
 def save_trade_data():
     id = request.form['id']
     hold_bond = None
-    if id is None or id.strip(' ') == '':
+    is_new = id is None or id.strip(' ') == ''
+    if is_new:
         #新增操作
         hold_bond = HoldBond()
     else:
@@ -334,7 +350,7 @@ def save_trade_data():
     hold_bond.account = account
 
     # 计算持仓成本
-    hold_bond.calc_hold_price(direction, trade_amount, trade_price)
+    trade_utils.calc_hold_price(hold_bond, direction, trade_amount, trade_price)
 
     strategy_type = request.form['strategy_type']
     if strategy_type is None or strategy_type.strip(' ') == '':
@@ -342,11 +358,18 @@ def save_trade_data():
 
     hold_bond.strategy_type = strategy_type
 
-    if id is None or id.strip(' ') == '':
+    ymd = trade_utils.get_ymd()
+    if is_new:
+        # 增加开始时间
+        hold_bond.start_date = ymd
         db.session.add(hold_bond)
+    else:
+        hold_bond.modify_date = ymd
     db.session.commit()
 
-    return redirect(request.form['back_url'])
+    options = get_strategy_options_html(None)
+
+    return render_template("sync_trade_data.html", bond=None, result='save is successful', strategy_options=options)
 
 
 @cb.route('/sync_jsl_bond_data.html')
@@ -369,7 +392,9 @@ def sync_trade_data(id='', bond_code=''):
         db.session.close()
         bond.id = ''
 
-    return render_template("sync_trade_data.html", bond=bond)
+    options = get_strategy_options_html(None if bond is None else bond.strategy_type)
+
+    return render_template("sync_trade_data.html", bond=bond, strategy_options=options)
 
 
 @cb.route('/view_up_down.html')
@@ -488,7 +513,7 @@ def market_view():
     # current_user = None
     user_id = session.get('_user_id')
     utils.trade_utils.calc_mid_data()
-    title, navbar, content = view_market.draw_market_view(user_id is not None)
+    title, navbar, content = view_market.draw_market_view(user_id)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @cb.route('/jsl_update_data.html')
@@ -524,13 +549,14 @@ def stock_xueqiu_update_data():
 @cb.route('/download_db_data.html')
 @login_required
 def download_db_data():
-    con = get_connect()
     today = datetime.now()
     ymd = today.strftime('%Y-%m-%d')
     file_name = 'dump/data_' + ymd + '.sql'
+
     with open(file_name, 'w') as f:
-        for line in con.iterdump():
-            f.write('%s\n' % line)
+        with get_connect() as con:
+            for line in con.iterdump():
+                f.write('%s\n' % line)
 
     # 需要知道2个参数, 第1个参数是本地目录的path, 第2个参数是文件名(带扩展名)
     directory = os.getcwd()  # 假设在当前目录
@@ -550,8 +576,8 @@ def save_db_data():
     file = request.files['file']
     s = file.read().decode('utf-8')
     # 灌入上传的数据
-    con = get_connect()
-    con.executescript(s)
+    with get_connect() as con:
+        con.executescript(s)
 
     return 'OK'
 
@@ -570,15 +596,13 @@ def query_database_view():
         if not sql_code.lower().strip().startswith('select'):
             raise Exception("仅允许select操作")
 
-        conn = sqlite3.connect("db/cb.db3")
-        cur = conn.cursor()
-        cur.execute(sql_code)
+        cur = get_cursor(sql_code)
         table = from_db_cursor(cur)
 
         if table.rowcount > 10:
             table_height_style = """style="height:500px" """
 
-        table_html = html_utils.build_table_html()
+        table_html = utils.table_html_utils.build_table_html()
 
     return render_template("query_database.html", table_html=table_html, sql_code=sql_code, table_height_style=table_height_style)
 
@@ -599,8 +623,8 @@ def execute_sql():
     if not sql_code.lower().strip().startswith('update') and not sql_code.lower().strip().startswith('insert'):
         raise Exception("仅允许update/insert操作")
 
-    con = get_connect()
-    con.executescript(sql_code)
+    with get_connect() as con:
+        con.executescript(sql_code)
 
     return 'OK'
 

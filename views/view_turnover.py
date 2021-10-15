@@ -7,16 +7,12 @@
 # import matplotlib.pyplot as plt
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
-from utils.db_utils import get_connect
 from views import view_utils
 from views.view_market import generate_strategy_html
 
 
 
 def draw_view(is_login_user):
-    # 打开文件数据库
-    con_file = get_connect()
-    cur = con_file.cursor()
     try:
 
         html = ''
@@ -76,17 +72,14 @@ def draw_view(is_login_user):
                  ) e 
             on d.bond_code = e.bond_code
                   """
-        html = '<br><br><br>' + generate_strategy_html(con_file, sql, "换手率排行", "换手率大于100%且top10", html,
-                                      remark_fields_color=['正股涨跌', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
-                                      use_personal_features=is_login_user
-                                      )
-
-        con_file.close()
+        html = '<br><br><br>' + generate_strategy_html(sql, "换手率排行", "换手率大于100%且top10", html,
+                                                       remark_fields_color=['正股涨跌', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)',
+                                                                            '换手率(%)'],
+                                                       use_personal_features=is_login_user)
 
         return '换手率排行', view_utils.build_analysis_nav_html('/view_turnover.html'), html
 
     except Exception as e:
-        con_file.close()
         print("processing is failure. ", e)
         raise e
 

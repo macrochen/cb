@@ -1,13 +1,12 @@
 # 从东方财富抓正股的相关数据
 import datetime
 import re
-import sqlite3
 import time
 
 from selenium import webdriver
 
 from utils import trade_utils
-from utils.db_utils import get_connect
+from utils.db_utils import get_cursor
 
 driver = None
 
@@ -16,11 +15,10 @@ driver = None
 def do_update_stock_sum():
     # 遍历可转债列表
     # 打开文件数据库
-    con_file = get_connect()
 
     try:
         # 查询可转债
-        bond_cursor = con_file.execute("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
+        bond_cursor = get_cursor("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
         # 当前日月
         y = datetime.datetime.now().year
         m = datetime.datetime.now().month
@@ -34,7 +32,7 @@ def do_update_stock_sum():
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
-            stock_cursor = con_file.execute("""SELECT modify_date from stock_report where stock_code = ?""", [stock_code])
+            stock_cursor = get_cursor("""SELECT modify_date from stock_report where stock_code = ?""", [stock_code])
             stocks = list(stock_cursor)
             if len(stocks) == 0:
                 continue
@@ -45,7 +43,7 @@ def do_update_stock_sum():
 
             row = get_stock_sum(stock_code)
 
-            result = con_file.execute("""update stock_report set pe = ?, 
+            result = get_cursor("""update stock_report set pe = ?, 
                 net_asset = ?, 
                 gross_rate = ?, 
                 avg_market_cap = ?, 
@@ -115,13 +113,9 @@ def do_update_stock_sum():
         print("共处理" + str(i) + "条记录")
 
     except Exception as e:
-        # con_file.close()
         print("db操作出现异常" + str(e), e)
     except TimeoutError as e:
         print("网络超时, 请手工重试")
-    finally:
-        con_file.commit()
-        con_file.close()
 
 # 更新概念题材的配置信息
 def update_theme_config():
@@ -131,25 +125,22 @@ def update_theme_config():
     # 更新题材概念信息
     # 关闭数据库
 
-    # 打开文件数据库
-    con_file = get_connect()
-
     try:
         # 删除已有的数据
-        result = con_file.execute("""delete from config where key = 'gn_1' """)
+        result = get_cursor("""delete from config where key = 'gn_1' """)
         if result.rowcount == 0:
             print("not delete gn_1 config")
         else:
             print("delete old gn_1 is successful. count:" + str(result.rowcount))
 
         # 删除已有的数据
-        result = con_file.execute("""delete from config where key = 'gn_5' """)
+        result = get_cursor("""delete from config where key = 'gn_5' """)
         if result.rowcount == 0:
             print("not delete gn_5 config")
         else:
             print("delete old gn_5 is successful. count:" + str(result.rowcount))
 
-        result = con_file.execute("""delete from config where key = 'gn_10' """)
+        result = get_cursor("""delete from config where key = 'gn_10' """)
         if result.rowcount == 0:
             print("not delete gn_10 config")
         else:
@@ -159,7 +150,7 @@ def update_theme_config():
         # 添加当日数据
         rows = fetch_theme_data(3, '')
         for row in rows:
-            result = con_file.execute("""insert into config(order_index,key,value,field_name)values(?, 'gn_1', ?, 'theme')""",
+            result = get_cursor("""insert into config(order_index,key,value,field_name)values(?, 'gn_1', ?, 'theme')""",
                                       (row[0], row[1])
                                       )
             if result.rowcount == 0:
@@ -174,7 +165,7 @@ def update_theme_config():
         # 添加5日数据
         rows = fetch_theme_data(5, '_5')
         for row in rows:
-            result = con_file.execute("""insert into config(order_index,key,value,field_name)values(?, 'gn_5', ?, 'theme')""",
+            result = get_cursor("""insert into config(order_index,key,value,field_name)values(?, 'gn_5', ?, 'theme')""",
                                       (row[0], row[1])
                                       )
             if result.rowcount == 0:
@@ -189,7 +180,7 @@ def update_theme_config():
         # 添加10日数据
         rows = fetch_theme_data(10, '_10')
         for row in rows:
-            result = con_file.execute("""insert into config(order_index,key,value,field_name)values(?, 'gn_10', ?, 'theme')""",
+            result = get_cursor("""insert into config(order_index,key,value,field_name)values(?, 'gn_10', ?, 'theme')""",
                                       (row[0], row[1])
                                       )
             if result.rowcount == 0:
@@ -201,22 +192,16 @@ def update_theme_config():
         print("共处理" + str(i) + "条记录")
 
     except Exception as e:
-        # con_file.close()
         print("db操作出现异常" + str(e), e)
     except TimeoutError as e:
         print("网络超时, 请手工重试")
-    finally:
-        con_file.commit()
-        con_file.close()
 
 def update_stock_theme():
     # 遍历可转债列表
-    # 打开文件数据库
-    con_file = get_connect()
 
     try:
         # 查询可转债
-        bond_cursor = con_file.execute("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
+        bond_cursor = get_cursor("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
 
         i = 0
         for bond_row in bond_cursor:
@@ -226,7 +211,7 @@ def update_stock_theme():
 
             theme = fetch_stock_theme(stock_code)
 
-            result = con_file.execute("""update changed_bond_extend set theme = ? where bond_code = ?""",
+            result = get_cursor("""update changed_bond_extend set theme = ? where bond_code = ?""",
                              (theme, bond_code)
                              )
             if result.rowcount == 0:
@@ -241,25 +226,19 @@ def update_stock_theme():
         print("共处理" + str(i) + "条记录")
 
     except Exception as e:
-        # con_file.close()
         print("db操作出现异常" + str(e), e)
     except TimeoutError as e:
         print("网络超时, 请手工重试")
-    finally:
-        con_file.commit()
-        con_file.close()
 
 
 def modify_data_unit_error():
     # 遍历可转债列表
-    # 打开文件数据库
-    con_file = get_connect()
 
     try:
 
         i = 0
 
-        stock_cursor = con_file.execute("""SELECT avg_net_margin, stock_name from stock_report""")
+        stock_cursor = get_cursor("""SELECT avg_net_margin, stock_name from stock_report""")
         stocks = list(stock_cursor)
 
         for stock in stocks:
@@ -271,7 +250,7 @@ def modify_data_unit_error():
 
             avg_net_margin = change_data_unit(avg_net_margin, no_clean_text)
 
-            con_file.execute("""update stock_report set avg_net_margin = ? where stock_name = ?""",
+            get_cursor("""update stock_report set avg_net_margin = ? where stock_name = ?""",
                              (avg_net_margin, stock_name))
 
             i += 1
@@ -280,13 +259,9 @@ def modify_data_unit_error():
         print("共处理" + str(i) + "条记录")
 
     except Exception as e:
-        # con_file.close()
         print("db操作出现异常" + str(e), e)
     except TimeoutError as e:
         print("网络超时, 请手工重试")
-    finally:
-        con_file.commit()
-        con_file.close()
 
 # http://data.eastmoney.com/bkzj/gn_5.html
 def fetch_theme_data(count, days):

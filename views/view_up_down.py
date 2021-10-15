@@ -10,24 +10,20 @@ from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
-from utils import db_utils, html_utils
-from utils.db_utils import get_connect
-
-
+import utils.table_html_utils
+from utils import html_utils
+from utils.db_utils import get_cursor
 # import matplotlib.pyplot as plt
 from views import view_utils
 
 
 def draw_view(is_login_user):
-    # 打开文件数据库
-    con_file = get_connect()
-    cur = con_file.cursor()
     try:
 
         html = ''
 
         # =========全网可转债涨跌TOP20柱状图=========
-        cur.execute("""
+        cur = get_cursor("""
         select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
          from (SELECT DISTINCT c. * from changed_bond c 
           order by cb_mov2_id DESC limit 20)     
@@ -40,7 +36,7 @@ def draw_view(is_login_user):
         rows = cur.fetchall()
         html += '<br/><br/><br/>' + generate_bar_html(rows, '全网可转债涨跌TOP20')
 
-        cur.execute("""
+        cur = get_cursor("""
 SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量
   FROM (
       SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称,cb_mov2_id, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌, 
@@ -88,16 +84,13 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
         ORDER by cb_mov2_id DESC
                     """)
 
-        html = html_utils.generate_table_html("全网涨跌TOP10", cur, html, need_title=False,
-                                   remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
-                                              is_login_user=is_login_user)
-
-        con_file.close()
+        html = utils.table_html_utils.generate_table_html("全网涨跌TOP10", cur, html, need_title=False,
+                                                          remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
+                                                          is_login_user=is_login_user)
 
         return '可转债涨跌排行', view_utils.build_analysis_nav_html('/view_up_down.html'), html
 
     except Exception as e:
-        con_file.close()
         print("processing is failure. ", e)
         raise e
 
