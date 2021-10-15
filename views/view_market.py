@@ -1154,13 +1154,7 @@ def generate_active_strategy_html(con_file, gn_c, gn_s, suffix, html, htmls, use
 
 
 if __name__ == "__main__":
-<<<<<<< HEAD:view_market.py
-    draw_market_view(False, False)
-    #common.init_cb_sum_data()
-    #draw_market_view(False, True)
-=======
     utils.trade_utils.calc_mid_data()
 
     draw_market_view(True)
->>>>>>> macro/master:views/view_market.py
     print("processing is successful")
