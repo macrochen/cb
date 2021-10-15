@@ -71,7 +71,7 @@ def draw_view(is_login_user):
             on d.bond_code = e.bond_code
                   """
         html = '<br><br><br>' + generate_strategy_html(sql, "正股涨幅排行", "正股涨幅top20", html,
-                                                       remark_fields_color=['正股涨跌', '到期收益率', '溢价率', '转债价格', '可转债涨跌',
+                                                       remark_fields=['正股涨跌', '到期收益率', '溢价率', '转债价格', '可转债涨跌',
                                                                             '余额(亿元)',
                                                                             '换手率(%)'],
                                                        use_personal_features=is_login_user)

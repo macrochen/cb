@@ -85,7 +85,7 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
                     """)
 
         html = utils.table_html_utils.generate_table_html("全网涨跌TOP10", cur, html, need_title=False,
-                                                          remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
+                                                          remark_fields=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                                           is_login_user=is_login_user)
 
         return '可转债涨跌排行', view_utils.build_analysis_nav_html('/view_up_down.html'), html

@@ -1,13 +1,25 @@
+from utils import db_utils
 from utils.db_utils import get_record, from_db
 from utils.html_utils import add_nav_html, default_edit_link_maker
 
 
-def build_table_html(table, remark_fields_color=[],
+def generate_simple_table_html(cur, html, is_login_user=False):
+    table = db_utils.from_db(cur)
+
+    if table.rowcount == 0:
+        return html
+
+    return html + build_table_html(table, is_login_user=is_login_user)
+
+
+def build_table_html(table, remark_fields=[],
                      ignore_fields=[], is_login_user=False,
                      field_links={},
                      table_rows_size=10,
                      table_width=None
                      ):
+    new_remark_fields = ['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌']
+    new_remark_fields.append([] if remark_fields is None else remark_fields)
     options = table._get_options({})
     rows = table._get_rows(options)
     table_height_style_content = ''
@@ -57,7 +69,7 @@ def build_table_html(table, remark_fields_color=[],
                 datum = ''
 
             remark_color = ''
-            if remark_fields_color.count(field) > 0:
+            if new_remark_fields.count(field) > 0:
                 if datum.startswith('-'):
                     remark_color = 'class="remarked-down"'
                 else:
@@ -98,19 +110,19 @@ def build_table_html(table, remark_fields_color=[],
 
 
 def generate_table_html(type, cur, html, need_title=True, ext_field_names=None, rows=None,
-                        remark_fields_color=[],
+                        remark_fields=[],
                         nav_html_list=None,
                         tables=None,
                         subtitle='',
                         ignore_fields=[],
                         field_links={},
                         is_login_user=False):
-    table, html = generate_table_html_with_data(type, cur, html, need_title, ext_field_names, rows, remark_fields_color, nav_html_list, tables, subtitle, ignore_fields, field_links, is_login_user)
+    table, html = generate_table_html_with_data(type, cur, html, need_title, ext_field_names, rows, remark_fields, nav_html_list, tables, subtitle, ignore_fields, field_links, is_login_user)
     return html
 
 
 def generate_table_html_with_data(type, cur, html, need_title=True, ext_field_names=None, rows=None,
-                                  remark_fields_color=[],
+                                  remark_fields=[],
                                   nav_html_list=None,
                                   tables=None,
                                   subtitle='',
@@ -140,7 +152,7 @@ def generate_table_html_with_data(type, cur, html, need_title=True, ext_field_na
                + ('' if len(subtitle) == 0 else """<center> """ + subtitle + """</center>""") + """<br>"""
         title_suffix = """</div>"""
 
-    return table, html + title + build_table_html(table, remark_fields_color, ignore_fields, is_login_user, field_links, table_width=table_width) + title_suffix
+    return table, html + title + build_table_html(table, remark_fields, ignore_fields, is_login_user, field_links, table_width=table_width) + title_suffix
 
 
 def generate_head_tail_html(field, is_login_user, record):

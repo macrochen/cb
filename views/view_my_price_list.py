@@ -22,27 +22,29 @@ from views import view_utils
 def draw_view(is_login_user):
     try:
 
-        html = ''
+        html = '<br/><br/><br/><br/><br/>'
 
-        # =========我的转债涨跌TOP20柱状图=========
+        # =========我的转债价格TOP20柱状图=========
         cur = get_cursor("""
-select bond_code, cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
+select bond_code, cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 100, 2) as 涨跌, round(cb_premium_id*100,2) || '%' as 溢价率
  from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
- where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_mov2_id DESC limit 20)     
+ where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_price2_id DESC limit 20)     
 UNION  
-select bond_code, cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
+select bond_code, cb_name_id as 名称, cb_price2_id as 转债价格, round(cb_mov2_id * 100, 2) as 涨跌, round(cb_premium_id*100,2) || '%' as 溢价率
  from (SELECT DISTINCT c. * from changed_bond c, hold_bond h 
- where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 20) 
-order by 涨跌 desc
+ where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_price2_id ASC limit 20) 
+order by 转债价格 desc
                     """)
-        rows = cur.fetchall()
-        html += '<br/><br/><br/><br/><br/>' + generate_rise_bar_html(rows, '我持有的可转债涨跌TOP20')
 
-        # =========我的转债涨跌TOP20表格=========
+        rows = cur.fetchall()
+        html += '<br/>' + generate_price_bar_html(rows, '我的可转债价格高低TOP20')
 
         cur = get_cursor("""
-    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
-        cb_price2_id as 转债价格, h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)',round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) || '(' || round((c.cb_price2_id - h.hold_price) / c.cb_price2_id * 100, 2) || '%)' as 盈亏, 
+        
+    SELECT h.id as hold_id, c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称,    
+        cb_price2_id as 转债价格, round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,
+        h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)',
+        round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) || '(' || round((c.cb_price2_id - h.hold_price) / c.cb_price2_id * 100, 2) || '%)' as 盈亏, 
    
         round(cb_premium_id*100,2) || '%' as 溢价率, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         remain_amount as '余额(亿元)',round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
@@ -72,19 +74,13 @@ order by 涨跌 desc
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from (select * from (SELECT DISTINCT c. *, h.id from changed_bond c, (select * 
-            from hold_bond where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
-             ) h where  c.bond_code = h.bond_code  order by cb_mov2_id DESC limit 10)     
+        from changed_bond c, stock_report s, (select * from (SELECT DISTINCT h. * from changed_bond c, hold_bond h 
+ where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_price2_id DESC limit 10)  
 UNION  
-select * from (SELECT DISTINCT c. *, h.id from changed_bond c, hold_bond h where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 10)) c, 
-stock_report s, (select * 
-            from hold_bond where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
-             ) h
-    WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code 
-    order  by cb_mov2_id desc
-            """)
+select * from (SELECT DISTINCT h. * from changed_bond c, hold_bond h 
+ where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_price2_id ASC limit 10)) h 
+ where  c.stock_code = s.stock_code and  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0 order by cb_price2_id desc
+        """)
 
         html = table_html_utils.generate_simple_table_html(cur, html, is_login_user=is_login_user)
 
@@ -95,7 +91,8 @@ stock_report s, (select *
         raise e
 
 
-def generate_rise_bar_html(rows, title):
+# 高低top20
+def generate_price_bar_html(rows, title):
     xx1 = []
     xx2 = []
     yy1 = []
@@ -110,8 +107,8 @@ def generate_rise_bar_html(rows, title):
             xx1.append(row[1].replace('转债', ''))
             yy1.append({'value': row[2], 'bond_code': bond_code})
         else:
-            xx2.append(row[1].replace('转债', ''))
-            yy2.append({'value': row[2], 'bond_code': bond_code})
+            xx2.insert(0, row[1].replace('转债', ''))
+            yy2.insert(0, {'value': round(-float(row[2])+0, 2), 'bond_code': bond_code})
 
     max_value = 0
     size = len(yy1)
@@ -120,7 +117,7 @@ def generate_rise_bar_html(rows, title):
         if yy1[i]['value'] + abs(yy2[i]['value']) > max_value:
             max_value = yy1[i]['value'] + abs(yy2[i]['value'])
 
-    max_value = round(max_value * 1.1, 2) + 1
+    max_value = round(max_value * 0.7, 2) + 1
 
     chart_id = str(abs(hash(title)))
     bar = Bar(init_opts=opts.InitOpts(height='700px', width='1424px', theme=ThemeType.SHINE, chart_id=chart_id))
@@ -149,50 +146,56 @@ def generate_rise_bar_html(rows, title):
         yaxis=opts.AxisOpts(
             type_="value",
             position="right",
-            name='跌幅(%)',
+            name='可转债价格(元)',
             name_gap=45,
             name_location='middle',
             min_=-max_value,
+            is_scale=True,
             axisline_opts=opts.AxisLineOpts(
                 linestyle_opts=opts.LineStyleOpts(
                     is_show=True,
 
                 )
             ),
-            axislabel_opts=opts.LabelOpts(formatter="{value}%"),
+            # axislabel_opts=opts.LabelOpts(formatter="{value}"),
+            axislabel_opts=opts.LabelOpts(formatter=JsCode(
+                          "function(x){return (x + '元').substring(1);}"
+                      )),
         )
     )
-    # 添加涨的柱状图
-    bar.add_yaxis("涨", yy1,
+    # 添加高价格的柱状图
+    bar.add_yaxis("高价格", yy1,
                   bar_width=25,
                   category_gap='1%',
                   gap='1%',
                   label_opts=opts.LabelOpts(
+                      is_show=True,
                       position="top",
                       formatter=JsCode(
-                          "function(x){return x.data['value'] +'%';}"
+                          "function(x){return x.data['value']+'元';}"
                       )
                   ),
                   )
-    # 添加跌的柱状图
-    bar.add_yaxis("跌",
+    # 添加低价格的柱状图
+    bar.add_yaxis("低价格",
                   yy2,
                   bar_width=25,
                   yaxis_index=1,
                   label_opts=opts.LabelOpts(
+                      is_show=True,
                       position="bottom",
                       formatter=JsCode(
-                          "function(x){return x.data['value'] +'%';}"
+                          "function(x){return (x.data['value'] + '元').substring(1);}"
                       )
                   ),
                   )
     # bar.reversal_axis()
     bar.set_series_opts(
-        itemstyle_opts=opts.ItemStyleOpts(
-            color=JsCode(
-                "function(x){return x.data['value']>0?'#c23531':'#1d953f'}"
-            )
-        )
+        # itemstyle_opts=opts.ItemStyleOpts(
+        #     color=JsCode(
+        #         "function(x){return x.data['value']>0?'#c23531':'#1d953f'}"
+        #     )
+        # )
     )
     bar.set_global_opts(
         title_opts=opts.TitleOpts(
@@ -222,14 +225,14 @@ def generate_rise_bar_html(rows, title):
         ),
         yaxis_opts=opts.AxisOpts(
             type_='value',
-            name='涨幅(%)',
+            name='可转债价格(元)',
             # name_rotate=90,
             name_gap=35,
             name_location='middle',
             # min_=0,
             max_=max_value,
             is_scale=True,
-            axislabel_opts=opts.LabelOpts(formatter='{value}%'),
+            axislabel_opts=opts.LabelOpts(formatter='{value}元'),
             splitline_opts=opts.SplitLineOpts(is_show=False),
             axisline_opts=opts.AxisLineOpts(
                 is_on_zero=False,

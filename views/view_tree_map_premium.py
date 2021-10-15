@@ -155,7 +155,7 @@ order by _sign desc, abs(cb_mov2_id) DESC
                                 """, (start, end, up, start, end, down))
 
             table, table_html = generate_table_html_with_data('', cur, '', need_title=False,
-                                       remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
+                                       remark_fields=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                        is_login_user=is_login_user)
             html += "<div id='cb_detail_list'>"
             html += generate_scatter_html_with_one_table(table,

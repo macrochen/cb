@@ -73,7 +73,7 @@ def draw_view(is_login_user):
             on d.bond_code = e.bond_code
                   """
         html = '<br><br><br>' + generate_strategy_html(sql, "换手率排行", "换手率大于100%且top10", html,
-                                                       remark_fields_color=['正股涨跌', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)',
+                                                       remark_fields=['正股涨跌', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)',
                                                                             '换手率(%)'],
                                                        use_personal_features=is_login_user)
 

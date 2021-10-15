@@ -15,13 +15,13 @@ from utils.db_utils import get_cursor
 
 
 def generate_table_html(cur, html, ext_field_names=None, rows=None,
-                        remark_fields_color=[], is_login_user=False, field_links={}):
+                        remark_fields=[], is_login_user=False, field_links={}):
     table = db_utils.from_db(cur, ext_field_names, rows)
 
     if table.rowcount == 0:
         return html
 
-    return table, html + utils.table_html_utils.build_table_html(table, remark_fields_color, ignore_fields=['持有数量', ],
+    return table, html + utils.table_html_utils.build_table_html(table, remark_fields, ignore_fields=['持有数量', ],
                                                                  is_login_user=is_login_user, field_links=field_links)
 
 
@@ -50,7 +50,7 @@ def draw_view(is_login_user):
             """)
 
         table, html = generate_table_html(cur, html,
-                                   remark_fields_color=['策略',  '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
+                                   remark_fields=['策略',  '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                    is_login_user=is_login_user, field_links={'备注': select_link_maker})
 
         scatter_html = utils.echarts_html_utils.generate_scatter_html_with_one_table(table, use_personal_features=is_login_user)

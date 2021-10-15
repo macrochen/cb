@@ -92,7 +92,7 @@ def draw_my_view(is_login_user):
             """)
 
         html = generate_table_html("回售", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '回售年限', '回售收益率'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '回售年限', '回售收益率'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -137,7 +137,7 @@ def draw_my_view(is_login_user):
             """)
 
         html = generate_table_html("低余额", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '正股涨跌'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '正股涨跌'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -178,7 +178,7 @@ def draw_my_view(is_login_user):
             """)
 
         html = generate_table_html("高收益", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -219,7 +219,7 @@ def draw_my_view(is_login_user):
                 """)
 
         html = generate_table_html("双低", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -260,7 +260,7 @@ def draw_my_view(is_login_user):
                 """)
 
         html = generate_table_html("双低轮动", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -302,7 +302,7 @@ def draw_my_view(is_login_user):
                 """)
 
         html = generate_table_html("多因子", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -344,7 +344,7 @@ def draw_my_view(is_login_user):
             """)
 
         html = generate_table_html("打新", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -386,7 +386,7 @@ def draw_my_view(is_login_user):
             """)
 
         html = generate_table_html("网格", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -430,7 +430,7 @@ def draw_my_view(is_login_user):
         """)
 
         html = generate_table_html("基本面", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -474,7 +474,7 @@ def draw_my_view(is_login_user):
         """)
 
         html = generate_table_html("猪肉概念", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '正股涨跌'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '正股涨跌'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -539,7 +539,7 @@ def draw_my_view(is_login_user):
             """)
 
         html = generate_table_html("活性债", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -582,7 +582,7 @@ order by 双低值
         """)
 
         html = generate_table_html("其他", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -590,9 +590,9 @@ order by 双低值
         for config in configs:
             cur = get_cursor(config.value)
             ext_config = json.loads(config.ext_value)
-            remark_fields_color = ext_config['remark_fields_color']
+            remark_fields = ext_config['remark_fields']
             html = generate_table_html(config.key, cur, html,
-                                       remark_fields_color=remark_fields_color,
+                                       remark_fields=remark_fields,
                                        nav_html_list=nav_html_list, tables=tables,
                                        is_login_user=is_login_user)
 
@@ -621,7 +621,7 @@ order by 双低值
 
         html = generate_table_html("清仓建议", cur, html,
                                    subtitle='(价格<100且溢价率>90%或100<价格<110且溢价率>60%或价格>130)',
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, is_login_user=is_login_user)
 
         # 数据汇总
@@ -686,7 +686,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
         pie_html = utils.echarts_html_utils.generate_pie_html(dict_rows, '策略', '投入金额')
 
         sum_html = utils.table_html_utils.generate_table_html("汇总", cur, '', need_title=False, ext_field_names=['投入占比'],
-                                                              remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
+                                                              remark_fields=['日收益', '日收益率', '累积收益率', '累积收益'],
                                                               ignore_fields=['投入金额'],
                                                               rows=new_rows)
 
@@ -712,13 +712,13 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
 
 def generate_table_html(title, cur, html,
                         subtitle='',
-                        remark_fields_color=[],
+                        remark_fields=[],
                         nav_html_list=None,
                         tables=None,
                         is_login_user=False):
     return utils.table_html_utils.generate_table_html(title, cur, html,
                                                       subtitle=subtitle,
-                                                      remark_fields_color=remark_fields_color,
+                                                      remark_fields=remark_fields,
                                                       ignore_fields=['持有数量'],
                                                       nav_html_list=nav_html_list, tables=tables,
                                                       is_login_user=is_login_user)

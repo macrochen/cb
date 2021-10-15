@@ -127,7 +127,7 @@ def do_update_bond_yield():
 def get_up_down_data():
     driver = webdriver.Chrome()
 
-    driver.implicitly_wait(10)
+    driver.implicitly_wait(15)
 
     url = "https://www.ninwin.cn/index.php?m=cb&c=idx"
 

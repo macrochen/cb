@@ -14,15 +14,18 @@ MID_YIELD = -3.92
 def get_date_type():
     date = datetime.now().strftime('%Y-%m-%d')
     url = 'http://tool.bitefu.net/jiari/?d=' + date
-    resp = request.urlopen(url, timeout=3)
-    content = resp.read()
-    if content:
-        try:
-            day_type = int(content)
-        except ValueError:
-            return -1
-        else:
-            return day_type
+    try:
+        resp = request.urlopen(url, timeout=5)
+        content = resp.read()
+        if content:
+            try:
+                day_type = int(content)
+            except ValueError:
+                return -1
+            else:
+                return day_type
+    except Exception as e:
+        print("get_date_type is timeout", e)
 
     return -1
 

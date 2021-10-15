@@ -6,7 +6,7 @@ from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType
 
 import utils.trade_utils
-from utils import db_utils
+from utils import db_utils, trade_utils
 from utils.db_utils import get_record
 from utils.html_utils import env, default_get_label
 
@@ -130,14 +130,17 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
         record = db_utils.get_record(table, row)
 
         x1 = record['转债价格']
+        bond_code = record['bond_code']
+        bond_code = trade_utils.rebuild_bond_code(bond_code)
         x.append(x1)
-        y1 = record[field_name].replace('%', '')
+        cb_name = record[field_name]
+        y1 = cb_name.replace('%', '')
         amount = 0
         if use_personal_features:
             amount = record.get("持有数量", 0)
-            y.append([y1, get_label(record), amount])
+            y.append([y1, get_label(record), bond_code, amount])
         else:
-            y.append([y1, get_label(record)])
+            y.append([y1, get_label(record)], bond_code)
 
         if use_personal_features and record.get('hold_id') is not None:
             point_items.append(opts.MarkPointItem(
@@ -163,14 +166,25 @@ def get_hover_js_code(field_name='溢价率'):
     hover_text = "function (params) {" \
                     "return '价格:' + params.value[0] + '元<br/> " + \
                         field_name + ":' + params.value[1] + '%'+ " \
-                        "( params.value[3] == null ? '' : " \
-                                     "('<br/>持有数量:' + params.value[3] + '张'));" \
+                        "( params.value[4] == null ? '' : " \
+                                     "('<br/>持有数量:' + params.value[4] + '张'));" \
                  "}"
     return JsCode(hover_text)
 
 
 def create_scatter(title, sub_title, field_name, label_y, point_items, x, y):
-    scatter = Scatter(opts.InitOpts(height='700px', width='1424px'))
+    chart_id = str(abs(hash(title)))
+    scatter = Scatter(opts.InitOpts(
+        height='700px',
+        width='1424px',
+        chart_id=chart_id
+    ))
+    scatter.add_js_funcs(
+        'chart_' + chart_id + """.on('click', function(params){
+            // alert(params)
+            popWin.showWin("1200","600", params['data'][3]);
+        })
+    """)
     scatter.add_xaxis(xaxis_data=x)
     scatter.add_yaxis(
         series_name="",

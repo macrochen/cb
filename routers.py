@@ -19,7 +19,7 @@ from utils.db_utils import get_connect, get_cursor
 from utils.html_utils import get_strategy_options_html
 from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
     view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_tree_map_price, \
-    view_tree_map_premium
+    view_tree_map_premium, view_my_price_list
 
 cb = Blueprint('cb', __name__)
 
@@ -392,7 +392,9 @@ def sync_trade_data(id='', bond_code=''):
         db.session.close()
         bond.id = ''
 
-    options = get_strategy_options_html(None if bond is None else bond.strategy_type)
+    options = get_strategy_options_html(None
+                                        if bond is None
+                                        else (bond.strategy_type if hasattr(bond, 'strategy_type') else None))
 
     return render_template("sync_trade_data.html", bond=bond, strategy_options=options)
 
@@ -484,6 +486,15 @@ def my_up_down_view():
     title, navbar, content = view_my_up_down.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
+
+@cb.route('/view_my_price_list.html')
+@login_required
+def my_price_list_view():
+    user_id = session.get('_user_id')
+    utils.trade_utils.calc_mid_data()
+    title, navbar, content = view_my_price_list.draw_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
 @cb.route('/view_my_strategy.html')
 @login_required
 def my_strategy_view():
@@ -496,6 +507,13 @@ def my_strategy_view():
 @cb.route('/view_my_yield.html')
 @login_required
 def my_yield_view():
+    title, navbar, content = view_my_yield.draw_my_view()
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_my_trade.html')
+@login_required
+def my_trade_view():
     title, navbar, content = view_my_yield.draw_my_view()
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 

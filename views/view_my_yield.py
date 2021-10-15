@@ -32,7 +32,7 @@ order by date  desc   --limit 2
 
         # table_html = table.get_html_string()
         table, table_html = utils.table_html_utils.generate_table_html_with_data(None, cur, html, need_title=False,
-                                                                                 remark_fields_color=['我的', '可转债指数', '沪深300'],
+                                                                                 remark_fields=['我的', '可转债指数', '沪深300'],
                                                                                  ignore_fields=['我的净值', '可转债指数净值', '沪深300净值'],
                                                                                  nav_html_list=nav_html_list, table_width='800px')
 
@@ -43,7 +43,7 @@ order by date  desc   --limit 2
             dict_row = db_utils.get_dict_row(cur, row)
             dict_rows.append(dict_row)
 
-        line_html = utils.echarts_html_utils.generate_line_html(dict_rows)
+        line_html = utils.echarts_html_utils.generateview_my_up_down_line_html(dict_rows)
 
         html = """
             <br/>

@@ -106,7 +106,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by �
         pie_html = utils.echarts_html_utils.generate_pie_html(dict_rows, '账户', '投入金额')
 
         sum_html = utils.table_html_utils.generate_table_html("汇总", cur, '', need_title=False, ext_field_names=['投入占比'],
-                                                              remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
+                                                              remark_fields=['日收益', '日收益率', '累积收益率', '累积收益'],
                                                               rows=new_rows, ignore_fields=['投入金额'],
                                                               is_login_user=is_login_user)
 
@@ -169,7 +169,7 @@ WHERE c.stock_code = s.stock_code
 order by 持有数量, h.bond_code
         """, (unit, account))
     return utils.table_html_utils.generate_table_html(account, cur, html, nav_html_list=nav_html_list, tables=tables,
-                                                      remark_fields_color=['盈亏', '正股涨跌', '溢价率', '可转债涨跌'],
+                                                      remark_fields=['盈亏', '正股涨跌', '溢价率', '可转债涨跌'],
                                                       field_links={"成本": link_maker},
                                                       is_login_user=is_login_user)
 

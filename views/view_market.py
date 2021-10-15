@@ -121,7 +121,7 @@ def draw_market_view(user_id):
             """
             html = generate_strategy_html(sql, "回售策略", "回售年限<1年, 回收收益率>1%", html, label_y="回售收益率(%)",
                                           field_name='回售收益率', nav_html_list=nav_html_list,
-                                          remark_fields_color=['回售年限(年)', '回售收益率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['回售年限(年)', '回售收益率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========回售策略=========
@@ -174,7 +174,7 @@ def draw_market_view(user_id):
             """
             html = generate_strategy_html(sql, "下修博弈策略", "100面值以下为主", html, label_y="到期收益率(%)", field_name='到期收益率',
                                           nav_html_list=nav_html_list,
-                                          remark_fields_color=['溢价率', '到期收益率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['溢价率', '到期收益率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========低余额策略=========
@@ -244,7 +244,7 @@ def draw_market_view(user_id):
             """
             get_label = lambda row: row['名称'].replace('转债', '') + '(' + str(row['双低值']) + ')'
             html = generate_strategy_html(sql, "双低策略", "双低值前10", html, get_label=get_label, nav_html_list=nav_html_list,
-                                          remark_fields_color=['溢价率', '转债价格', '可转债涨跌', '到期收益率', '双低值', '正股涨跌'],
+                                          remark_fields=['溢价率', '转债价格', '可转债涨跌', '到期收益率', '双低值', '正股涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========高收益策略=========
@@ -301,7 +301,7 @@ def draw_market_view(user_id):
 
             html = generate_strategy_html(sql, "高收益策略", "到期收益率前10", html, label_y="到期收益率(%)", field_name='到期收益率',
                                           nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========活性债策略=========
@@ -384,7 +384,7 @@ def draw_market_view(user_id):
               on d.bond_code = e.bond_code
                   """
                 html = generate_strategy_html(sql, "快到期保本策略", "税后到期收益率>0, 剩余年限<3", html, nav_html_list=nav_html_list,
-                                              remark_fields_color=['税后到期收益率', '溢价率', '转债价格', '可转债涨跌', '剩余年限'],
+                                              remark_fields=['税后到期收益率', '溢价率', '转债价格', '可转债涨跌', '剩余年限'],
                                               use_personal_features=use_personal_features)
 
             # =========低溢价率策略=========
@@ -440,7 +440,7 @@ def draw_market_view(user_id):
                   """
                 html = generate_strategy_html(sql, "低溢价率策略", "溢价率<4%, 转债价格<140, 如果持有, 坚持不卖", html,
                                               nav_html_list=nav_html_list,
-                                              remark_fields_color=['溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
+                                              remark_fields=['溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
                                               use_personal_features=use_personal_features)
 
         # =========广撒网策略=========
@@ -501,7 +501,7 @@ def draw_market_view(user_id):
         on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(sql, "广撒网策略", "价格<105, 溢价率<20%, pb>1", html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========正股优选策略=========
@@ -569,7 +569,7 @@ def draw_market_view(user_id):
               """
             html = generate_strategy_html(sql, "正股优选策略", "正股综合评分>6, 转债价格<115, 双低值<130", html,
                                           nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========高成长策略=========
@@ -626,7 +626,7 @@ def draw_market_view(user_id):
               """
             html = generate_strategy_html(sql, "高成长策略", "利润率增长top20, 转债价格<115, 利润率>0", html,
                                           nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '利润率|行业均值', '利润率同比'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '利润率|行业均值', '利润率同比'],
                                           use_personal_features=use_personal_features)
 
         # =========股性策略=========
@@ -683,7 +683,7 @@ def draw_market_view(user_id):
         on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(sql, "股性策略", "转债价格<115, 溢价率<10%, 用来筛选网格对象", html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
                                           use_personal_features=use_personal_features)
 
         # =========妖债策略=========
@@ -743,7 +743,7 @@ def draw_market_view(user_id):
               """
             html = generate_strategy_html(sql, "妖债策略", "余额<3亿, 换手率>50%, 找底部长时间横盘, 刚刚放量上涨, 当大盘跌, 柚子没有攒钱的地方, 就会来短炒妖债",
                                           html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
                                           use_personal_features=use_personal_features)
 
 
@@ -796,7 +796,7 @@ def draw_market_view(user_id):
              ) e 
         on d.bond_code = e.bond_code"""
             html = generate_strategy_html(sql, "抄作业", "收集近期大V们推荐", html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========自选集=========
@@ -849,7 +849,7 @@ def draw_market_view(user_id):
             on d.bond_code = e.bond_code"""
 
             html = generate_strategy_html(sql, "自选集", "根据各种策略选出来准备买入的", html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========非200不卖=========
@@ -905,7 +905,7 @@ def draw_market_view(user_id):
             on d.bond_code = e.bond_code"""
 
             html = generate_strategy_html(sql, "非200不卖", "不到200元不卖", html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========凌波双低轮动=========
@@ -963,7 +963,7 @@ def draw_market_view(user_id):
             html = generate_strategy_html(sql, "凌波双低轮动",
                                           "脉冲卖出标准:110元以下(价格120双低值125)，110-115元(价格125双低值130)，115-120元(价格130双低值135)，120-125元(价格135双低值140)",
                                           html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
                                           use_personal_features=use_personal_features)
 
             cfg_list = db.session.query(Config)\
@@ -976,10 +976,10 @@ def draw_market_view(user_id):
                 s = cfg.ext_value
                 ss = json.loads(s)
                 sub_title = ss.get('sub_title', None)
-                remark_fields_color = ss.get('remark_fields_color', None)
+                remark_fields = ss.get('remark_fields', None)
                 html = generate_strategy_html(sql, title, sub_title, html,
                                        nav_html_list=nav_html_list,
-                                       remark_fields_color=remark_fields_color,
+                                       remark_fields=remark_fields,
                                        use_personal_features=use_personal_features)
 
         return '市场策略', ''.join(nav_html_list), html
@@ -997,7 +997,7 @@ def get_strategy_list():
 
 
 def generate_strategy_html(sql, type, sub_title, html, label_y='转股溢价率(%)', field_name='溢价率',
-                           get_label=default_get_label, nav_html_list=None, remark_fields_color=[], draw_figure=True,
+                           get_label=default_get_label, nav_html_list=None, remark_fields=[], draw_figure=True,
                            use_personal_features=False):
 
     cur = db.session.execute(sql)
@@ -1013,7 +1013,7 @@ def generate_strategy_html(sql, type, sub_title, html, label_y='转股溢价率(
 
     html += """
     <div id=\"""" + type + """\">
-        """ + scatter_html + utils.table_html_utils.build_table_html(table, remark_fields_color, ignore_fields=['持有数量'], is_login_user=use_personal_features, table_rows_size=6) + """
+        """ + scatter_html + utils.table_html_utils.build_table_html(table, remark_fields, ignore_fields=['持有数量'], is_login_user=use_personal_features, table_rows_size=6) + """
     </div>
     """
 
@@ -1074,7 +1074,7 @@ def build_low_remain_block(html, nav_html_list, sort_field, sub_strategy, use_pe
     get_label = lambda row: row['名称'].replace('转债', '') + '(' + str(round(row['余额(亿元)'], 1)) + '亿)'
     html = generate_strategy_html(sql, "低余额策略(" + sub_strategy + ")", "余额<3亿, " + sub_strategy + "top10", html,
                                   get_label=get_label, nav_html_list=nav_html_list,
-                                  remark_fields_color=['余额(亿元)', '溢价率', '转债价格', '可转债涨跌'],
+                                  remark_fields=['余额(亿元)', '溢价率', '转债价格', '可转债涨跌'],
                                   use_personal_features=use_personal_features)
     return html
 
@@ -1163,7 +1163,7 @@ def generate_active_strategy_html(gn_c, gn_s, suffix, html, htmls, use_personal_
     html = generate_strategy_html(sql, "活性债策略(" + suffix + ')',
                                   "按照主题>风格>行业方向, " + suffix + "(" + gn_s + ")\n\n结合价格<130, 溢价率<30%, 余额<3亿, 换手率>50%选出最具性价比和爆发力标的",
                                   html, nav_html_list=htmls,
-                                  remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
+                                  remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
                                   use_personal_features=use_personal_features)
     return html
 

@@ -14,7 +14,8 @@ personal_nav_html_dict = {
     '/view_my_account.html': (2, '<li><a href="/view_my_account.html">按账户统计</a></li>'),
     '/view_my_strategy.html': (3, '<li><a href="/view_my_strategy.html">按策略统计</a></li>'),
     '/view_my_up_down.html': (4, '<li><a href="/view_my_up_down.html">可转债涨跌排行</a></li>'),
-    '/view_my_yield.html': (5, '<li><a href="/view_my_yield.html">我的收益率</a></li>'),
+    '/view_my_price_list.html': (5, '<li><a href="/view_my_price_list.html">可转债价格排行</a></li>'),
+    '/view_my_yield.html': (6, '<li><a href="/view_my_yield.html">我的收益率</a></li>'),
 }
 
 
