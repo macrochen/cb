@@ -361,7 +361,9 @@ def fetch_data():
     options = webdriver.ChromeOptions()
     options.add_argument('user-agent="' + userAgent + '"')
     options.add_argument('Referer="http://www.ninwin.cn/index.php?m=profile"')
-
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')
     driver = webdriver.Chrome(options=options)
 
     driver.implicitly_wait(10)

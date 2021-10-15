@@ -515,7 +515,11 @@ def get_stock_sum(stock_code):
     return get_sum_data(driver)
 
 def fetch_data():
-    driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(chrome_options=options)
 
     driver.implicitly_wait(10)
 

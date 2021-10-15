@@ -125,8 +125,11 @@ def do_update_bond_yield():
 
 
 def get_up_down_data():
-    driver = webdriver.Chrome()
-
+    options = webdriver.ChromeOptions()
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(chrome_options=options)
     driver.implicitly_wait(10)
 
     url = "https://www.ninwin.cn/index.php?m=cb&c=idx"
