@@ -3,6 +3,7 @@ import threading
 
 from prettytable import PrettyTable
 
+from config import db_file_path
 from models import db
 
 
@@ -36,16 +37,17 @@ local_con = {}
 
 def get_connect():
     # 避免同一个方法/线程多次调用时db被锁住
-    if local_con.get(threading.current_thread(), None) is None:
-        local_con[threading.current_thread()] = sqlite3.connect('db/cb.db3')
-    return local_con[threading.current_thread()]
-
+    # if local_con.get(threading.current_thread(), None) is None:
+    #     local_con[threading.current_thread()] = sqlite3.connect('db/cb.db3')
+    # return local_con[threading.current_thread()]
+    return sqlite3.connect(db_file_path)
 
 def get_cursor(sql, params=None):
-    # fixme SQLAlchemy 带参数的只支持dict格式的, 改动太大, 走原生连接
-    if params is not None:
-        with get_connect() as con:
-            return con.execute(sql, params)
-    else:
-        result = db.session.execute(sql)
-        return result.cursor
+    result = db.session.execute(sql, params)
+    return result.cursor
+
+
+def execute_sql_with_rowcount(sql, params=None):
+    # fixme update这种sql语句不会返回cursor, 直接返回更新数
+    result = db.session.execute(sql, params)
+    return result.rowcount

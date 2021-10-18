@@ -6,6 +6,7 @@ import json
 # 单选
 import utils.echarts_html_utils
 import utils.table_html_utils
+import views.nav_utils
 from models import db, Config
 from utils import db_utils
 from utils.db_utils import get_cursor
@@ -38,7 +39,7 @@ def draw_my_view(is_login_user):
     try:
 
         html = ''
-        nav_html_list = view_utils.build_personal_nav_html_list('/view_my_strategy.html')
+        nav_html_list = views.nav_utils.build_personal_nav_html_list('/view_my_strategy.html')
 
         # =========我的强赎=========
         cur = get_cursor("""
@@ -86,8 +87,8 @@ def draw_my_view(is_login_user):
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code AND h.strategy_type = '回售' and h.hold_owner = 'me' and h.hold_amount != -1
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '回售' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 回售收益率
             """)
 
@@ -128,8 +129,8 @@ def draw_my_view(is_login_user):
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code 
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code
     AND h.strategy_type = '低余额' 
     and h.hold_owner = 'me' 
     and h.hold_amount != -1
@@ -172,8 +173,8 @@ def draw_my_view(is_login_user):
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code AND h.strategy_type = '高收益' and h.hold_owner = 'me' and h.hold_amount != -1
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '高收益' and h.hold_owner = 'me' and h.hold_amount != -1
     ORDER by 性价比 desc
             """)
 
@@ -213,8 +214,8 @@ def draw_my_view(is_login_user):
             trade_suggest as 操作建议,
 
             rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-        from changed_bond c, stock_report s, hold_bond h
-        WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '双低' and h.hold_owner = 'me' and h.hold_amount != -1
+        from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '双低' and h.hold_owner = 'me' and h.hold_amount != -1
         order by 双低值
                 """)
 
@@ -254,8 +255,8 @@ def draw_my_view(is_login_user):
             trade_suggest as 操作建议,
 
             rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-        from changed_bond c, stock_report s, hold_bond h
-        WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '双低轮动' and h.hold_owner = 'me' and h.hold_amount != -1
+        from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '双低轮动' and h.hold_owner = 'me' and h.hold_amount != -1
         order by 双低值
                 """)
 
@@ -296,8 +297,8 @@ def draw_my_view(is_login_user):
             trade_suggest as 操作建议,
 
             rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-        from changed_bond c, stock_report s, hold_bond h
-        WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '多因子' and h.hold_owner = 'me' and h.hold_amount != -1
+        from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '多因子' and h.hold_owner = 'me' and h.hold_amount != -1
         order by 双低值
                 """)
 
@@ -338,8 +339,8 @@ def draw_my_view(is_login_user):
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '打新' and h.hold_owner = 'me' and h.hold_amount != -1
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '打新' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格
             """)
 
@@ -380,8 +381,8 @@ def draw_my_view(is_login_user):
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '网格' and h.hold_owner = 'me' and h.hold_amount != -1
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '网格' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格
             """)
 
@@ -423,8 +424,8 @@ def draw_my_view(is_login_user):
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
         h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    where c.stock_code = s.stock_code and c.bond_code = h.bond_code
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code
      AND h.strategy_type = '基本面' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格
         """)
@@ -467,8 +468,8 @@ def draw_my_view(is_login_user):
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
         h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    where c.stock_code = s.stock_code and c.bond_code = h.bond_code
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code
      AND h.strategy_type = '猪肉概念' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格
         """)
@@ -492,8 +493,8 @@ def draw_my_view(is_login_user):
         round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as '市盈率(动)', c.stock_pb as 市净率,
         market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
         cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-        from changed_bond c, stock_report s, hold_bond h
-    	where c.stock_code = s.stock_code and c.bond_code = h.bond_code 
+        from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code 
     	AND h.strategy_type = '每周精选' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格
             """)
@@ -531,8 +532,8 @@ def draw_my_view(is_login_user):
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
         h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    where c.stock_code = s.stock_code and c.bond_code = h.bond_code
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code
     AND h.strategy_type = '活性债' and h.hold_owner = 'me' and h.hold_amount != -1 
     --and h.hold_owner = '水晶杯'
     order by 转债价格
@@ -575,8 +576,8 @@ def draw_my_view(is_login_user):
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
         h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    where c.stock_code = s.stock_code and c.bond_code = h.bond_code 
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code 
     AND h.strategy_type = '其他' and h.hold_owner = 'me' and h.hold_amount != -1
 order by 双低值
         """)
@@ -608,8 +609,8 @@ order by 双低值
         h.account as 账户, h.strategy_type as 策略,
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
         h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    where c.stock_code = s.stock_code and c.bond_code = h.bond_code 
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code 
         AND (
         cb_price2_id < 100 and cb_premium_id > 0.9 	
         or cb_price2_id > 130 
@@ -694,6 +695,9 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
         scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select)
 
         html = """
+            <br/>
+            <br/>
+            <br/>
             <br/>
             <br/>
             <br/>

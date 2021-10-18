@@ -9,6 +9,7 @@
 # 单选
 import utils.echarts_html_utils
 import utils.table_html_utils
+import views.nav_utils
 from utils import db_utils
 from utils.db_utils import get_cursor
 from views import view_utils
@@ -29,7 +30,7 @@ def draw_my_view(is_login_user):
 
         html = ''
         tables = {}
-        nav_html_list = view_utils.build_personal_nav_html_list('/view_my_account.html')
+        nav_html_list = views.nav_utils.build_personal_nav_html_list('/view_my_account.html')
 
         # =========银河=========
         account = '银河'
@@ -139,7 +140,7 @@ def generate_account_block(account, html, nav_html_list, tables, unit=100, is_lo
        c.cb_name_id                                                      as 名称,
        --c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
        --h.account as 账户,  
-       case when h.hold_unit = ? then h.hold_amount / 10 else h.hold_amount END
+       case when h.hold_unit = :hold_unit then h.hold_amount / 10 else h.hold_amount END
            --case when h.hold_unit = 10 then  h.hold_amount/10 else  h.hold_amount END as 数量,
            --h.hold_amount
                                                                          as 持有数量,
@@ -159,15 +160,14 @@ def generate_account_block(account, html, nav_html_list, tables, unit=100, is_lo
        --rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, 
        h.strategy_type                                                   as 策略,
        h.memo                                                            as 备注
-from changed_bond c,
-     stock_report s,
+from changed_bond c left join 
+     stock_report s on c.stock_code = s.stock_code,
      hold_bond h
-WHERE c.stock_code = s.stock_code
-  and c.bond_code = h.bond_code
+WHERE c.bond_code = h.bond_code
   and h.hold_owner = 'me'
-  and h.account = ?
+  and h.account = :account
 order by 持有数量, h.bond_code
-        """, (unit, account))
+        """, {'hold_unit':unit, 'account':account})
     return utils.table_html_utils.generate_table_html(account, cur, html, nav_html_list=nav_html_list, tables=tables,
                                                       remark_fields=['盈亏', '正股涨跌', '溢价率', '可转债涨跌'],
                                                       field_links={"成本": link_maker},

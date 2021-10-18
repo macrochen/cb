@@ -3,19 +3,25 @@ import datetime
 import re
 import time
 
-from selenium import webdriver
 
-from utils.db_utils import get_cursor
+from crawler import crawler_utils
+from models import db
+from utils.db_utils import get_cursor, execute_sql_with_rowcount
+from utils.task_utils import new_or_update_task, process_task_when_normal, process_task_when_finish, \
+    process_task_when_error
 
-driver = None
 
-
-def update_stock_sum():
+def update_stock_sum(driver, task_name):
     # 遍历可转债列表
 
+    task = None
     try:
         # 查询可转债
-        bond_cursor = get_cursor("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
+        bond_cursor= get_cursor("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
+        rows = bond_cursor.fetchall()
+        task, status = new_or_update_task(len(rows), task_name)
+        if status == -1:  # 有任务在执行
+            return
         # 当前日月
         y = datetime.datetime.now().year
         m = datetime.datetime.now().month
@@ -25,58 +31,63 @@ def update_stock_sum():
         s = (t - datetime.datetime(1970, 1, 1)).total_seconds()
 
         i = 0
-        for bond_row in bond_cursor:
+        for bond_row in rows:
+            process_task_when_normal(task, 1)
+
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
-            stock_cursor = get_cursor("""SELECT modify_date from stock_report where stock_code = ?""", [stock_code])
+            stock_cursor = get_cursor("""SELECT modify_date from stock_report where stock_code = :stock_code""", {'stock_code':stock_code})
             stocks = list(stock_cursor)
             if len(stocks) == 0:
                 continue
 
             # 已经更新了
-            if stocks[0][0] is not None and stocks[0][0] > s:
+            if stocks[0][0] is not None and stocks[0][0] >= s:
                 continue
 
-            row = get_stock_sum(stock_code)
+            row = get_stock_sum(driver, stock_code)
 
-            result = get_cursor("""update stock_report set 
-                stock_total = ?, 
-                stock_level = ?, 
-                trade_suggest = ?, 
-                fact_trend = ?, 
-                fact_money = ?, 
-                fact_news = ?, 
-                fact_industry = ?, 
-                fact_base = ?, 
-                modify_date = ? where stock_code = ?""",
-             (
-                 row['stock_total'],
-                 row['stock_level'],
-                 row['trade_suggest'],
-                 row['fact_trend'],
-                 row['fact_money'],
-                 row['fact_news'],
-                 row['fact_industry'],
-                 row['fact_base'],
-              s, stock_code)
-             )
-            if result.rowcount == 0:
+            rowcount = execute_sql_with_rowcount("""update stock_report set 
+                stock_total = :stock_total, 
+                stock_level = :stock_level, 
+                trade_suggest = :trade_suggest, 
+                fact_trend = :fact_trend, 
+                fact_money = :fact_money, 
+                fact_news = :fact_news, 
+                fact_industry = :fact_industry, 
+                fact_base = :fact_base, 
+                modify_date = :modify_date where stock_code = :stock_code""",
+                                                 {
+                 'stock_total' : row['stock_total'],
+                 'stock_level' : row['stock_level'],
+                 'trade_suggest' : row['trade_suggest'],
+                 'fact_trend' : row['fact_trend'],
+                 'fact_money' : row['fact_money'],
+                 'fact_news' : row['fact_news'],
+                 'fact_industry' : row['fact_industry'],
+                 'fact_base' : row['fact_base'],
+              'modify_date':s, 'stock_code':stock_code}
+                                                 )
+            if rowcount == 0:
                 print("not update stock:" + stock_name)
             else:
-                print("update " + stock_name + " is successful. count:" + str(i + 1))
+                print("update_diagnostic " + stock_name + " is successful. count:" + str(i + 1))
 
             # 暂停5s再执行， 避免被网站屏蔽掉
             time.sleep(3)
             i += 1
 
-        print("共处理" + str(i) + "条记录")
-
+        ok_desc = "共处理" + str(i) + "条记录"
+        print(ok_desc)
+        process_task_when_finish(task, ok_desc)
     except Exception as e:
         print("db操作出现异常" + str(e), e)
+        process_task_when_error(task, "db操作出现异常")
         raise e
     except TimeoutError as e:
         print("网络超时, 请手工重试")
+        process_task_when_error(task, "网络超时")
         raise e
 
 
@@ -108,7 +119,7 @@ def get_sum_data(driver):
     return row
 
 
-def get_stock_sum(stock_code):
+def get_stock_sum(driver, stock_code):
     # http://doctor.10jqka.com.cn/002002/
     url = "http://doctor.10jqka.com.cn/" + stock_code
 
@@ -118,12 +129,10 @@ def get_stock_sum(stock_code):
     return get_sum_data(driver)
 
 
-def fetch_data():
-    driver = webdriver.Chrome()
+def fetch_data(task_name):
+    driver = crawler_utils.get_chrome_driver(None)
 
-    driver.implicitly_wait(10)
-
-    update_stock_sum()
+    update_stock_sum(driver, task_name)
     # print(get_stock_sum('002002'))
     driver.close()
     # modify_data_unit_error()

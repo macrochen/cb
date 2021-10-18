@@ -1,7 +1,11 @@
+import threading
+
 from utils import db_utils
 from utils.db_utils import get_record, from_db
 from utils.html_utils import add_nav_html, default_edit_link_maker
 
+
+operation_html_content = threading.local()
 
 def generate_simple_table_html(cur, html, is_login_user=False):
     table = db_utils.from_db(cur)
@@ -19,7 +23,7 @@ def build_table_html(table, remark_fields=[],
                      table_width=None
                      ):
     new_remark_fields = ['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌']
-    new_remark_fields.append([] if remark_fields is None else remark_fields)
+    new_remark_fields.extend([] if remark_fields is None else remark_fields)
     options = table._get_options({})
     rows = table._get_rows(options)
     table_height_style_content = ''
@@ -187,6 +191,10 @@ def generate_head_tail_html(field, is_login_user, record):
 
         if is_login_user:
             hold_id = record.get('hold_id', None)
-            suffix += "&nbsp;<a href='" + default_edit_link_maker(hold_id,
-                                                                  bond_code) + "'><img src='../static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
+            id = record.get('id', None)
+            if hasattr(operation_html_content, 'maker'):
+                suffix += operation_html_content.maker(id, hold_id, bond_code)
+            else:
+                suffix += "&nbsp;<a href='" + default_edit_link_maker(hold_id,
+                                                                      bond_code) + "'><img src='../static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
     return prefix, prefix_append, suffix

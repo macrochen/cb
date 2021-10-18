@@ -4,9 +4,8 @@ import time
 from datetime import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from selenium import webdriver
 
-from crawler import cb_ninwen
+from crawler import cb_ninwen, crawler_utils
 from models import InvestYield, db, HoldBond, HoldBondHistory
 from utils import trade_utils
 from utils.db_utils import get_cursor
@@ -125,14 +124,7 @@ def do_update_bond_yield():
 
 
 def get_up_down_data():
-    driver = webdriver.Chrome()
-
-    driver.implicitly_wait(15)
-
-    url = "https://www.ninwin.cn/index.php?m=cb&c=idx"
-
-    # fixme 需要把chromedriver放到/usr/local/bin目录下
-    driver.get(url)
+    driver = crawler_utils.get_chrome_driver("https://www.ninwin.cn/index.php?m=cb&c=idx", 15)
 
     div = driver.find_elements_by_xpath(
         "//div[contains(@style,'font-size: 12px;color: gray;margin: 10px 20px;clear: both')]")[0]
@@ -157,7 +149,7 @@ def calc_yield():
 SELECT    
 	round(sum(round((c.cb_price2_id/(1+c.cb_mov2_id) * c.cb_mov2_id)*h.hold_amount, 2)) /    sum(h.sum_buy-h.sum_sell)*100,2)  as '日收益率',
 	round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy - h.sum_sell) * 100, 2)  as 累积收益率
-from (select * from hold_bond union select * from hold_bond_history) h , changed_bond c 
+from (select hold_amount, sum_buy, hold_owner, bond_code, sum_sell from hold_bond union select hold_amount, sum_buy, hold_owner, bond_code, sum_sell from hold_bond_history) h , changed_bond c 
 where h.bond_code = c.bond_code and hold_owner='me'
         """)
 

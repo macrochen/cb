@@ -11,7 +11,8 @@ from pyecharts.globals import ThemeType
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 import utils.table_html_utils
-from utils import html_utils
+import views.nav_utils
+from utils import html_utils, trade_utils
 from utils.db_utils import get_cursor
 # import matplotlib.pyplot as plt
 from views import view_utils
@@ -24,11 +25,11 @@ def draw_view(is_login_user):
 
         # =========全网可转债涨跌TOP20柱状图=========
         cur = get_cursor("""
-        select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
+        select bond_code, cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
          from (SELECT DISTINCT c. * from changed_bond c 
           order by cb_mov2_id DESC limit 20)     
         UNION  
-        select cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
+        select bond_code, cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率
          from (SELECT DISTINCT c. * from changed_bond c 
            order by cb_mov2_id ASC limit 20) 
         order by 涨跌 desc
@@ -88,7 +89,7 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
                                                           remark_fields=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                                           is_login_user=is_login_user)
 
-        return '可转债涨跌排行', view_utils.build_analysis_nav_html('/view_up_down.html'), html
+        return '可转债涨跌排行', views.nav_utils.build_analysis_nav_html('/view_up_down.html'), html
 
     except Exception as e:
         print("processing is failure. ", e)
@@ -104,23 +105,26 @@ def generate_bar_html(rows, title):
     count = 0
     for row in rows:
         count += 1
+        bond_code = row[0]
+        bond_code = trade_utils.rebuild_bond_code(bond_code)
         if count <= 20:
-            xx1.append(row[0].replace('转债', ''))
-            yy1.append(row[1])
+            xx1.append(row[1].replace('转债', ''))
+            yy1.append({'value': row[2], 'bond_code': bond_code})
         else:
-            xx2.append(row[0].replace('转债', ''))
-            yy2.append(row[1])
-
+            xx2.append(row[1].replace('转债', ''))
+            yy2.append({'value': row[2], 'bond_code': bond_code})
     max_value = 0
     size = len(yy1)
 
     for i in range(size):
-        if yy1[i] + abs(yy2[i]) > max_value:
-            max_value = yy1[i] + abs(yy2[i])
+        if yy1[i]['value'] + abs(yy2[i]['value']) > max_value:
+            max_value = yy1[i]['value'] + abs(yy2[i]['value'])
 
     max_value = round(max_value * 1.1, 2) + 1
 
-    bar = Bar(init_opts=opts.InitOpts(height='700px', width='1424px', theme=ThemeType.SHINE))
+    chart_id = str(abs(hash(title)))
+    bar = Bar(init_opts=opts.InitOpts(height='700px', width='1424px', theme=ThemeType.SHINE, chart_id=chart_id))
+    view_utils.add_popwin_js_code(bar, chart_id)
     # 底部x轴
     bar.add_xaxis(xx1)
     # 顶部x轴
@@ -160,7 +164,7 @@ def generate_bar_html(rows, title):
                   label_opts=opts.LabelOpts(
                       position="top",
                       formatter=JsCode(
-                          "function(x){return x.data +'%';}"
+                          "function(x){return x.data['value'] +'%';}"
                       )
                   ),
                   )
@@ -172,7 +176,7 @@ def generate_bar_html(rows, title):
                   label_opts=opts.LabelOpts(
                       position="bottom",
                       formatter=JsCode(
-                          "function(x){return x.data +'%';}"
+                          "function(x){return x.data['value'] +'%';}"
                       )
                   ),
                   )
@@ -180,7 +184,7 @@ def generate_bar_html(rows, title):
     bar.set_series_opts(
         itemstyle_opts=opts.ItemStyleOpts(
             color=JsCode(
-                "function(x){return x.data>0?'#c23531':'#1d953f'}"
+                "function(x){return x.data['value']>0?'#c23531':'#1d953f'}"
             )
         )
     )

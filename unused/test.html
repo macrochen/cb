@@ -383,394 +383,422 @@
 
 <!doctype html>
 <html lang="en">
- <head>
-  <meta charset="UTF-8">
-  <title>laofan</title>
-  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.min.js"></script>
-  <style>
-  .detail_content{
-    display: none;
-	  color:#FF0000;
-	  color:#2E8B57;
-	  color:#fff;
-	  color: #d05a56;
-	  color: rgb(153,0,51);
-	  color: rgb(255,0,85);
-      color: rgb(0,204,68);
-      color: rgb(0,229,76);
-      color: rgb(0,255,85);
-	  color: rgb(26, 196, 26);
-	  color: rgb(54, 203, 54);
-	  color: rgb(83, 212, 83);
-	  color: rgb(141, 248, 141);
-}
+<head>
+    <meta charset="UTF-8">
+    <title>laofan</title>
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.min.js"></script>
+    <style>
+        .detail_content {
+            display: none;
+            color: #FF0000;
+            color: #2E8B57;
+            color: #fff;
+            color: #d05a56;
+            color: rgb(153, 0, 51);
+            color: rgb(255, 0, 85);
+            color: rgb(0, 204, 68);
+            color: rgb(0, 229, 76);
+            color: rgb(0, 255, 85);
+            color: rgb(26, 196, 26);
+            color: rgb(54, 203, 54);
+            color: rgb(83, 212, 83);
+            color: rgb(141, 248, 141);
+        }
 
-  </style>
-<!-- </head>-->
-<!-- <body>-->
+    </style>
+    <!-- </head>-->
+    <!-- <body>-->
 
-<!--&lt;!&ndash;<div>&ndash;&gt;-->
-<!--&lt;!&ndash;	<table>&ndash;&gt;-->
-<!--&lt;!&ndash;		这是表格内容&ndash;&gt;-->
-<!--&lt;!&ndash;	</table>&ndash;&gt;-->
+    <!--&lt;!&ndash;<div>&ndash;&gt;-->
+    <!--&lt;!&ndash;	<table>&ndash;&gt;-->
+    <!--&lt;!&ndash;		这是表格内容&ndash;&gt;-->
+    <!--&lt;!&ndash;	</table>&ndash;&gt;-->
 
-<!--&lt;!&ndash;	<div class="detail_click">&ndash;&gt;-->
-<!--&lt;!&ndash;	    展开&ndash;&gt;-->
-<!--&lt;!&ndash;	</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;	<div class="detail_click">&ndash;&gt;-->
+    <!--&lt;!&ndash;	    展开&ndash;&gt;-->
+    <!--&lt;!&ndash;	</div>&ndash;&gt;-->
 
-<!--&lt;!&ndash;	<div class="detail_content">&ndash;&gt;-->
-<!--&lt;!&ndash;	 这是详情&ndash;&gt;-->
-<!--&lt;!&ndash;	</div>&ndash;&gt;-->
-<!--&lt;!&ndash;</div>&ndash;&gt;-->
-
-
-<!--&lt;!&ndash;<div>&ndash;&gt;-->
-<!--&lt;!&ndash;	<table>&ndash;&gt;-->
-<!--&lt;!&ndash;		这是表格内容&ndash;&gt;-->
-<!--&lt;!&ndash;	</table>&ndash;&gt;-->
-
-<!--&lt;!&ndash;	<div class="detail_click">&ndash;&gt;-->
-<!--&lt;!&ndash;	    展开&ndash;&gt;-->
-<!--&lt;!&ndash;	</div>&ndash;&gt;-->
-
-<!--&lt;!&ndash;	<div class="detail_content">&ndash;&gt;-->
-<!--&lt;!&ndash;	 这是详情&ndash;&gt;-->
-<!--&lt;!&ndash;	</div>&ndash;&gt;-->
-<!--&lt;!&ndash;</div>&ndash;&gt;-->
-
-<!--<label for="h">h:<input type="text" id = 'h'>-->
-<!--<label for="s">s:<input type="text" id = 's'>-->
-<!--<label for="v">v:<input type="text" id = 'v'>-->
-<!--<div id = 'color_block' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;	<div class="detail_content">&ndash;&gt;-->
+    <!--&lt;!&ndash;	 这是详情&ndash;&gt;-->
+    <!--&lt;!&ndash;	</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
 
 
-<!--<div id = 'color_block1' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--&lt;!&ndash;<div id = 'color_block12' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
-<!--<div id = 'color_block2' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--&lt;!&ndash;<div id = 'color_block23' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
-<!--<div id = 'color_block3' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--&lt;!&ndash;<div id = 'color_block34' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
-<!--<div id = 'color_block4' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--&lt;!&ndash;<div id = 'color_block45' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
-<!--<div id = 'color_block5' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--&lt;!&ndash;<div id = 'color_block56' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
-<!--<div id = 'color_block6' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div>&ndash;&gt;-->
+    <!--&lt;!&ndash;	<table>&ndash;&gt;-->
+    <!--&lt;!&ndash;		这是表格内容&ndash;&gt;-->
+    <!--&lt;!&ndash;	</table>&ndash;&gt;-->
+
+    <!--&lt;!&ndash;	<div class="detail_click">&ndash;&gt;-->
+    <!--&lt;!&ndash;	    展开&ndash;&gt;-->
+    <!--&lt;!&ndash;	</div>&ndash;&gt;-->
+
+    <!--&lt;!&ndash;	<div class="detail_content">&ndash;&gt;-->
+    <!--&lt;!&ndash;	 这是详情&ndash;&gt;-->
+    <!--&lt;!&ndash;	</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+
+    <!--<label for="h">h:<input type="text" id = 'h'>-->
+    <!--<label for="s">s:<input type="text" id = 's'>-->
+    <!--<label for="v">v:<input type="text" id = 'v'>-->
+    <!--<div id = 'color_block' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
 
 
-<!--<div id = 'color_block11' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--<div id = 'color_block22' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--<div id = 'color_block33' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--<div id = 'color_block44' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--<div id = 'color_block55' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--<div id = 'color_block66' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<!--<script type="text/javascript">-->
-
-<!--	  $('.detail_click').click(function(){-->
-<!--        //$(this) 为 detail_click 实体-->
-<!--        $(this).next().slideToggle('1000',function(){-->
-
-<!--            //$(this) 为 detail_content 实体-->
-<!--            // $(this).prev() 为 detail_click 实体-->
-<!--            $(this).prev().text($(this).is(":visible") ? "收起" : "展开" );-->
+    <!--<div id = 'color_block1' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div id = 'color_block12' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
+    <!--<div id = 'color_block2' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div id = 'color_block23' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
+    <!--<div id = 'color_block3' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div id = 'color_block34' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
+    <!--<div id = 'color_block4' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div id = 'color_block45' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
+    <!--<div id = 'color_block5' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div id = 'color_block56' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
+    <!--<div id = 'color_block6' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
 
 
-<!--		});-->
-<!--    })-->
+    <!--<div id = 'color_block11' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<div id = 'color_block22' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<div id = 'color_block33' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<div id = 'color_block44' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<div id = 'color_block55' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<div id = 'color_block66' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<script type="text/javascript">-->
+
+    <!--	  $('.detail_click').click(function(){-->
+    <!--        //$(this) 为 detail_click 实体-->
+    <!--        $(this).next().slideToggle('1000',function(){-->
+
+    <!--            //$(this) 为 detail_content 实体-->
+    <!--            // $(this).prev() 为 detail_click 实体-->
+    <!--            $(this).prev().text($(this).is(":visible") ? "收起" : "展开" );-->
 
 
-<!--            $("#h").bind("input propertychange",function (event) {-->
-<!--                doChange(event)-->
-<!--            });-->
-<!--            $("#s").bind("input propertychange",function (event) {-->
-<!--                doChange(event)-->
-<!--            });-->
-<!--            $("#v").bind("input propertychange",function (event) {-->
-<!--                doChange(event)-->
-<!--            });-->
-
-<!--            function doChange(event){-->
-<!--            	rgb = hsv2rgb($("#h").val(), $("#s").val(), $("#v").val())-->
-<!--				// alert(rgb)-->
-<!--              $('#color_block').css('background-color', rgb)-->
-<!--            }-->
-
-<!--            $('#color_block1').css('background-color', hsv2rgb(700,1, 0.5))-->
-<!--            // $('#color_block12').css('background-color', hsv2rgb(700,1, 0.55))-->
-<!--            $('#color_block2').css('background-color', hsv2rgb(700,1, 0.6))-->
-<!--            // $('#color_block23').css('background-color', hsv2rgb(700,1, 0.65))-->
-<!--            $('#color_block3').css('background-color', hsv2rgb(700,1, 0.7))-->
-<!--            // $('#color_block34').css('background-color', hsv2rgb(700,1, 0.75))-->
-<!--            $('#color_block4').css('background-color', hsv2rgb(700,1, 0.8))-->
-<!--            // $('#color_block45').css('background-color', hsv2rgb(700,1, 0.85))-->
-<!--            $('#color_block5').css('background-color', hsv2rgb(700,1, 0.9))-->
-<!--            // $('#color_block56').css('background-color', hsv2rgb(700,1, 0.95))-->
-<!--            // $('#color_block6').css('background-color', hsv2rgb(700,1, 1))-->
-<!--            // $('#color_block67').css('background-color', hsv2rgb(700,1, 0.45))-->
-
-<!--            $('#color_block11').css('background-color', hsv2rgb(500,1, 0.5))-->
-<!--            $('#color_block22').css('background-color', hsv2rgb(500,1, 0.6))-->
-<!--            $('#color_block33').css('background-color', hsv2rgb(500,1, 0.7))-->
-<!--            $('#color_block44').css('background-color', hsv2rgb(500,1, 0.8))-->
-<!--            $('#color_block55').css('background-color', hsv2rgb(500,1, 0.9))-->
-<!--            $('#color_block66').css('background-color', hsv2rgb(500,1, 1))-->
-
-<!--	  function hsv2rgb(h, s, v){-->
-<!--		// h = float(h)-->
-<!--		// s = float(s)-->
-<!--		// v = float(v)-->
-<!--		h60 = h / 60.0-->
-<!--		h60f = Math.round(h60, 2)-->
-<!--		hi = Math.round(h60f, 0) % 6-->
-<!--		f = h60 - h60f-->
-<!--		p = v * (1 - s)-->
-<!--		q = v * (1 - f * s)-->
-<!--		t = v * (1 - (1 - f) * s)-->
-<!--		r= g = b = 0-->
-<!--		if (hi == 0){-->
-<!--			r=v; g=t; b =  p-->
-<!--		}-->
-<!--		else if (hi == 1){-->
-<!--			r=q; g=v; b = p-->
-<!--		}-->
-<!--		else if(hi == 2) {-->
-<!--			r= p; g= v; b= t-->
-<!--		}-->
-<!--		else if (hi == 3) {-->
-<!--			r= p; g= q; b= v-->
-<!--		}-->
-<!--		else if (hi == 4) {-->
-<!--			r= t; g= p; b= v-->
-<!--		}-->
-<!--		else if (hi == 5) {-->
-<!--			r= v; g= p; b= q-->
-<!--		}-->
-<!--    // r, g, b = int(r * 255), int(g * 255), int(b * 255)-->
-<!--    	return "rgb("+ Math.round(r * 255,0) + "," + Math.round(g * 255,0) + "," + Math.round(b * 255, 0) +")"-->
-<!--	  }-->
-<!--</script>-->
-
-<!-- </body>-->
-<!--</html>-->
-
-<!--<!DOCTYPE html>-->
-<!--<head>-->
-<!--<html>-->
-<!--  <meta charset="utf-8">-->
-<!--  <meta http-equiv="X-UA-Compatible" content="IE=edge">-->
-<!--  <title>模态框 - 开发</title>-->
+    <!--		});-->
+    <!--    })-->
 
 
-<!--        <script type="text/javascript" src="../static/js/echarts.min.js"></script>-->
-<!--        <link rel="icon" href="/static/img/favicon.ico">-->
+    <!--            $("#h").bind("input propertychange",function (event) {-->
+    <!--                doChange(event)-->
+    <!--            });-->
+    <!--            $("#s").bind("input propertychange",function (event) {-->
+    <!--                doChange(event)-->
+    <!--            });-->
+    <!--            $("#v").bind("input propertychange",function (event) {-->
+    <!--                doChange(event)-->
+    <!--            });-->
 
-<!--        <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.min.css">-->
-<!--        &lt;!&ndash;<link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">&ndash;&gt;-->
-<!--        <link rel="stylesheet" type="text/css" href="../static/css/bootsnav.css">-->
+    <!--            function doChange(event){-->
+    <!--            	rgb = hsv2rgb($("#h").val(), $("#s").val(), $("#v").val())-->
+    <!--				// alert(rgb)-->
+    <!--              $('#color_block').css('background-color', rgb)-->
+    <!--            }-->
 
+    <!--            $('#color_block1').css('background-color', hsv2rgb(700,1, 0.5))-->
+    <!--            // $('#color_block12').css('background-color', hsv2rgb(700,1, 0.55))-->
+    <!--            $('#color_block2').css('background-color', hsv2rgb(700,1, 0.6))-->
+    <!--            // $('#color_block23').css('background-color', hsv2rgb(700,1, 0.65))-->
+    <!--            $('#color_block3').css('background-color', hsv2rgb(700,1, 0.7))-->
+    <!--            // $('#color_block34').css('background-color', hsv2rgb(700,1, 0.75))-->
+    <!--            $('#color_block4').css('background-color', hsv2rgb(700,1, 0.8))-->
+    <!--            // $('#color_block45').css('background-color', hsv2rgb(700,1, 0.85))-->
+    <!--            $('#color_block5').css('background-color', hsv2rgb(700,1, 0.9))-->
+    <!--            // $('#color_block56').css('background-color', hsv2rgb(700,1, 0.95))-->
+    <!--            // $('#color_block6').css('background-color', hsv2rgb(700,1, 1))-->
+    <!--            // $('#color_block67').css('background-color', hsv2rgb(700,1, 0.45))-->
 
-<!--        <script src="../static/js/jquery.min.js"></script>-->
-<!--        <script src="../static/js/bootstrap.min.js"></script>-->
-<!--        <script src="../static/js/jquery.bootstrap-autohidingnavbar.min.js"></script>-->
+    <!--            $('#color_block11').css('background-color', hsv2rgb(500,1, 0.5))-->
+    <!--            $('#color_block22').css('background-color', hsv2rgb(500,1, 0.6))-->
+    <!--            $('#color_block33').css('background-color', hsv2rgb(500,1, 0.7))-->
+    <!--            $('#color_block44').css('background-color', hsv2rgb(500,1, 0.8))-->
+    <!--            $('#color_block55').css('background-color', hsv2rgb(500,1, 0.9))-->
+    <!--            $('#color_block66').css('background-color', hsv2rgb(500,1, 1))-->
 
-<!--        <script type="text/javascript" src="../static/js/bootsnav.js"></script>-->
+    <!--	  function hsv2rgb(h, s, v){-->
+    <!--		// h = float(h)-->
+    <!--		// s = float(s)-->
+    <!--		// v = float(v)-->
+    <!--		h60 = h / 60.0-->
+    <!--		h60f = Math.round(h60, 2)-->
+    <!--		hi = Math.round(h60f, 0) % 6-->
+    <!--		f = h60 - h60f-->
+    <!--		p = v * (1 - s)-->
+    <!--		q = v * (1 - f * s)-->
+    <!--		t = v * (1 - (1 - f) * s)-->
+    <!--		r= g = b = 0-->
+    <!--		if (hi == 0){-->
+    <!--			r=v; g=t; b =  p-->
+    <!--		}-->
+    <!--		else if (hi == 1){-->
+    <!--			r=q; g=v; b = p-->
+    <!--		}-->
+    <!--		else if(hi == 2) {-->
+    <!--			r= p; g= v; b= t-->
+    <!--		}-->
+    <!--		else if (hi == 3) {-->
+    <!--			r= p; g= q; b= v-->
+    <!--		}-->
+    <!--		else if (hi == 4) {-->
+    <!--			r= t; g= p; b= v-->
+    <!--		}-->
+    <!--		else if (hi == 5) {-->
+    <!--			r= v; g= p; b= q-->
+    <!--		}-->
+    <!--    // r, g, b = int(r * 255), int(g * 255), int(b * 255)-->
+    <!--    	return "rgb("+ Math.round(r * 255,0) + "," + Math.round(g * 255,0) + "," + Math.round(b * 255, 0) +")"-->
+    <!--	  }-->
+    <!--</script>-->
 
+    <!-- </body>-->
+    <!--</html>-->
 
-<!--  &lt;!&ndash;图标库&ndash;&gt;-->
-<!--  <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.min.css">-->
-
-<!--  &lt;!&ndash;图标库&ndash;&gt;-->
-<!--  <script src="https://cdn.bootcss.com/font-awesome/5.11.2/js/all.min.js"></script>-->
-
-
-<!--</head>-->
-<!--<body>-->
-
-<!--  &lt;!&ndash;核心样式&ndash;&gt;-->
-<!--  <link rel="stylesheet" href="../static/css/modallayer.min.css">-->
-
-<!--   &lt;!&ndash;插件&ndash;&gt;-->
-<!--  <script src="../static/js/modallayer-ie.min.js"></script>-->
-
-<!--  <style>-->
-<!--    #test-button-container {-->
-<!--      position: absolute;-->
-<!--      top: 50%;-->
-<!--      left: 0px;-->
-<!--      right: 0px;-->
-<!--      width: 145px;-->
-<!--      margin: 0px auto;-->
-<!--      text-align: center;-->
-<!--      transform: translateY(-50%);-->
-<!--    }-->
-
-<!--    #test-button-container button {-->
-<!--      width: 145px;-->
-<!--      margin: 5px 0px;-->
-<!--      padding: 10px 0px;-->
-<!--    }-->
-<!--  </style>-->
-<!--  <div id="test-button-container">-->
-<!--    <button id="msg-button" type="button">测试msg</button>-->
-<!--    <button id="alert-button" type="button">测试alert</button>-->
-<!--    <button id="confirm-button" type="button">测试confirm</button>-->
-<!--    <button id="prompt-button" type="button">测试prompt</button>-->
-<!--    <button id="page-button-1" type="button">测试page</button>-->
-<!--    <button id="page-button-2" type="button">测试page</button>-->
-<!--  </div>-->
-<!--<script>-->
-<!--  // 测试msg-->
-<!--  document.querySelector('#msg-button').onclick = function () {-->
-<!--    let option = {-->
-<!--      popupTime: 2,-->
-<!--      hook: {-->
-<!--        initStart: function () {-->
-<!--          // 检查之前老旧实例如果存在则销毁-->
-<!--          if (document.querySelector('#modal-layer-container'))-->
-<!--            ModalLayer.removeAll();-->
-<!--        }-->
-<!--      },-->
-<!--      displayProgressBar: true,-->
-<!--      displayProgressBarPos: 'top',-->
-<!--      displayProgressBarColor: 'red',-->
-<!--      content: '<i class="fas fa-check" style="color: deepskyblue"></i>点击遮罩层自动消失!',-->
-<!--    };-->
-
-<!--    ModalLayer.msg(option);-->
-<!--    // ModalLayer.msg('测试一下');-->
-<!--  }-->
-<!--  // 测试alert-->
-<!--  document.querySelector('#alert-button').onclick = function () {-->
-<!--    let option = {-->
-<!--      hook: {-->
-<!--        initStart: function () {-->
-<!--          // 检查之前老旧实例如果存在则销毁-->
-<!--          if (document.querySelector('#modal-layer-container'))-->
-<!--            ModalLayer.removeAll();-->
-<!--        }-->
-<!--      },-->
-<!--      popupTime: 0,-->
-<!--      type: 'alert',-->
-<!--      title: '测试',-->
-<!--      dragOverflow: true,-->
-<!--      content: '<i class="fas fa-check" style="color: deepskyblue"></i>点击遮罩层自动消失!',-->
-<!--    };-->
-
-<!--    ModalLayer.alert(option);-->
-<!--  }-->
-<!--  // 测试confirm-->
-<!--  document.querySelector('#confirm-button').onclick = function () {-->
-<!--    let option = {-->
-<!--      title: '测试',-->
-<!--      popupTime: 10,-->
-<!--      hook: {-->
-<!--        initStart: function () {-->
-<!--          // 检查之前老旧实例如果存在则销毁-->
-<!--          if (document.querySelector('#modal-layer-container'))-->
-<!--            ModalLayer.removeAll();-->
-<!--        }-->
-<!--      },-->
-<!--      displayProgressBar: true,-->
-<!--      displayProgressBarPos: 'left',-->
-<!--      content: '你认为你能成功吗 ?',-->
-<!--      okText: '那是必须滴！',-->
-<!--      noText: '怎么可能 ?',-->
-<!--      callback: {-->
-<!--        ok: function () {-->
-<!--          this.hide();-->
-<!--          ModalLayer.alert({-->
-<!--            content: '<i class="fas fa-check-circle" style="color: green"></i> Good Luck!',-->
-<!--            parentModalLayer: this-->
-<!--          });-->
-<!--        },-->
-<!--        no: function () {-->
-<!--          ModalLayer.alert({-->
-<!--            content: '<i class="fas fa-window-close" style="color: red"></i> More Confidence!!<br>五秒后自动关闭该窗口'-->
-<!--          });-->
-<!--        }-->
-<!--      }-->
-<!--    }-->
-
-<!--    ModalLayer.confirm(option);-->
-<!--  }-->
-
-<!--  // 测试prompt-->
-<!--  document.querySelector('#prompt-button').onclick = function () {-->
-<!--    let option = {-->
-<!--      title: '测试',-->
-<!--      popupTime: 0,-->
-<!--      hook: {-->
-<!--        initStart: function () {-->
-<!--          // 检查之前老旧实例如果存在则销毁-->
-<!--          if (document.querySelector('#modal-layer-container'))-->
-<!--            ModalLayer.removeAll();-->
-<!--        }-->
-<!--      },-->
-<!--      displayProgressBar: true,-->
-<!--      displayProgressBarColor: 'red',-->
-<!--      displayProgressBarPos: 'right',-->
-<!--      content: '<input type="text" style="width: calc(100% - 2px); height: 24px; font-size: 16px; color: red;" placeholder="输入内容进行测试">',-->
-<!--      okText: '提交',-->
-<!--      noText: '取消',-->
-<!--      callback : {-->
-<!--        ok: function () {-->
-<!--          this.hide();-->
-<!--          ModalLayer.alert({-->
-<!--            parentModalLayer: this,-->
-<!--            content: '<i class="fas fa-check-circle" style="color: green"></i> 提交成功!<br>你提交的数据为: ' + this.getNodes().container.querySelector('input').value-->
-<!--          });-->
-<!--        },-->
-<!--      }-->
-<!--    };-->
-
-<!--    ModalLayer.prompt(option);-->
-<!--  }-->
+    <!--<!DOCTYPE html>-->
+    <!--<head>-->
+    <!--<html>-->
+    <!--  <meta charset="utf-8">-->
+    <!--  <meta http-equiv="X-UA-Compatible" content="IE=edge">-->
+    <!--  <title>模态框 - 开发</title>-->
 
 
-<!--  // 测试Page-->
-<!--  document.querySelector('#page-button-1').onclick = function () {-->
-<!--    let option = {-->
-<!--      mask: false,-->
-<!--      title: '测试测试',-->
-<!--      popupTime: 0,-->
-<!--      contentFullContainer: false,-->
-<!--      pageOption: {-->
-<!--        src: 'https://baidu.com',-->
-<!--      }-->
-<!--    };-->
-<!--    ModalLayer.page(option);-->
-<!--  }-->
-<!--  document.querySelector('#page-button-2').onclick = function () {-->
-<!--    let option = {-->
-<!--      mask: false,-->
-<!--      title: '测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试',-->
-<!--      popupTime: 0,-->
-<!--      contentFullContainer: true,-->
-<!--      pageOption: {-->
-<!--        scrolling: 'yes',-->
-<!--        src: 'https://www.taobao.com/',-->
-<!--      }-->
-<!--    };-->
-<!--    ModalLayer.page(option);-->
-<!--  }-->
+    <!--        <script type="text/javascript" src="../static/js/echarts.min.js"></script>-->
+    <!--        <link rel="icon" href="/static/img/favicon.ico">-->
 
-<!--</script>-->
+    <!--        <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.min.css">-->
+    <!--        &lt;!&ndash;<link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">&ndash;&gt;-->
+    <!--        <link rel="stylesheet" type="text/css" href="../static/css/bootsnav.css">-->
 
-<script type="text/javascript" src="../static/js/jquery.min.js"></script>
-<script type="text/javascript" src="../static/js/popwin.js"></script>
 
-<script>
+    <!--        <script src="../static/js/jquery.min.js"></script>-->
+    <!--        <script src="../static/js/bootstrap.min.js"></script>-->
+    <!--        <script src="../static/js/jquery.bootstrap-autohidingnavbar.min.js"></script>-->
 
-$(document).ready(function() {
+    <!--        <script type="text/javascript" src="../static/js/bootsnav.js"></script>-->
 
-    $("a").on('click' , function(){
 
-		popWin.showWin("800","600","通用的iframe弹层插件","http://www.jq22.com");
+    <!--  &lt;!&ndash;图标库&ndash;&gt;-->
+    <!--  <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.min.css">-->
 
-	});
+    <!--  &lt;!&ndash;图标库&ndash;&gt;-->
+    <!--  <script src="https://cdn.bootcss.com/font-awesome/5.11.2/js/all.min.js"></script>-->
 
-});
-</script>
 
-<a href="javascript:void(0)">弹出iframe层</a>
-</body>
+    <!--</head>-->
+    <!--<body>-->
+
+    <!--  &lt;!&ndash;核心样式&ndash;&gt;-->
+    <!--  <link rel="stylesheet" href="../static/css/modallayer.min.css">-->
+
+    <!--   &lt;!&ndash;插件&ndash;&gt;-->
+    <!--  <script src="../static/js/modallayer-ie.min.js"></script>-->
+
+    <!--  <style>-->
+    <!--    #test-button-container {-->
+    <!--      position: absolute;-->
+    <!--      top: 50%;-->
+    <!--      left: 0px;-->
+    <!--      right: 0px;-->
+    <!--      width: 145px;-->
+    <!--      margin: 0px auto;-->
+    <!--      text-align: center;-->
+    <!--      transform: translateY(-50%);-->
+    <!--    }-->
+
+    <!--    #test-button-container button {-->
+    <!--      width: 145px;-->
+    <!--      margin: 5px 0px;-->
+    <!--      padding: 10px 0px;-->
+    <!--    }-->
+    <!--  </style>-->
+    <!--  <div id="test-button-container">-->
+    <!--    <button id="msg-button" type="button">测试msg</button>-->
+    <!--    <button id="alert-button" type="button">测试alert</button>-->
+    <!--    <button id="confirm-button" type="button">测试confirm</button>-->
+    <!--    <button id="prompt-button" type="button">测试prompt</button>-->
+    <!--    <button id="page-button-1" type="button">测试page</button>-->
+    <!--    <button id="page-button-2" type="button">测试page</button>-->
+    <!--  </div>-->
+    <!--<script>-->
+    <!--  // 测试msg-->
+    <!--  document.querySelector('#msg-button').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      popupTime: 2,-->
+    <!--      hook: {-->
+    <!--        initStart: function () {-->
+    <!--          // 检查之前老旧实例如果存在则销毁-->
+    <!--          if (document.querySelector('#modal-layer-container'))-->
+    <!--            ModalLayer.removeAll();-->
+    <!--        }-->
+    <!--      },-->
+    <!--      displayProgressBar: true,-->
+    <!--      displayProgressBarPos: 'top',-->
+    <!--      displayProgressBarColor: 'red',-->
+    <!--      content: '<i class="fas fa-check" style="color: deepskyblue"></i>点击遮罩层自动消失!',-->
+    <!--    };-->
+
+    <!--    ModalLayer.msg(option);-->
+    <!--    // ModalLayer.msg('测试一下');-->
+    <!--  }-->
+    <!--  // 测试alert-->
+    <!--  document.querySelector('#alert-button').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      hook: {-->
+    <!--        initStart: function () {-->
+    <!--          // 检查之前老旧实例如果存在则销毁-->
+    <!--          if (document.querySelector('#modal-layer-container'))-->
+    <!--            ModalLayer.removeAll();-->
+    <!--        }-->
+    <!--      },-->
+    <!--      popupTime: 0,-->
+    <!--      type: 'alert',-->
+    <!--      title: '测试',-->
+    <!--      dragOverflow: true,-->
+    <!--      content: '<i class="fas fa-check" style="color: deepskyblue"></i>点击遮罩层自动消失!',-->
+    <!--    };-->
+
+    <!--    ModalLayer.alert(option);-->
+    <!--  }-->
+    <!--  // 测试confirm-->
+    <!--  document.querySelector('#confirm-button').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      title: '测试',-->
+    <!--      popupTime: 10,-->
+    <!--      hook: {-->
+    <!--        initStart: function () {-->
+    <!--          // 检查之前老旧实例如果存在则销毁-->
+    <!--          if (document.querySelector('#modal-layer-container'))-->
+    <!--            ModalLayer.removeAll();-->
+    <!--        }-->
+    <!--      },-->
+    <!--      displayProgressBar: true,-->
+    <!--      displayProgressBarPos: 'left',-->
+    <!--      content: '你认为你能成功吗 ?',-->
+    <!--      okText: '那是必须滴！',-->
+    <!--      noText: '怎么可能 ?',-->
+    <!--      callback: {-->
+    <!--        ok: function () {-->
+    <!--          this.hide();-->
+    <!--          ModalLayer.alert({-->
+    <!--            content: '<i class="fas fa-check-circle" style="color: green"></i> Good Luck!',-->
+    <!--            parentModalLayer: this-->
+    <!--          });-->
+    <!--        },-->
+    <!--        no: function () {-->
+    <!--          ModalLayer.alert({-->
+    <!--            content: '<i class="fas fa-window-close" style="color: red"></i> More Confidence!!<br>五秒后自动关闭该窗口'-->
+    <!--          });-->
+    <!--        }-->
+    <!--      }-->
+    <!--    }-->
+
+    <!--    ModalLayer.confirm(option);-->
+    <!--  }-->
+
+    <!--  // 测试prompt-->
+    <!--  document.querySelector('#prompt-button').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      title: '测试',-->
+    <!--      popupTime: 0,-->
+    <!--      hook: {-->
+    <!--        initStart: function () {-->
+    <!--          // 检查之前老旧实例如果存在则销毁-->
+    <!--          if (document.querySelector('#modal-layer-container'))-->
+    <!--            ModalLayer.removeAll();-->
+    <!--        }-->
+    <!--      },-->
+    <!--      displayProgressBar: true,-->
+    <!--      displayProgressBarColor: 'red',-->
+    <!--      displayProgressBarPos: 'right',-->
+    <!--      content: '<input type="text" style="width: calc(100% - 2px); height: 24px; font-size: 16px; color: red;" placeholder="输入内容进行测试">',-->
+    <!--      okText: '提交',-->
+    <!--      noText: '取消',-->
+    <!--      callback : {-->
+    <!--        ok: function () {-->
+    <!--          this.hide();-->
+    <!--          ModalLayer.alert({-->
+    <!--            parentModalLayer: this,-->
+    <!--            content: '<i class="fas fa-check-circle" style="color: green"></i> 提交成功!<br>你提交的数据为: ' + this.getNodes().container.querySelector('input').value-->
+    <!--          });-->
+    <!--        },-->
+    <!--      }-->
+    <!--    };-->
+
+    <!--    ModalLayer.prompt(option);-->
+    <!--  }-->
+
+
+    <!--  // 测试Page-->
+    <!--  document.querySelector('#page-button-1').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      mask: false,-->
+    <!--      title: '测试测试',-->
+    <!--      popupTime: 0,-->
+    <!--      contentFullContainer: false,-->
+    <!--      pageOption: {-->
+    <!--        src: 'https://baidu.com',-->
+    <!--      }-->
+    <!--    };-->
+    <!--    ModalLayer.page(option);-->
+    <!--  }-->
+    <!--  document.querySelector('#page-button-2').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      mask: false,-->
+    <!--      title: '测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试',-->
+    <!--      popupTime: 0,-->
+    <!--      contentFullContainer: true,-->
+    <!--      pageOption: {-->
+    <!--        scrolling: 'yes',-->
+    <!--        src: 'https://www.taobao.com/',-->
+    <!--      }-->
+    <!--    };-->
+    <!--    ModalLayer.page(option);-->
+    <!--  }-->
+
+    <!--</script>-->
+
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../static/js/popwin.js"></script>
+
+    <script>
+
+        //$(document).ready(function() {
+        //
+        //    $("a").on('click' , function(){
+        //
+        //		popWin.showWin("800","600","通用的iframe弹层插件","http://www.jq22.com");
+        //
+        //	});
+        //
+        //});
+        // url = "/stock_xueqiu.html/update_stock_report/"
+        // ss = url.split('/')
+        //         alert(task_name = ss[ss.length-2])
+    </script>
+
+    <a href="javascript:void(0)">弹出iframe层</a>
+    <table border="0" style="border:0px">
+        <tr style="border: 1px black solid">
+            <td style="color:red">haha</td>
+        </tr>
+    </table>
+
+    <table style="width:180px;border:1px black solid">
+        <tr>
+            <td style="height:20px;background-color:white;border:1px black solid" colspan=2>累积收益率</td>
+        </tr>
+        <tr>
+            <td style="margin-left:0px; width:80px;height:20px;background-color:white;border:1px black solid;text-align: right;color:#37A2DA">我</td>
+            <td style="height:20px;background-color:white;border:1px">0.79%</td>
+        </tr>
+        <tr>
+            <td style="width:80px;height:20px;background-color:white;border:1px black solid;text-align: right;color:#67E0E3">可转债指数
+            </td>
+            <td style="height:20px;background-color:white;border:1px">0.93%</td>
+        </tr>
+        <tr>
+            <td style="width:80px;height:20px;background-color:white;border:1px;text-align: right;color:#FFDB5C">沪深300
+            </td>
+            <td style="height:20px;background-color:white;border:1px">1%</td>
+        </tr>
+    </table>
+    </body>
 </html>

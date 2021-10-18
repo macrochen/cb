@@ -5,7 +5,8 @@ import time
 import bs4
 import requests
 
-from utils.db_utils import get_cursor
+from config import db_file_path
+from utils.db_utils import get_cursor, execute_sql_with_rowcount
 
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
@@ -17,7 +18,7 @@ header = {
 
 def createDb():
 
-    con = sqlite3.connect("db/cb.db3")
+    con = sqlite3.connect(db_file_path)
     # 只执行一次
     con.executescript("""
         drop table if exists stock_report;
@@ -873,7 +874,7 @@ neteaseClickStat();
             # 还没添加股票信息
             if len(stocks) == 0:
                 # 新增
-                get_cursor("""insert into stock_report(bond_code,cb_name_id,stock_code,stock_name,
+                rowcount = execute_sql_with_rowcount("""insert into stock_report(bond_code,cb_name_id,stock_code,stock_name,
                             last_date,
                             revenue,qoq_revenue_rate,yoy_revenue_rate,
                             net,qoq_net_rate,yoy_net_rate,
@@ -881,7 +882,7 @@ neteaseClickStat();
                             roe,qoq_roe_rate,yoy_roe_rate,
                             al_ratio,qoq_rl_ratio_rate,yoy_al_ratio_rate)
                          values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                                 (bond_row[0], bond_row[1], bond_row[2], bond_row[3],
+                                                     (bond_row[0], bond_row[1], bond_row[2], bond_row[3],
                                   earnings.lastDate,
 
                                   earnings.revenue,
@@ -904,8 +905,11 @@ neteaseClickStat();
                                   earnings.qoqAlRatioRate,
                                   earnings.yoyAlRatioRate
                                   )
-                                 )
-                print("insert " + stock_name + " is successful")
+                                                     )
+                if rowcount == 0:
+                    print("insert " + stock_name + " is failure")
+                else:
+                    print("insert " + stock_name + " is successful")
             else:
                 last_date = stocks[0][2]
                 if last_date != earnings.lastDate:

@@ -3,6 +3,7 @@
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 import utils.echarts_html_utils
 import utils.table_html_utils
+import views.nav_utils
 from utils import db_utils
 from utils.db_utils import get_cursor
 from views import view_utils
@@ -43,7 +44,7 @@ order by date  desc   --limit 2
             dict_row = db_utils.get_dict_row(cur, row)
             dict_rows.append(dict_row)
 
-        line_html = utils.echarts_html_utils.generateview_my_up_down_line_html(dict_rows)
+        line_html = utils.echarts_html_utils.generate_line_html(dict_rows)
 
         html = """
             <br/>
@@ -55,7 +56,7 @@ order by date  desc   --limit 2
                 </center>
         """
 
-        return '我的可转债收益情况', ''.join(view_utils.build_personal_nav_html_list('/view_my_yield.html')), html
+        return '我的可转债收益情况', ''.join(views.nav_utils.build_personal_nav_html_list('/view_my_yield.html')), html
 
     except Exception as e:
         print("processing is failure. ", e)

@@ -12,6 +12,7 @@ import utils.echarts_html_utils
 import utils.table_html_utils
 from utils import db_utils
 from utils.db_utils import get_cursor
+from views.nav_utils import build_select_nav_html
 
 
 def generate_table_html(cur, html, ext_field_names=None, rows=None,
@@ -55,7 +56,7 @@ def draw_view(is_login_user):
 
         scatter_html = utils.echarts_html_utils.generate_scatter_html_with_one_table(table, use_personal_features=is_login_user)
 
-        return '我的可转债自选', '<li><a href="/">Home</a></li>', html + "<br/>" + scatter_html + '<br/><br/>'
+        return '我的可转债自选', build_select_nav_html('/view_my_select.html'), html + "<br/>" + scatter_html + '<br/><br/>'
 
     except Exception as e:
         print("processing is failure. ", e)

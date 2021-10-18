@@ -105,9 +105,9 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-         and red_t not in('无权', '回售内')
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+         where red_t not in('无权', '回售内')
          and red_t < 1
          and round(bt_red * 100,2) > 1
         --ORDER by 回售年限 ASC, 回售收益率 DESC;
@@ -160,9 +160,9 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-         and e.optional = 300
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+         where e.optional = 300
         --ORDER by 回售年限 ASC, 回售收益率 DESC;
         ORDER by 转债价格 ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
@@ -230,8 +230,8 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
         ORDER by 双低值
         limit 10) d left join 
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
@@ -242,7 +242,7 @@ def draw_market_view(user_id):
         on d.bond_code = e.bond_code
         
             """
-            get_label = lambda row: row['名称'].replace('转债', '') + '(' + str(row['双低值']) + ')'
+            get_label = lambda row: row['名称'].replace('转债', '') + '(双低:' + str(row['双低值']) + ')'
             html = generate_strategy_html(sql, "双低策略", "双低值前10", html, get_label=get_label, nav_html_list=nav_html_list,
                                           remark_fields=['溢价率', '转债价格', '可转债涨跌', '到期收益率', '双低值', '正股涨跌'],
                                           use_personal_features=use_personal_features)
@@ -283,8 +283,8 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
         --and c.rating in ('AA+', 'AA-', 'AA', 'AAA', 'A', 'A+')
         --and c.cb_name_id not in( '亚药转债' , '本钢转债','搜特转债','广汇转债')
         --AND bt_yield > 0
@@ -362,9 +362,9 @@ def draw_market_view(user_id):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and at_yield > 0
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where at_yield > 0
           and bond_t1 < 3
           -- and duration < 3 
           -- and cb_price2_id > 99 
@@ -426,9 +426,9 @@ def draw_market_view(user_id):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and cb_premium_id < 0.05
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where cb_premium_id < 0.05
 		  and cb_price2_id < 140 
           order by (2.5-bond_t1) + bt_yield * 100 desc limit 5) d left join
                 (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
@@ -481,11 +481,11 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
       -- and duration < 3 
       -- and cb_price2_id > 99 
-      and cb_price2_id < 105 
+      where cb_price2_id < 105 
       and stock_pb > 1 
       -- and s.net > 0
       -- and s.margin > 10
@@ -542,8 +542,8 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
       -- and duration < 3 
       -- and cb_price2_id > 99 
       -- and cb_price2_id < 105 
@@ -552,7 +552,7 @@ def draw_market_view(user_id):
       -- and s.margin > 10
       -- and cb_t_id = '转股中' 
       -- and cb_premium_id*100 < 20 
-      and 双低值 < 130
+      where 双低值 < 130
       and stock_total >= 6
       -- and cb_price2_id < 115
       -- order by stock_total desc
@@ -610,9 +610,9 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-      and yoy_margin_rate > 0 
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+      where yoy_margin_rate > 0 
       and margin > 0 
       and cb_price2_id < 115
       ORDER by  yoy_margin_rate DESC limit 20
@@ -667,11 +667,11 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
      -- and yoy_margin_rate > 0 
       --and margin > 0 
-      and cb_price2_id < 115
+      where cb_price2_id < 115
 	  and cb_premium_id < 0.1
       ORDER by  cb_premium_id asc
       ) d left join 
@@ -727,10 +727,10 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
      -- and yoy_margin_rate > 0 
-      and remain_amount < 3 
+      where remain_amount < 3 
       and cb_trade_amount2_id > 0.5
       ORDER by  remain_amount asc
       ) d left join 
@@ -785,9 +785,9 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-      and e.optional = 1
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+      where e.optional = 1
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
@@ -837,9 +837,9 @@ def draw_market_view(user_id):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and e.optional = 2
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where e.optional = 2
           ) d left join 
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
@@ -893,9 +893,9 @@ def draw_market_view(user_id):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and e.optional = 200 and cb_price2_id < 200
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where e.optional = 200 and cb_price2_id < 200
           ) d left join 
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
@@ -949,9 +949,9 @@ def draw_market_view(user_id):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and e.optional = 'yyb' order by 转债价格 
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where e.optional = 'yyb' order by 转债价格 
           ) d left join 
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
@@ -1056,10 +1056,10 @@ def build_low_remain_block(html, nav_html_list, sort_field, sub_strategy, use_pe
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
         --and cb_premium_id * 100 < 30 
-        and remain_amount < 3 
+        where remain_amount < 3 
         --and cb_price2_id < 110
         ORDER by """ + sort_field + """ ASC
         limit 10
@@ -1143,12 +1143,12 @@ def generate_active_strategy_html(gn_c, gn_s, suffix, html, htmls, use_personal_
         case when e.memo is not null then  e.memo else  '' END as 备注
 
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
       --and duration < 3 
       --and remain_amount < 5 -- 余额
       --and cb_price2_id > 110
-      and cb_price2_id < 130 -- 转债价格
+      where cb_price2_id < 130 -- 转债价格
       -- and cb_trade_amount2_id > 0.5 -- 换手率
 	  and cb_premium_id < 0.3 -- 溢价率
 """ + gn_c + """

@@ -55,16 +55,22 @@ def generate_line_html(rows, select=None):
 
     line.add_xaxis(x)
 
-    line.add_yaxis("我的净值", y1)
-    line.add_yaxis("可转债指数净值", y2)
-    line.add_yaxis("沪深300净值", y3)
+    line.add_yaxis("我的涨跌", y1)
+    line.add_yaxis("可转债指数涨跌", y2)
+    line.add_yaxis("沪深300涨跌", y3)
 
     line.set_global_opts(
         title_opts=opts.TitleOpts(title="收益率曲线", pos_left='center', pos_top=-5),
         tooltip_opts=opts.TooltipOpts(
+            trigger='axis',
             formatter=JsCode(
-                "function (params) {return '累积收益率<br/>' + params.value[1] + '%';}"
-                # "function (params) {return '累积收益率:' + params.value[1] + '%' + '<br/>日收益率:' + params.value[2] + '%';}"
+                "function (params) {"
+                "return '<table style=\"width:150px;\">'+"
+                "'<tr ><td style=\"height:20px;background-color:white;border:0px\" colspan=2>累积收益率</td></tr>' +"
+                "'<tr ><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[0].color+'\">我</td><td style=\"height:15px;background-color:white;border:0px\">' + params[0].value[1] + '%</td></tr>' +"
+                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[1].color+'\">可转债指数</td><td style=\"height:15px;background-color:white;border:0px\">' + params[1].value[1] + '%</td></tr>' +"
+                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[2].color+'\">沪深300</td><td style=\"height:15px;background-color:white;border:0px\">' + params[2].value[1] + '%</td></tr>' +"
+                "'</table>';}"
             )
         ),
         legend_opts=opts.LegendOpts(
@@ -109,9 +115,9 @@ def generate_line_html(rows, select=None):
         )
     )
     line.set_series_opts(
-        # symbol='none',
-        smooth=True,
-        label_opts=opts.LabelOpts(is_show=False)
+        symbol='none',
+        smooth=False,
+        label_opts=opts.LabelOpts(is_show=False),
     )
     line_html = line.render_embed('template.html', env)
     return line_html
@@ -133,27 +139,25 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
         bond_code = record['bond_code']
         bond_code = trade_utils.rebuild_bond_code(bond_code)
         x.append(x1)
-        cb_name = record[field_name]
-        y1 = cb_name.replace('%', '')
-        amount = 0
-        if use_personal_features:
-            amount = record.get("持有数量", 0)
-            y.append([y1, get_label(record), bond_code, amount])
-        else:
-            y.append([y1, get_label(record)], bond_code)
+        field_value = record[field_name]
+        y1 = float(field_value.replace('%', ''))
+        y.append(y1)
 
         if use_personal_features and record.get('hold_id') is not None:
+            amount = record.get("持有数量", 0)
             point_items.append(opts.MarkPointItem(
                 coord=[x1, y1],
                 symbol_size=amount,
                 itemstyle_opts=opts.ItemStyleOpts(
-                    opacity=0.2
-                )
+                    opacity=0.5
+                ),
+                value=[get_label(record), x1, y1, bond_code, amount]
             ))
         else:
             point_items.append(opts.MarkPointItem(
                 coord=[x1, y1],
-                itemstyle_opts=opts.ItemStyleOpts(color='#fff', border_color='#000')
+                itemstyle_opts=opts.ItemStyleOpts(color='#fff', border_color='#000'),
+                value=[get_label(record), x1, y1, bond_code]
             ))
 
     if draw_figure is False:
@@ -164,10 +168,12 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
 
 def get_hover_js_code(field_name='溢价率'):
     hover_text = "function (params) {" \
-                    "return '价格:' + params.value[0] + '元<br/> " + \
-                        field_name + ":' + params.value[1] + '%'+ " \
-                        "( params.value[4] == null ? '' : " \
-                                     "('<br/>持有数量:' + params.value[4] + '张'));" \
+                    "return " \
+                 "'名称:' + params.data.value[0]+ '<br/>' + " \
+                 "'价格:' + params.data.value[1] + '元<br/> " + \
+                 field_name + ":' + params.value[2] + '%<br/>'+ " \
+                        "( params.data.value[4] == null ? '' : " \
+                                     "('头寸:' + params.data.value[4] + '张'));" \
                  "}"
     return JsCode(hover_text)
 
@@ -182,7 +188,7 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y):
     scatter.add_js_funcs(
         'chart_' + chart_id + """.on('click', function(params){
             // alert(params)
-            popWin.showWin("1200","600", params['data'][3]);
+            popWin.showWin("1200","600", params['data']['value'][3]);
         })
     """)
     scatter.add_xaxis(xaxis_data=x)
@@ -191,22 +197,13 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y):
         y_axis=y,
         color=choice(colors),
         label_opts=opts.LabelOpts(
+            is_show=False,
             position='bottom',
             # distance=20,
             formatter=JsCode(
                 "function(params){return params.value[2];}"
             )
         ),
-        # tooltip_opts=opts.TooltipOpts(
-        #     formatter=JsCode(
-        #         "function (params) {" \
-        #         "return '价格:' + params.value[0] + '元<br/> " + \
-        #         field_name + ":' + params.value[1] + '%'+ " \
-        #                      "( params.value[3] == null ? '' : " \
-        #                      "('<br/>持有数量:' + params.value[3] + '张'));" \
-        #                      "}"
-        #     )
-        # ),
         markline_opts=opts.MarkLineOpts(
             linestyle_opts=opts.LineStyleOpts(type_='dashed'),
             is_silent=True,
@@ -224,7 +221,11 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y):
         markpoint_opts=opts.MarkPointOpts(
             symbol='circle',
             symbol_size=12,
-            data=point_items
+            data=point_items,
+            label_opts=opts.LabelOpts(
+                position='bottom',
+                formatter=JsCode('function(params){return params.value[0]}')
+            )
         )
     )
     if title is not None and title.strip(' ') != '':

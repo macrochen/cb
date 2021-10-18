@@ -8,6 +8,7 @@ import requests
 
 from utils import trade_utils, db_utils
 from utils.db_utils import get_cursor
+from utils.task_utils import *
 
 header = {
     "origin": "https://xueqiu.com",
@@ -59,13 +60,14 @@ def createDb():
     print("create db is successful")
 
 
-def fetch_data():
+def fetch_data(task_name):
 
     # 遍历可转债列表
 
     stock_name = ''
     earnings = None
 
+    task = None
     try:
 
         # 当前报告期
@@ -76,9 +78,15 @@ def fetch_data():
         bond_cursor = get_cursor("""
             SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond
         """)
+        rows = bond_cursor.fetchall()
+        task, status = new_or_update_task(len(rows), task_name)
+        if status == -1:  # 有任务在执行
+            return
 
         i = 0
-        for bond_row in bond_cursor:
+        for bond_row in rows:
+            process_task_when_normal(task, 1)
+
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
@@ -89,39 +97,49 @@ def fetch_data():
             if len(stocks) == 0:
                 earnings = getEarnings(stock_code)
                 # 新增
-                get_cursor("""insert into stock_report(stock_code,stock_name,
-                            last_date,
-                            revenue,qoq_revenue_rate,yoy_revenue_rate,
-                            net,qoq_net_rate,yoy_net_rate,
-                            margin,qoq_margin_rate,yoy_margin_rate,
-                            roe,qoq_roe_rate,yoy_roe_rate,
-                            al_ratio,qoq_rl_ratio_rate,yoy_al_ratio_rate)
-                         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                                 (bond_row[2], bond_row[3],
-                                  earnings.lastDate,
 
-                                  earnings.revenue,
-                                  earnings.qoqRevenueRate,
-                                  earnings.yoyRevenueRate,
+                rowcount = db_utils.execute_sql_with_rowcount("""insert into stock_report(stock_code,stock_name,
+                                            last_date,
+                                            revenue,qoq_revenue_rate,yoy_revenue_rate,
+                                            net,qoq_net_rate,yoy_net_rate,
+                                            margin,qoq_margin_rate,yoy_margin_rate,
+                                            roe,qoq_roe_rate,yoy_roe_rate,
+                                            al_ratio,qoq_rl_ratio_rate,yoy_al_ratio_rate)
+                         values(:stock_code,:stock_name,
+                            :last_date,
+                            :revenue,:qoq_revenue_rate,:yoy_revenue_rate,
+                            :net,:qoq_net_rate,:yoy_net_rate,
+                            :margin,:qoq_margin_rate,:yoy_margin_rate,
+                            :roe,:qoq_roe_rate,:yoy_roe_rate,
+                            :al_ratio,:qoq_rl_ratio_rate,:yoy_al_ratio_rate)""",
+                                                              {'stock_code':bond_row[2], 'stock_name':bond_row[3],
+                                  'last_date':earnings.lastDate,
 
-                                  earnings.net,
-                                  earnings.qoqNetRate,
-                                  earnings.yoyNetRate,
+                                  'revenue':earnings.revenue,
+                                  'qoq_revenue_rate':earnings.qoqRevenueRate,
+                                  'yoy_revenue_rate':earnings.yoyRevenueRate,
 
-                                  earnings.margin,
-                                  earnings.qoqMarginRate,
-                                  earnings.yoyMarginRate,
+                                  'net':earnings.net,
+                                  'qoq_net_rate':earnings.qoqNetRate,
+                                  'yoy_net_rate':earnings.yoyNetRate,
 
-                                  earnings.roe,
-                                  earnings.qoqRoeRate,
-                                  earnings.yoyRoeRate,
+                                  'margin':earnings.margin,
+                                  'qoq_margin_rate':earnings.qoqMarginRate,
+                                  'yoy_margin_rate':earnings.yoyMarginRate,
 
-                                  earnings.alRatio,
-                                  earnings.qoqAlRatioRate,
-                                  earnings.yoyAlRatioRate
-                                  )
-                                 )
-                print("insert " + stock_name + " is successful. count:" + str(i+1))
+                                  'roe':earnings.roe,
+                                  'qoq_roe_rate':earnings.qoqRoeRate,
+                                  'yoy_roe_rate':earnings.yoyRoeRate,
+
+                                  'al_ratio':earnings.alRatio,
+                                  'qoq_rl_ratio_rate':earnings.qoqAlRatioRate,
+                                  'yoy_al_ratio_rate':earnings.yoyAlRatioRate,
+                                  }
+                                                              )
+                if rowcount == 0:
+                    print("insert " + stock_name + " is failure. count:" + str(i+1))
+                else:
+                    print("insert " + stock_name + " is successful. count:" + str(i+1))
                 # 暂停10s再执行， 避免被网站屏蔽掉
                 time.sleep(20)
                 i += 1
@@ -133,48 +151,53 @@ def fetch_data():
 
                 if last_date != report_date:
                     earnings = getEarnings(stock_code)
-                    get_cursor("""update stock_report
-                                set last_date = ?,
-                                revenue = ?,qoq_revenue_rate = ?,yoy_revenue_rate = ?,
-                                net = ?,qoq_net_rate = ?,yoy_net_rate = ?,
-                                margin = ?,qoq_margin_rate = ?,yoy_margin_rate = ?,
-                                roe = ?,qoq_roe_rate = ?,yoy_roe_rate = ?,
-                                al_ratio = ?,qoq_rl_ratio_rate = ?,yoy_al_ratio_rate = ?
-                             where stock_code = ?""",
-                                     (earnings.lastDate,
+                    rowcount = db_utils.execute_sql_with_rowcount("""update stock_report
+                                set last_date = :last_date,
+                                revenue = :revenue,qoq_revenue_rate = :qoq_revenue_rate,yoy_revenue_rate = :yoy_revenue_rate,
+                                net = :net,qoq_net_rate = :qoq_net_rate,yoy_net_rate = :yoy_net_rate,
+                                margin = :margin,qoq_margin_rate = :qoq_margin_rate,yoy_margin_rate = :yoy_margin_rate,
+                                roe = :roe,qoq_roe_rate = :qoq_roe_rate,yoy_roe_rate = :yoy_roe_rate,
+                                al_ratio = :al_ratio,qoq_rl_ratio_rate = :qoq_rl_ratio_rate,yoy_al_ratio_rate = :yoy_al_ratio_rate
+                             where stock_code = :stock_code""",
+                                                                  {'last_date':earnings.lastDate,
 
-                                      earnings.revenue,
-                                      earnings.qoqRevenueRate,
-                                      earnings.yoyRevenueRate,
+                                      'revenue':earnings.revenue,
+                                      'qoq_revenue_rate':earnings.qoqRevenueRate,
+                                      'yoy_revenue_rate':earnings.yoyRevenueRate,
 
-                                      earnings.net,
-                                      earnings.qoqNetRate,
-                                      earnings.yoyNetRate,
+                                      'net':earnings.net,
+                                      'qoq_net_rate':earnings.qoqNetRate,
+                                      'yoy_net_rate':earnings.yoyNetRate,
 
-                                      earnings.margin,
-                                      earnings.qoqMarginRate,
-                                      earnings.yoyMarginRate,
+                                      'margin':earnings.margin,
+                                      'qoq_margin_rate':earnings.qoqMarginRate,
+                                      'yoy_margin_rate':earnings.yoyMarginRate,
 
-                                      earnings.roe,
-                                      earnings.qoqRoeRate,
-                                      earnings.yoyRoeRate,
+                                      'roe':earnings.roe,
+                                      'qoq_roe_rate':earnings.qoqRoeRate,
+                                      'yoy_roe_rate':earnings.yoyRoeRate,
 
-                                      earnings.alRatio,
-                                      earnings.qoqAlRatioRate,
-                                      earnings.yoyAlRatioRate,
+                                      'al_ratio':earnings.alRatio,
+                                      'qoq_rl_ratio_rate':earnings.qoqAlRatioRate,
+                                      'yoy_al_ratio_rate':earnings.yoyAlRatioRate,
 
-                                      stock_code
-                                      )
-                                     )
-                    print("update " + stock_name + " is successful. count:" + str(i+1))
+                                      'stock_code':stock_code
+                                }
+                                                                  )
+                    if rowcount == 0:
+                        print("update " + stock_name + " is failure. count:" + str(i+1))
+                    else:
+                        print("update " + stock_name + " is successful. count:" + str(i+1))
                     # 暂停10s再执行， 避免被网站屏蔽掉
                     time.sleep(20)
                     i += 1
 
-        print("共处理" + str(i) + "条记录")
-
+        ok_desc = "共处理" + str(i) + "条记录"
+        print(ok_desc)
+        process_task_when_finish(task, ok_desc)
     except Exception as e:
         print("db操作出现异常" + str(e) + ', stock_code: ' + stock_code + ', stock_name:' + stock_name + ', earnings:' + str(earnings), e)
+        process_task_when_error(task, "db操作出现异常")
         raise e
     return 'OK'
 

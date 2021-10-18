@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+import math
+from datetime import datetime
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
@@ -30,22 +33,38 @@ class ChangedBond(db.Model):
     def keys(self):
         return ('id', 'bond_code', 'cb_name_id')
 
+    def to_dict(self, expect_name=None):
+        dict = {}
+        for key in self.keys():
+            if expect_name is not None and key == expect_name:
+                continue
+
+            dict[key] = self.__getitem__(key)
+        return dict
+
     def __getitem__(self, item):
         return getattr(self, item)
 
 
-class TradeDetail(db.Model):
+class TradeHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bond_code = db.Column(db.String(20))
     cb_name_id = db.Column(db.String(20))
     price = db.Column(db.Float)
     amount = db.Column(db.Integer)
+    hold_id = db.Column(db.Integer)
+    owner_id = db.Column(db.Integer)
     account = db.Column(db.String(20))
+    strategy_type = db.Column(db.String(20))
     fee = db.Column(db.Float)
-    create_date = db.Column(db.Integer)
+    create_date = db.Column(db.DateTime, server_default=func.now())
+    is_delete = db.Column(db.Integer, default=0)
+
+    def __init__(self):
+        self.is_delete = 0
 
     def keys(self):
-        return ('id', 'bond_code', 'cb_name_id', 'price', 'amount', 'account', 'fee', 'create_date')
+        return ('id', 'bond_code', 'cb_name_id', 'price', 'amount', 'account', 'fee', 'create_date', 'owner_id', 'hold_id', 'strategy_type', 'is_delete')
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -102,6 +121,12 @@ class ChangedBondSelect(db.Model):
     def keys(self):
         return ('id', 'bond_code', 'cb_name_id', 'strategy_type', 'memo')
 
+    def to_dict(self):
+        dict = {}
+        for key in self.keys():
+            dict[key] = self.__getitem__(key)
+        return dict
+
     def __getitem__(self, item):
         return getattr(self, item)
 
@@ -143,6 +168,21 @@ class HoldBond(BaseHoldBond):
     def __getitem__(self, item):
         return getattr(self, item)
 
+    def to_dict(self, expect_name=None):
+        dict = {}
+        for key in self.keys():
+            if expect_name is not None and key == expect_name:
+                continue
+
+            dict[key] = self.__getitem__(key)
+        return dict
+
+    def copy(self, source):
+        for key, value in source.__dict__.items():
+            if key not in self.keys() or value is None:
+                continue
+            setattr(self, key, value)
+
 
 class HoldBondHistory(BaseHoldBond):
     end_date = db.Column(db.String(20))
@@ -168,3 +208,45 @@ class Config(db.Model):
     desc = db.Column(db.String(2048))
     is_delete = db.Column(db.Integer)
     owner_id = db.Column(db.Integer)
+
+
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200))
+    current_num = db.Column(db.Integer)
+    total_num = db.Column(db.Integer)
+    process = db.Column(db.Integer, default=0)
+    status = db.Column(db.Integer)
+    create_date = db.Column(db.DateTime)
+    modify_date = db.Column(db.DateTime)
+    is_delete = db.Column(db.DateTime)
+    desc = db.Column(db.String(1024))
+
+    def __init__(self):
+        self.current_num = 0
+        self.total_num = 0
+        self.process = 0
+
+    def keys(self):
+        return ('id', 'name', 'current_num', 'total_num', 'process', 'status', 'modify_date', 'create_date', 'is_delete', 'desc')
+
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    def update(self, num):
+        self.current_num += num
+        self.process = 0 if self.total_num == 0 else math.ceil(self.current_num/self.total_num*100)
+        self.modify_date = datetime.now()
+
+    def error(self, desc):
+        self.status = -1
+        self.desc = desc
+        self.modify_date = datetime.now()
+
+    def success(self, desc):
+        self.current_num = self.total_num
+        self.status = 1
+        self.desc = desc
+        self.modify_date = datetime.now()
+

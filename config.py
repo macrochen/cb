@@ -4,11 +4,13 @@ import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+db_file_path = 'db/cb.db3'
+
 class Config:
     # SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
     SECRET_KEY = 'super secret key'
     SESSION_TYPE = 'filesystem'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, 'db/cb.db3')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, db_file_path)
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
     @staticmethod

@@ -15,6 +15,7 @@
         <script src="/static/js/jquery.bootstrap-autohidingnavbar.min.js"></script>
 
         <script type="text/javascript" src="/static/js/bootsnav.js"></script>
+        <script type="text/javascript" src="/static/js/bootstrap3-typeahead.min.js"></script>
         <title>更新可转债持仓</title>
         <style>
             html,body {height: 100%;}
@@ -122,7 +123,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="bond_name">转债名称</label>
-                    <input type="text" class="form-control" id="bond_name" name="bond_name" value="{{ bond['cb_name_id'] }}" required >
+                    <input type="text" class="form-control" id="bond_name" name="bond_name" value="{{ bond['cb_name_id'] }}" required data-provide="typeahead" autocomplete="off" >
 
                     <div class="invalid-feedback">
                         必须指定转债名称
@@ -214,7 +215,67 @@
               })
 
 
-            $("#bond_name").bind("input propertychange",dd);
+            $('#bond_name').typeahead({
+                autoSelect: false,//自动选择
+                items: 10,//下拉选项个数
+                fitToElement: false,
+                delay: 500,//延迟毫米
+                //minLength: 0,//最小触发请求的文本长度
+                //高亮格式化
+                highlighter: function (item) {
+                    var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+                    return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                        return '<strong style="color: red;">' + match + '</strong>'
+                    });
+                },
+                //选中项后触发
+                afterSelect: function (data) {
+                    $("#id").val(data['id']);
+                    $("#bond_code").val(data['bond_code']);
+                    $("#bond_name").val(data['cb_name_id']);
+                    $("#trade_amount").attr('placeholder', data['hold_amount']);
+                    $("#trade_price").attr('placeholder', data['hold_price']);
+                    if (data['account'] != null) {
+                        $("#account").val(data['account']);
+                    }
+                    if (data['strategy_type'] != null) {
+                        $("#strategy_type").val(data['strategy_type']);
+                    }
+                    $("#memo").val(data['memo'])
+                },
+                //发送ajax
+                source: function (query , process) {
+                    $.ajax({
+                        dataType:'json',
+                        url: "/find_bond_by_name.html/" + $("#bond_name").val() + "/",
+                        success: function (result) {
+                            if(result.length == 0){
+                                return process([{"text" : "" , "name": "未找到包含 " + query + " 的数据"}]);
+                            }
+
+                            var list = result.map(function (item) {
+                                var data = {"name": item.cb_name_id + "(" + item.account + ")" ,
+                                    'id': item.id,
+                                    "bond_code": item.bond_code ,
+                                    "cb_name_id": item.cb_name_id ,
+                                    "hold_amount": item.hold_amount ,
+                                    "hold_price": item.hold_price ,
+                                    "account": item.account ,
+                                    "strategy_type": item.strategy_type ,
+                                    "memo": item.memo ,
+                                    "text" : item.cb_name_id};
+                                return data;
+                            });
+                            return process(list);
+                        },
+                        error: function () {
+                            return process([{"text" : "" , "name": "未找到包含 " + query + " 的数据"}]);
+                        }
+                    });
+                }
+            });
+
+            // $("#bond_name").bind("input propertychange",dd);
             $("#bond_code").bind("input propertychange",dd);
 
             function dd(event){

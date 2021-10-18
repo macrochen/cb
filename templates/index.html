@@ -118,11 +118,12 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                 </li>
 
                 {% if current_user and current_user.is_authenticated %}
+                <li><a href="#" onclick="process_wrapper('/realtime_update_data.html');return false">实时刷新</a></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">我的自选</a>
                     <ul class="dropdown-menu">
-                      <li><a href="/view_my_select.html">我的可转债自选</a></li>
-                      <li><a href="/edit_changed_bond_select.html">编辑可转债笔记</a></li>
+                      <li><a href="/view_my_select.html">自选列表</a></li>
+                      <li><a href="/edit_changed_bond_select.html">添加自选</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
@@ -135,30 +136,31 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                         <li><a href="/view_my_up_down.html">可转债涨跌排行</a></li>
                         <li><a href="/view_my_price_list.html">可转债价格排行</a></li>
                         <li><a href="/view_my_yield.html">我的收益率</a></li>
-                        <li><a href="/view_my_trade.html">我的交易记录</a></li>
+                        <li><a href="/view_my_trade_history.html">我的成交记录</a></li>
                         <li><a href="#" onclick="process_wrapper('/update_bond_yield.html');return false">更新可转债收益率</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">系统管理</a>
                     <ul class="dropdown-menu">
-                      <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">实时更新&nbsp;&nbsp;▸</a>
-                            <ul class="dropdown-menu">
-                              <li><a target="_blank" href="https://www.jisilu.cn/account/login/">登录集思录</a></li>
-                              <li><a href="#" onclick="process_wrapper('/jsl_update_data.html');return false">直接同步集思录可转债数据</a></li>
-                              <li><a target="_blank" href="https://www.jisilu.cn/data/cbnew/cb_list/">访问集思录JSON格式数据</a></li>
-                              <li><a href="/sync_jsl_bond_data.html">提交集思录JSON格式数据</a></li>
-                            </ul>
-                        </li>
+<!--                      <li class="dropdown">-->
+<!--                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">实时更新&nbsp;&nbsp;▸</a>-->
+<!--                            <ul class="dropdown-menu">-->
+<!--&lt;!&ndash;                              <li><a target="_blank" href="https://www.jisilu.cn/account/login/">登录集思录</a></li>&ndash;&gt;-->
+<!--&lt;!&ndash;                              <li><a href="#" onclick="process_wrapper('/jsl_update_data.html');return false">直接同步集思录可转债数据</a></li>&ndash;&gt;-->
+<!--&lt;!&ndash;                              <li><a href="#" onclick="process_wrapper('/eastmoney_update_data.html');return false">同步东方财富可转债数据</a></li>&ndash;&gt;-->
+<!--                              <li><a target="_blank" href="https://www.jisilu.cn/data/cbnew/cb_list/">访问集思录JSON格式数据</a></li>-->
+<!--                              <li><a href="/sync_jsl_bond_data.html">提交集思录JSON格式数据</a></li>-->
+<!--                            </ul>-->
+<!--                        </li>-->
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">数据同步&nbsp;&nbsp;▸</a>
                             <ul class="dropdown-menu">
                               <li><a href="#" onclick="process_wrapper('/cb_ninwen.html');return false">更新所有可转债数据(非实时)</a></li>
-                              <li><a href="/cb_ninwen_detail.html">更新可转债条款明细</a></li>
-                              <li><a href="/stock_10jqka.html">同步同花顺正股诊断数据</a></li>
-                              <li><a href="/stock_eastmoney.html">同步东财正股关键指标</a></li>
-                              <li><a href="/stock_xueqiu.html">同步雪球正股财报指标</a></li>
+                              <li><a href="#" onclick="process_task('更新可转债条款明细', '/cb_ninwen_detail.html/update_terms/');return false">更新可转债条款明细</a></li>
+                              <li><a href="#" onclick="process_task('更新诊断信息', '/stock_10jqka.html/update_diagnostic/');return false">同步同花顺正股诊断数据</a></li>
+                              <li><a href="#" onclick="process_task('更新正股信息', '/stock_eastmoney.html/update_stock/');return false">同步东财正股关键指标</a></li>
+                              <li><a href="#" onclick="process_task('更新财报信息', '/stock_xueqiu.html/update_stock_report/');return false">同步雪球正股财报指标</a></li>
                             </ul>
                         </li>
                         <li class="dropdown">
@@ -236,7 +238,6 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
 
 
     </div>
-{% endif %}
 
     <!-- Modal HTML -->
     <div id="myModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop='static'>
@@ -262,6 +263,34 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                 <div class="modal-content">
                     <div class="modal-body">
                         <img src="/static/img/processing.gif">处理中, 请稍后...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="task_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop='static' >
+        <div class="vertical-alignment-helper">
+            <div class="modal-dialog vertical-align-center" role="document" style="width:400px">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h5 class="modal-title" id="myModalLabel"></h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="progress progress-striped active">
+                            <div class="progress-bar progress-bar-success" role="progressbar"
+                                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                                 style="width: 0%;">
+                                <span class="sr-only">0% 完成</span>
+                            </div>
+                        </div>
+                        <h6 class="modal-title" id="myModalBody">当前任务处理中...</h6>
+                    </div>
+                    <div class="modal-footer" style = 'text-align:center'>
+                        <button type="button" class="btn btn-default" data-dismiss="modal" id = 'btn_close_task'>关&nbsp;&nbsp;闭
+                        </button>
                     </div>
                 </div>
             </div>
@@ -326,6 +355,9 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
             url:url,
             success: function (data, status) {
                 defer.resolve({'data':data, 'status':status})
+            },
+            error: function (data, status) {
+                defer.resolve({'data':data, 'status':status})
             }
         });
         return defer.promise()
@@ -340,6 +372,54 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
             doCallback(return_value['data'], return_value['status'])
         });
     }
+
+    function process_task(title, url) {
+        // 调用异步处理后台程序
+        $.get(url);
+
+        ss = url.split('/')
+        task_name = ss[ss.length-2]
+
+        // 查看当前任务处理状态, 初始化进度条
+        timer = window.setInterval(function () {
+                $.ajax({
+                url:"/get_task_data.html/" + task_name + "/",
+                dataType: 'json',
+                success: function (data) {
+
+                    if (data['process'] == 100 || $("#task_modal").css('display') == 'none') { // 任务完成或进度弹窗关闭, 终止轮询
+                        window.clearInterval(timer)
+                    }
+                    $(".progress-bar").css('width', data['process'] + '%')
+                    if (data['status'] == -1 || data['status'] == 1) { // 任务结束(失败or结束), 给出提示信息
+
+                        if (data['status'] == -1) { // 失败, 红色警告
+                            $('.progress-bar').removeClass('progress-bar-success');
+                            $('.progress-bar').addClass('progress-bar-danger');
+                            $('#myModalBody').text("任务处理中断. " + data['desc']);
+                        } else {
+                            $('#myModalBody').text("任务处理完成. " + data['desc']);
+                            window.clearInterval(timer)
+                        }
+                    } else {
+                        $('.progress-bar').removeClass('progress-bar-danger');
+                        $('.progress-bar').addClass('progress-bar-success');
+                        $('#myModalBody').text("当前任务处理中("+ data['current_num'] + "/" + data['total_num'] +")...")
+                    }
+                },
+                error: function (data) {
+                    alert(data)
+                }
+            })
+        }, 3000)
+        $('#myModalLabel').text(title)
+        $(".progress-bar").css('width', '0%')
+        $('#myModalBody').text("");
+        $('#task_modal').modal('show')
+        // 轮询后台task表, 根据更新进度更新进度条
+        // 后台处理异常, 进度条换颜色(红色), 并提示异常信息
+    }
 </script>
+{% endif %}
 </body>
 </html>

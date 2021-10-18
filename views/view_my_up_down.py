@@ -11,6 +11,7 @@ from pyecharts.globals import ThemeType
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 import utils.table_html_utils
+import views.nav_utils
 from utils import db_utils, html_utils, trade_utils, table_html_utils
 from utils.db_utils import get_cursor
 from views import view_utils
@@ -77,18 +78,18 @@ order by 涨跌 desc
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) h where  c.bond_code = h.bond_code  order by cb_mov2_id DESC limit 10)     
 UNION  
-select * from (SELECT DISTINCT c. *, h.id from changed_bond c, hold_bond h where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 10)) c, 
-stock_report s, (select * 
+select * from (SELECT DISTINCT c. *, h.id from changed_bond c, hold_bond h where  c.bond_code = h.bond_code and h.hold_owner = 'me' and h.hold_amount > 0  order by cb_mov2_id ASC limit 10)) c left join 
+stock_report s on c.stock_code = s.stock_code , (select * 
             from hold_bond where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
              ) h
-    WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code 
+    WHERE c.bond_code = h.bond_code 
     order  by cb_mov2_id desc
             """)
 
         html = table_html_utils.generate_simple_table_html(cur, html, is_login_user=is_login_user)
 
-        return '我的可转债涨跌', ''.join(view_utils.build_personal_nav_html_list('/view_my_up_down.html')), html
+        return '我的可转债涨跌', ''.join(views.nav_utils.build_personal_nav_html_list('/view_my_up_down.html')), html
 
     except Exception as e:
         print("processing is failure. ", e)
@@ -125,12 +126,7 @@ def generate_rise_bar_html(rows, title):
     chart_id = str(abs(hash(title)))
     bar = Bar(init_opts=opts.InitOpts(height='700px', width='1424px', theme=ThemeType.SHINE, chart_id=chart_id))
 
-    bar.add_js_funcs(
-        'chart_' + chart_id + """.on('click', function(params){
-            // alert(params)
-            popWin.showWin("1200","600", params['data']['bond_code']);
-        })
-    """)
+    view_utils.add_popwin_js_code(bar, chart_id)
     # 底部x轴
     bar.add_xaxis(xx1)
     # 顶部x轴

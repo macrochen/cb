@@ -7,6 +7,7 @@
 # import matplotlib.pyplot as plt
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+import views.nav_utils
 from views import view_utils
 from views.view_market import generate_strategy_html
 
@@ -55,8 +56,8 @@ def draw_view(is_login_user):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
          -- and yoy_margin_rate > 0 
           --and margin > 0 
           -- and cb_price2_id < 115
@@ -76,7 +77,7 @@ def draw_view(is_login_user):
                                                                             '换手率(%)'],
                                                        use_personal_features=is_login_user)
 
-        return '正股涨幅排行', view_utils.build_analysis_nav_html('/view_stock.html'), html
+        return '正股涨幅排行', views.nav_utils.build_analysis_nav_html('/view_stock.html'), html
 
     except Exception as e:
         print("processing is failure. ", e)
