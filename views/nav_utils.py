@@ -28,8 +28,12 @@ def build_select_nav_html(url):
     return to_html(select_nav_html_dict, url)
 
 
-def build_personal_nav_html_list(url):
+def build_personal_nav_html_list(url=None):
     return to_list(personal_nav_html_dict, url)
+
+
+def build_personal_nav_html(url=None):
+    return to_html(personal_nav_html_dict, url)
 
 
 def build_analysis_nav_html(url):
@@ -41,9 +45,11 @@ def to_html(nav_dict, url):
     return ''.join(new_list)
 
 
-def to_list(nav_dict, url):
+def to_list(nav_dict, url=None):
     copy_dict = nav_dict.copy()
-    copy_dict.pop(url)
+    if url is not None:
+        copy_dict.pop(url)
+
     sorted_nav_list = sorted(copy_dict.items(), key=lambda key_value: key_value[1][0])
     new_list = []
     for value in sorted_nav_list:

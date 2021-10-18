@@ -30,7 +30,7 @@ def draw_view(is_login_user):
     # 打开文件数据库
     try:
 
-        html = '<br/><br/><br/><br/><br/><br/><br/>'
+        html = '<br/><br/><br/><br/><br/><br/>'
 
         # =========我的转债自选集=========
         cur = get_cursor("""
@@ -44,9 +44,9 @@ def draw_view(is_login_user):
         --remain_amount as '余额(亿元)',
         
         b.strategy_type as 策略, b.memo as 备注
-    from changed_bond_select b left join hold_bond h on b.bond_code = h.bond_code,  
+    from changed_bond_select b left join (select * from hold_bond where id in (select min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)) h on b.bond_code = h.bond_code,  
         changed_bond c
-    WHERE  c.bond_code = b.bond_code
+    WHERE  c.bond_code = b.bond_code 
     --order  by cb_mov2_id desc
             """)
 

@@ -22,7 +22,7 @@ from utils.html_utils import get_strategy_options_html
 from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
     view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_tree_map_price, \
     view_tree_map_premium, view_my_price_list, view_my_trade_history
-from views.nav_utils import build_select_nav_html
+from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html
 
 cb = Blueprint('cb', __name__)
 
@@ -478,7 +478,7 @@ def sync_trade_data(id='', bond_code=''):
                                         if bond is None
                                         else (bond.strategy_type if hasattr(bond, 'strategy_type') else None))
 
-    return render_template("sync_trade_data.html", bond=bond, strategy_options=options)
+    return render_template("sync_trade_data.html", bond=bond, navbar=build_personal_nav_html(), strategy_options=options)
 
 
 @cb.route('/view_up_down.html')

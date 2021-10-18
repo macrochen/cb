@@ -58,8 +58,7 @@ def draw_market_view(user_id):
     from (select * from changed_bond where enforce_get in ('强赎中')) c left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)  
              ) e 
         on c.bond_code = e.bond_code
     order by 转债价格 desc 
@@ -114,8 +113,7 @@ def draw_market_view(user_id):
         ORDER by 性价比 DESC) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
             """
@@ -167,8 +165,7 @@ def draw_market_view(user_id):
         ORDER by 转债价格 ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
             """
@@ -495,8 +492,7 @@ def draw_market_view(user_id):
       order by bt_yield desc) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
               """
@@ -562,8 +558,7 @@ def draw_market_view(user_id):
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
               """
@@ -619,8 +614,7 @@ def draw_market_view(user_id):
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
               """
@@ -677,8 +671,7 @@ def draw_market_view(user_id):
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
               """
@@ -736,8 +729,7 @@ def draw_market_view(user_id):
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
               """
@@ -791,8 +783,7 @@ def draw_market_view(user_id):
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code"""
             html = generate_strategy_html(sql, "抄作业", "收集近期大V们推荐", html, nav_html_list=nav_html_list,
@@ -1066,8 +1057,7 @@ def build_low_remain_block(html, nav_html_list, sort_field, sub_strategy, use_pe
         ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code            
             """
