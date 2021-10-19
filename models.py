@@ -117,9 +117,10 @@ class ChangedBondSelect(db.Model):
     cb_name_id = db.Column(db.String(20))
     strategy_type = db.Column(db.String(20))
     memo = db.Column(db.String(2048))
+    is_deleted = db.Column(db.Integer, default=0)
 
     def keys(self):
-        return ('id', 'bond_code', 'cb_name_id', 'strategy_type', 'memo')
+        return ('id', 'bond_code', 'cb_name_id', 'strategy_type', 'memo', 'is_deleted')
 
     def to_dict(self):
         dict = {}

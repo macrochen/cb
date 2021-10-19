@@ -107,19 +107,7 @@ on a.rn = b.rn
     MID_Y = row[1]
     print('init mid data is successful.MID_X:' + str(MID_X) + ', MID_Y:' + str(MID_Y))
 
-    # for row in rows:
-
-    # if key == 'mid_premium':
-    #     MID_Y = value
-    # elif key == 'mid_price':
-    #     MID_X = value
-    # elif key == 'mid_yield':
-    #     mid_yield = value
-    # else:
-    #     raise Exception('unknow key:' + key)
-
-    # return mid_y, mid_x #, mid_yield
-
+    return row[0], row[1]
 
 def get_ymd():
     today = datetime.now()

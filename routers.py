@@ -14,14 +14,14 @@ import utils.table_html_utils
 import utils.trade_utils
 from config import db_file_path
 from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney, cb_eastmoney
-from jobs import do_update_bond_yield
+from jobs import do_update_data_when_trade_is_end
 from models import User, ChangedBond, HoldBond, ChangedBondSelect, db, TradeHistory, HoldBondHistory, Task
 from utils import trade_utils
 from utils.db_utils import get_connect, get_cursor
 from utils.html_utils import get_strategy_options_html
 from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
     view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_tree_map_price, \
-    view_tree_map_premium, view_my_price_list, view_my_trade_history
+    view_tree_map_premium, view_my_price_list, view_my_trade_history, view_cb_trend
 from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html
 
 cb = Blueprint('cb', __name__)
@@ -141,6 +141,21 @@ def my_select_view():
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
+@cb.route('/delete_selected_bond.html/<ids>/')
+@login_required
+def delete_selected_bond(ids):
+    if ids is None or ids.strip(' ') == '':
+        print("parameter ids is invalid.")
+
+    ss = ids.split(',')
+    db.session.query(ChangedBondSelect)\
+        .filter(ChangedBondSelect.id.in_(ss))\
+        .update({ChangedBondSelect.is_deleted: 1})
+    db.session.commit()
+
+    return 'OK'
+
+
 @cb.route('/edit_changed_bond_select.html')
 @cb.route('/edit_changed_bond_select.html/<bond_code>/')
 @login_required
@@ -192,7 +207,7 @@ def find_changed_bond_select_by_code():
 def find_changed_bond_select_by_name(bond_name):
     bonds = None
     if bond_name != '':
-        bonds = db.session.query(ChangedBondSelect).filter(ChangedBondSelect.cb_name_id.like('%' + bond_name + '%')).all()
+        bonds = db.session.query(ChangedBondSelect).filter(ChangedBondSelect.cb_name_id.like('%' + bond_name + '%'), ChangedBondSelect.is_deleted != 1).all()
         if len(bonds) == 0:
             bonds = db.session.query(ChangedBond).filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).all()
             if len(bonds) > 0:  # changed bond的id非select的id, 故排除
@@ -415,7 +430,8 @@ def save_trade_data():
 
     options = get_strategy_options_html(None)
 
-    return render_template("sync_trade_data.html", bond=None, result='operation is successful', strategy_options=options)
+
+    return render_template("sync_trade_data.html", bond=None, navbar=build_personal_nav_html(), result='operation is successful', strategy_options=options)
 
 
 @cb.route('/un_save_trade_data.html/<id>', methods=['GET'])
@@ -617,10 +633,17 @@ def market_view():
     title, navbar, content = view_market.draw_market_view(user_id)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
+@cb.route('/view_trend.html')
+def trend_view():
+    # current_user = None
+    utils.trade_utils.calc_mid_data()
+    title, navbar, content = view_cb_trend.draw_view()
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
 @cb.route('/eastmoney_update_data.html')
 @cb.route('/realtime_update_data.html')
-@login_required
-def eastmoney_update_data():
+# @login_required
+def realtime_update_data():
     return cb_eastmoney.fetch_data()
 
 @cb.route('/easy_update_data.html')
@@ -748,8 +771,8 @@ def execute_sql():
     return 'OK'
 
 
-@cb.route('/update_bond_yield.html')
+@cb.route('/update_data_when_trade_is_end.html')
 @login_required
-def update_bond_yield():
-    return do_update_bond_yield()
+def update_data_when_trade_is_end():
+    return do_update_data_when_trade_is_end()
 

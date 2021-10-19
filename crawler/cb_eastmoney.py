@@ -105,6 +105,12 @@ def update_db(rows):
     try:
 
         for row in rows:
+           cur = get_cursor("select count(*) from changed_bond where bond_code=:bond_code", {'bond_code':row['bond_code']})
+           one = cur.fetchone()
+           if one[0] == 0:
+               print("not update cb:" + row['cb_name_id'])
+               continue
+
             # execute执行脚本
            rowcount = execute_sql_with_rowcount("""update changed_bond 
                 set cb_price2_id = :cb_price2_id,

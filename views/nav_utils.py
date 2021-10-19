@@ -37,7 +37,7 @@ def build_personal_nav_html(url=None):
 
 
 def build_analysis_nav_html(url):
-    return to_list(analysis_nav_html_dict, url)
+    return to_html(analysis_nav_html_dict, url)
 
 
 def to_html(nav_dict, url):

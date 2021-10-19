@@ -16,21 +16,24 @@ from views.nav_utils import build_select_nav_html
 
 
 def generate_table_html(cur, html, ext_field_names=None, rows=None,
-                        remark_fields=[], is_login_user=False, field_links={}):
+                        remark_fields=[], is_login_user=False, field_links={},
+                        support_selected_operation=None):
     table = db_utils.from_db(cur, ext_field_names, rows)
 
     if table.rowcount == 0:
-        return html
+        return table, html
 
     return table, html + utils.table_html_utils.build_table_html(table, remark_fields, ignore_fields=['持有数量', ],
-                                                                 is_login_user=is_login_user, field_links=field_links)
+                                                                 is_login_user=is_login_user, field_links=field_links,
+                                                                 support_selected_operation=support_selected_operation
+                                                                 )
 
 
 def draw_view(is_login_user):
     # 打开文件数据库
     try:
 
-        html = '<br/><br/><br/><br/><br/><br/>'
+        html = ''
 
         # =========我的转债自选集=========
         cur = get_cursor("""
@@ -46,17 +49,19 @@ def draw_view(is_login_user):
         b.strategy_type as 策略, b.memo as 备注
     from changed_bond_select b left join (select * from hold_bond where id in (select min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)) h on b.bond_code = h.bond_code,  
         changed_bond c
-    WHERE  c.bond_code = b.bond_code 
-    --order  by cb_mov2_id desc
+    WHERE  c.bond_code = b.bond_code and b.is_deleted != 1 
+    order  by b.id desc
             """)
 
         table, html = generate_table_html(cur, html,
-                                   remark_fields=['策略',  '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
-                                   is_login_user=is_login_user, field_links={'备注': select_link_maker})
+                                          remark_fields=['策略',  '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
+                                          is_login_user=is_login_user, field_links={'备注': select_link_maker},
+                                          support_selected_operation={'name': '删除', 'url': '/delete_selected_bond.html'}
+                                          )
 
         scatter_html = utils.echarts_html_utils.generate_scatter_html_with_one_table(table, use_personal_features=is_login_user)
 
-        return '我的可转债自选', build_select_nav_html('/view_my_select.html'), html + "<br/>" + scatter_html + '<br/><br/>'
+        return '我的可转债自选', build_select_nav_html('/view_my_select.html'), '<br/><br/>' + scatter_html + "<br/>" + html + '<br/><br/>'
 
     except Exception as e:
         print("processing is failure. ", e)

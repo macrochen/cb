@@ -1,9 +1,10 @@
+import os
 import sqlite3
 import threading
 
 from prettytable import PrettyTable
 
-from config import db_file_path
+from config import db_file_path, basedir
 from models import db
 
 
@@ -35,12 +36,16 @@ def get_dict_row(cursor, row):
 local_con = {}
 
 
+def get_db_file():
+    return os.path.join(basedir, db_file_path)
+
+
 def get_connect():
     # 避免同一个方法/线程多次调用时db被锁住
     # if local_con.get(threading.current_thread(), None) is None:
     #     local_con[threading.current_thread()] = sqlite3.connect('db/cb.db3')
     # return local_con[threading.current_thread()]
-    return sqlite3.connect(db_file_path)
+    return sqlite3.connect(get_db_file())
 
 def get_cursor(sql, params=None):
     result = db.session.execute(sql, params)
