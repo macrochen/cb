@@ -3,10 +3,11 @@ analysis_nav_html_dict = {
     '/view_tree_map_industry.html': (2, '<li><a href="/view_tree_map_industry.html">可转债涨跌行业分布</a></li>'),
     '/view_tree_map_price.html': (3, '<li><a href="/view_tree_map_price.html">涨跌价格分布</a></li>'),
     '/view_tree_map_premium.html': (4, '<li><a href="/view_tree_map_premium.html">涨跌溢价率分布</a></li>'),
-    '/view_up_down.html': (5, '<li><a href="/view_up_down.html">可转债涨跌排行</a></li>'),
-    '/view_discount.html': (6, '<li><a href="/view_discount.html">溢价率折价排行</a></li>'),
-    '/view_stock.html': (7, '<li><a href="/view_stock.html">正股涨幅排行</a></li>'),
-    '/view_turnover.html': (8, '<li><a href="/view_turnover.html">换手率排行</a></li>'),
+    '/view_up_down_range.html': (5, '<li><a href="/view_up_down_range.html">可转债涨跌幅分布</a></li>'),
+    '/view_up_down.html': (6, '<li><a href="/view_up_down.html">可转债涨跌排行</a></li>'),
+    '/view_discount.html': (7, '<li><a href="/view_discount.html">溢价率折价排行</a></li>'),
+    '/view_stock.html': (8, '<li><a href="/view_stock.html">正股涨幅排行</a></li>'),
+    '/view_turnover.html': (9, '<li><a href="/view_turnover.html">换手率排行</a></li>'),
 }
 personal_nav_html_dict = {
     '/': (1, '<li><a href="/">Home</a></li>'),

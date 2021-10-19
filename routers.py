@@ -21,7 +21,7 @@ from utils.db_utils import get_connect, get_cursor
 from utils.html_utils import get_strategy_options_html
 from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
     view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_tree_map_price, \
-    view_tree_map_premium, view_my_price_list, view_my_trade_history, view_cb_trend
+    view_tree_map_premium, view_my_price_list, view_my_trade_history, view_cb_trend, view_up_down_range
 from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html
 
 cb = Blueprint('cb', __name__)
@@ -501,6 +501,13 @@ def sync_trade_data(id='', bond_code=''):
 def up_down_view():
     user_id = session.get('_user_id')
     title, navbar, content = view_up_down.draw_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_up_down_range.html')
+def up_down_range_view():
+    user_id = session.get('_user_id')
+    title, navbar, content = view_up_down_range.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
