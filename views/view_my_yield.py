@@ -3,6 +3,7 @@
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 import utils.echarts_html_utils
 import utils.table_html_utils
+import views.nav_utils
 from utils import db_utils
 from utils.db_utils import get_cursor
 from views import view_utils
@@ -32,7 +33,7 @@ order by date  desc   --limit 2
 
         # table_html = table.get_html_string()
         table, table_html = utils.table_html_utils.generate_table_html_with_data(None, cur, html, need_title=False,
-                                                                                 remark_fields_color=['我的', '可转债指数', '沪深300'],
+                                                                                 remark_fields=['我的', '可转债指数', '沪深300'],
                                                                                  ignore_fields=['我的净值', '可转债指数净值', '沪深300净值'],
                                                                                  nav_html_list=nav_html_list, table_width='800px')
 
@@ -55,7 +56,7 @@ order by date  desc   --limit 2
                 </center>
         """
 
-        return '我的可转债收益情况', ''.join(view_utils.build_personal_nav_html_list('/view_my_yield.html')), html
+        return '我的可转债收益情况', ''.join(views.nav_utils.build_personal_nav_html_list('/view_my_yield.html')), html
 
     except Exception as e:
         print("processing is failure. ", e)

@@ -5,6 +5,7 @@
 # https://blog.csdn.net/idomyway/article/details/82390040
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+import views.nav_utils
 from views import view_utils
 from views.view_market import generate_strategy_html
 
@@ -54,9 +55,9 @@ def draw_view(is_login_user):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and cb_premium_id < 0 
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where cb_premium_id < 0 
           -- and cb_price2_id > 99 
           -- and cb_price2_id < 115 
           -- and roe > 1 
@@ -74,10 +75,10 @@ def draw_view(is_login_user):
               on d.bond_code = e.bond_code
                   """
         html = '<br><br><br>' + generate_strategy_html(sql, "溢价率折价排行", "低溢价率top5", html,
-                                                       remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                                       remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                                        use_personal_features=is_login_user)
 
-        return '溢价率折价排行', view_utils.build_analysis_nav_html('/view_discount.html'), html
+        return '溢价率折价排行', views.nav_utils.build_analysis_nav_html('/view_discount.html'), html
 
     except Exception as e:
         print("processing is failure. ", e)

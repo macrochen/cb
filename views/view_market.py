@@ -58,8 +58,7 @@ def draw_market_view(user_id):
     from (select * from changed_bond where enforce_get in ('强赎中')) c left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)  
              ) e 
         on c.bond_code = e.bond_code
     order by 转债价格 desc 
@@ -105,23 +104,22 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-         and red_t not in('无权', '回售内')
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+         where red_t not in('无权', '回售内')
          and red_t < 1
          and round(bt_red * 100,2) > 1
         --ORDER by 回售年限 ASC, 回售收益率 DESC;
         ORDER by 性价比 DESC) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
             """
             html = generate_strategy_html(sql, "回售策略", "回售年限<1年, 回收收益率>1%", html, label_y="回售收益率(%)",
                                           field_name='回售收益率', nav_html_list=nav_html_list,
-                                          remark_fields_color=['回售年限(年)', '回售收益率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['回售年限(年)', '回售收益率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========回售策略=========
@@ -160,21 +158,20 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-         and e.optional = 300
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+         where e.optional = 300
         --ORDER by 回售年限 ASC, 回售收益率 DESC;
         ORDER by 转债价格 ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
             """
             html = generate_strategy_html(sql, "下修博弈策略", "100面值以下为主", html, label_y="到期收益率(%)", field_name='到期收益率',
                                           nav_html_list=nav_html_list,
-                                          remark_fields_color=['溢价率', '到期收益率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['溢价率', '到期收益率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========低余额策略=========
@@ -230,8 +227,8 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
         ORDER by 双低值
         limit 10) d left join 
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
@@ -242,9 +239,9 @@ def draw_market_view(user_id):
         on d.bond_code = e.bond_code
         
             """
-            get_label = lambda row: row['名称'].replace('转债', '') + '(' + str(row['双低值']) + ')'
+            get_label = lambda row: row['名称'].replace('转债', '') + '(双低:' + str(row['双低值']) + ')'
             html = generate_strategy_html(sql, "双低策略", "双低值前10", html, get_label=get_label, nav_html_list=nav_html_list,
-                                          remark_fields_color=['溢价率', '转债价格', '可转债涨跌', '到期收益率', '双低值', '正股涨跌'],
+                                          remark_fields=['溢价率', '转债价格', '可转债涨跌', '到期收益率', '双低值', '正股涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========高收益策略=========
@@ -283,8 +280,8 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
         --and c.rating in ('AA+', 'AA-', 'AA', 'AAA', 'A', 'A+')
         --and c.cb_name_id not in( '亚药转债' , '本钢转债','搜特转债','广汇转债')
         --AND bt_yield > 0
@@ -301,7 +298,7 @@ def draw_market_view(user_id):
 
             html = generate_strategy_html(sql, "高收益策略", "到期收益率前10", html, label_y="到期收益率(%)", field_name='到期收益率',
                                           nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========活性债策略=========
@@ -362,9 +359,9 @@ def draw_market_view(user_id):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and at_yield > 0
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where at_yield > 0
           and bond_t1 < 3
           -- and duration < 3 
           -- and cb_price2_id > 99 
@@ -384,7 +381,7 @@ def draw_market_view(user_id):
               on d.bond_code = e.bond_code
                   """
                 html = generate_strategy_html(sql, "快到期保本策略", "税后到期收益率>0, 剩余年限<3", html, nav_html_list=nav_html_list,
-                                              remark_fields_color=['税后到期收益率', '溢价率', '转债价格', '可转债涨跌', '剩余年限'],
+                                              remark_fields=['税后到期收益率', '溢价率', '转债价格', '可转债涨跌', '剩余年限'],
                                               use_personal_features=use_personal_features)
 
             # =========低溢价率策略=========
@@ -426,9 +423,9 @@ def draw_market_view(user_id):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and cb_premium_id < 0.05
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where cb_premium_id < 0.05
 		  and cb_price2_id < 140 
           order by (2.5-bond_t1) + bt_yield * 100 desc limit 5) d left join
                 (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
@@ -440,7 +437,7 @@ def draw_market_view(user_id):
                   """
                 html = generate_strategy_html(sql, "低溢价率策略", "溢价率<4%, 转债价格<140, 如果持有, 坚持不卖", html,
                                               nav_html_list=nav_html_list,
-                                              remark_fields_color=['溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
+                                              remark_fields=['溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
                                               use_personal_features=use_personal_features)
 
         # =========广撒网策略=========
@@ -481,11 +478,11 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
       -- and duration < 3 
       -- and cb_price2_id > 99 
-      and cb_price2_id < 105 
+      where cb_price2_id < 105 
       and stock_pb > 1 
       -- and s.net > 0
       -- and s.margin > 10
@@ -495,13 +492,12 @@ def draw_market_view(user_id):
       order by bt_yield desc) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(sql, "广撒网策略", "价格<105, 溢价率<20%, pb>1", html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========正股优选策略=========
@@ -542,8 +538,8 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
       -- and duration < 3 
       -- and cb_price2_id > 99 
       -- and cb_price2_id < 105 
@@ -552,7 +548,7 @@ def draw_market_view(user_id):
       -- and s.margin > 10
       -- and cb_t_id = '转股中' 
       -- and cb_premium_id*100 < 20 
-      and 双低值 < 130
+      where 双低值 < 130
       and stock_total >= 6
       -- and cb_price2_id < 115
       -- order by stock_total desc
@@ -562,14 +558,13 @@ def draw_market_view(user_id):
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(sql, "正股优选策略", "正股综合评分>6, 转债价格<115, 双低值<130", html,
                                           nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========高成长策略=========
@@ -610,23 +605,22 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-      and yoy_margin_rate > 0 
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+      where yoy_margin_rate > 0 
       and margin > 0 
       and cb_price2_id < 115
       ORDER by  yoy_margin_rate DESC limit 20
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(sql, "高成长策略", "利润率增长top20, 转债价格<115, 利润率>0", html,
                                           nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '利润率|行业均值', '利润率同比'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '利润率|行业均值', '利润率同比'],
                                           use_personal_features=use_personal_features)
 
         # =========股性策略=========
@@ -667,23 +661,22 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
      -- and yoy_margin_rate > 0 
       --and margin > 0 
-      and cb_price2_id < 115
+      where cb_price2_id < 115
 	  and cb_premium_id < 0.1
       ORDER by  cb_premium_id asc
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(sql, "股性策略", "转债价格<115, 溢价率<10%, 用来筛选网格对象", html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
                                           use_personal_features=use_personal_features)
 
         # =========妖债策略=========
@@ -727,23 +720,22 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
      -- and yoy_margin_rate > 0 
-      and remain_amount < 3 
+      where remain_amount < 3 
       and cb_trade_amount2_id > 0.5
       ORDER by  remain_amount asc
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code
               """
             html = generate_strategy_html(sql, "妖债策略", "余额<3亿, 换手率>50%, 找底部长时间横盘, 刚刚放量上涨, 当大盘跌, 柚子没有攒钱的地方, 就会来短炒妖债",
                                           html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '余额(亿元)', '换手率(%)'],
                                           use_personal_features=use_personal_features)
 
 
@@ -785,18 +777,17 @@ def draw_market_view(user_id):
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-      and e.optional = 1
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+      where e.optional = 1
       ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code"""
             html = generate_strategy_html(sql, "抄作业", "收集近期大V们推荐", html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========自选集=========
@@ -837,9 +828,9 @@ def draw_market_view(user_id):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and e.optional = 2
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where e.optional = 2
           ) d left join 
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
@@ -849,7 +840,7 @@ def draw_market_view(user_id):
             on d.bond_code = e.bond_code"""
 
             html = generate_strategy_html(sql, "自选集", "根据各种策略选出来准备买入的", html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========非200不卖=========
@@ -893,9 +884,9 @@ def draw_market_view(user_id):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and e.optional = 200 and cb_price2_id < 200
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where e.optional = 200 and cb_price2_id < 200
           ) d left join 
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
@@ -905,7 +896,7 @@ def draw_market_view(user_id):
             on d.bond_code = e.bond_code"""
 
             html = generate_strategy_html(sql, "非200不卖", "不到200元不卖", html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
                                           use_personal_features=use_personal_features)
 
         # =========凌波双低轮动=========
@@ -949,9 +940,9 @@ def draw_market_view(user_id):
             case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
             case when e.memo is not null then  e.memo else  '' END as 备注
 
-            from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-            where c.stock_code = s.stock_code and c.bond_code = e.bond_code
-          and e.optional = 'yyb' order by 转债价格 
+            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
+          where e.optional = 'yyb' order by 转债价格 
           ) d left join 
             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
                 from hold_bond 
@@ -963,7 +954,7 @@ def draw_market_view(user_id):
             html = generate_strategy_html(sql, "凌波双低轮动",
                                           "脉冲卖出标准:110元以下(价格120双低值125)，110-115元(价格125双低值130)，115-120元(价格130双低值135)，120-125元(价格135双低值140)",
                                           html, nav_html_list=nav_html_list,
-                                          remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
+                                          remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
                                           use_personal_features=use_personal_features)
 
             cfg_list = db.session.query(Config)\
@@ -976,10 +967,10 @@ def draw_market_view(user_id):
                 s = cfg.ext_value
                 ss = json.loads(s)
                 sub_title = ss.get('sub_title', None)
-                remark_fields_color = ss.get('remark_fields_color', None)
+                remark_fields = ss.get('remark_fields', None)
                 html = generate_strategy_html(sql, title, sub_title, html,
                                        nav_html_list=nav_html_list,
-                                       remark_fields_color=remark_fields_color,
+                                       remark_fields=remark_fields,
                                        use_personal_features=use_personal_features)
 
         return '市场策略', ''.join(nav_html_list), html
@@ -997,7 +988,7 @@ def get_strategy_list():
 
 
 def generate_strategy_html(sql, type, sub_title, html, label_y='转股溢价率(%)', field_name='溢价率',
-                           get_label=default_get_label, nav_html_list=None, remark_fields_color=[], draw_figure=True,
+                           get_label=default_get_label, nav_html_list=None, remark_fields=[], draw_figure=True,
                            use_personal_features=False):
 
     cur = db.session.execute(sql)
@@ -1013,7 +1004,7 @@ def generate_strategy_html(sql, type, sub_title, html, label_y='转股溢价率(
 
     html += """
     <div id=\"""" + type + """\">
-        """ + scatter_html + utils.table_html_utils.build_table_html(table, remark_fields_color, ignore_fields=['持有数量'], is_login_user=use_personal_features, table_rows_size=6) + """
+        """ + scatter_html + utils.table_html_utils.build_table_html(table, remark_fields, ignore_fields=['持有数量'], is_login_user=use_personal_features, table_rows_size=6) + """
     </div>
     """
 
@@ -1056,25 +1047,24 @@ def build_low_remain_block(html, nav_html_list, sort_field, sub_strategy, use_pe
         case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
         case when e.memo is not null then  e.memo else  '' END as 备注
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
         --and cb_premium_id * 100 < 30 
-        and remain_amount < 3 
+        where remain_amount < 3 
         --and cb_price2_id < 110
         ORDER by """ + sort_field + """ ASC
         limit 10
         ) d left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 
             from hold_bond 
-            where id in (select id from hold_bond where id 
-                in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code) ) 
+            where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) e 
         on d.bond_code = e.bond_code            
             """
     get_label = lambda row: row['名称'].replace('转债', '') + '(' + str(round(row['余额(亿元)'], 1)) + '亿)'
     html = generate_strategy_html(sql, "低余额策略(" + sub_strategy + ")", "余额<3亿, " + sub_strategy + "top10", html,
                                   get_label=get_label, nav_html_list=nav_html_list,
-                                  remark_fields_color=['余额(亿元)', '溢价率', '转债价格', '可转债涨跌'],
+                                  remark_fields=['余额(亿元)', '溢价率', '转债价格', '可转债涨跌'],
                                   use_personal_features=use_personal_features)
     return html
 
@@ -1143,12 +1133,12 @@ def generate_active_strategy_html(gn_c, gn_s, suffix, html, htmls, use_personal_
         case when e.memo is not null then  e.memo else  '' END as 备注
 
   
-        from (select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c, stock_report s, changed_bond_extend e
-        where c.stock_code = s.stock_code and c.bond_code = e.bond_code
+        from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+                  left join changed_bond_extend e on c.bond_code = e.bond_code
       --and duration < 3 
       --and remain_amount < 5 -- 余额
       --and cb_price2_id > 110
-      and cb_price2_id < 130 -- 转债价格
+      where cb_price2_id < 130 -- 转债价格
       -- and cb_trade_amount2_id > 0.5 -- 换手率
 	  and cb_premium_id < 0.3 -- 溢价率
 """ + gn_c + """
@@ -1163,7 +1153,7 @@ def generate_active_strategy_html(gn_c, gn_s, suffix, html, htmls, use_personal_
     html = generate_strategy_html(sql, "活性债策略(" + suffix + ')',
                                   "按照主题>风格>行业方向, " + suffix + "(" + gn_s + ")\n\n结合价格<130, 溢价率<30%, 余额<3亿, 换手率>50%选出最具性价比和爆发力标的",
                                   html, nav_html_list=htmls,
-                                  remark_fields_color=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
+                                  remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌', '正股涨跌'],
                                   use_personal_features=use_personal_features)
     return html
 

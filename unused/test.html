@@ -1,556 +1,804 @@
-<!--<!DOCTYPE html>-->
-<!--<html lang="en">-->
+<!--&lt;!&ndash;<!DOCTYPE html>&ndash;&gt;-->
+<!--&lt;!&ndash;<html lang="en">&ndash;&gt;-->
 
-<!--<head>-->
-<!--    <meta charset="UTF-8">-->
-<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
-<!--    <meta http-equiv="X-UA-Compatible" content="ie=edge">-->
-<!--    <title>CSS实现Tab切换效果</title>-->
-<!--    <style>-->
-<!--        ul {-->
-<!--            margin: 0;-->
-<!--            padding: 0;-->
+<!--&lt;!&ndash;<head>&ndash;&gt;-->
+<!--&lt;!&ndash;    <meta charset="UTF-8">&ndash;&gt;-->
+<!--&lt;!&ndash;    <meta name="viewport" content="width=device-width, initial-scale=1.0">&ndash;&gt;-->
+<!--&lt;!&ndash;    <meta http-equiv="X-UA-Compatible" content="ie=edge">&ndash;&gt;-->
+<!--&lt;!&ndash;    <title>CSS实现Tab切换效果</title>&ndash;&gt;-->
+<!--&lt;!&ndash;    <style>&ndash;&gt;-->
+<!--&lt;!&ndash;        ul {&ndash;&gt;-->
+<!--&lt;!&ndash;            margin: 0;&ndash;&gt;-->
+<!--&lt;!&ndash;            padding: 0;&ndash;&gt;-->
 
-<!--        }-->
-<!--        .clearfloat {-->
-<!--            zoom: 1;-->
-<!--        }-->
-<!--        .clearfloat::after {-->
-<!--            display: block;-->
-<!--            clear: both;-->
-<!--            content: "";-->
-<!--            visibility: hidden;-->
-<!--            height: 0;-->
-<!--        }-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+<!--&lt;!&ndash;        .clearfloat {&ndash;&gt;-->
+<!--&lt;!&ndash;            zoom: 1;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+<!--&lt;!&ndash;        .clearfloat::after {&ndash;&gt;-->
+<!--&lt;!&ndash;            display: block;&ndash;&gt;-->
+<!--&lt;!&ndash;            clear: both;&ndash;&gt;-->
+<!--&lt;!&ndash;            content: "";&ndash;&gt;-->
+<!--&lt;!&ndash;            visibility: hidden;&ndash;&gt;-->
+<!--&lt;!&ndash;            height: 0;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
 
-<!--        .tab-list {-->
-<!--            position: relative;-->
-<!--        }-->
+<!--&lt;!&ndash;        .tab-list {&ndash;&gt;-->
+<!--&lt;!&ndash;            position: relative;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
 
-<!--        .tab-list .tab-itom {-->
-<!--            float: left;-->
-<!--            list-style: none;-->
-<!--            margin-right: 4px;-->
-<!--        }-->
+<!--&lt;!&ndash;        .tab-list .tab-itom {&ndash;&gt;-->
+<!--&lt;!&ndash;            float: left;&ndash;&gt;-->
+<!--&lt;!&ndash;            list-style: none;&ndash;&gt;-->
+<!--&lt;!&ndash;            margin-right: 4px;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
 
-<!--        .tab-itom .test-label {-->
-<!--            position: relative;-->
-<!--            display: block;-->
-<!--            width: 85px;-->
-<!--            height: 27px;-->
-<!--            border: 1px solid transparent;-->
-<!--            border-top-left-radius: 5px;-->
-<!--            border-top-right-radius: 5px;-->
-<!--            line-height: 27px;-->
-<!--            text-align: center;-->
-<!--            background: #e7e8eb;-->
-<!--        }-->
+<!--&lt;!&ndash;        .tab-itom .test-label {&ndash;&gt;-->
+<!--&lt;!&ndash;            position: relative;&ndash;&gt;-->
+<!--&lt;!&ndash;            display: block;&ndash;&gt;-->
+<!--&lt;!&ndash;            width: 85px;&ndash;&gt;-->
+<!--&lt;!&ndash;            height: 27px;&ndash;&gt;-->
+<!--&lt;!&ndash;            border: 1px solid transparent;&ndash;&gt;-->
+<!--&lt;!&ndash;            border-top-left-radius: 5px;&ndash;&gt;-->
+<!--&lt;!&ndash;            border-top-right-radius: 5px;&ndash;&gt;-->
+<!--&lt;!&ndash;            line-height: 27px;&ndash;&gt;-->
+<!--&lt;!&ndash;            text-align: center;&ndash;&gt;-->
+<!--&lt;!&ndash;            background: #e7e8eb;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
 
-<!--        .tab-itom .tab-box {-->
-<!--            /* 设置绝对定位方便定位相对于tab-list栏的位置，同时为了可以使用z-index属性 */-->
-<!--            position: absolute;-->
-<!--            left: 0;-->
-<!--            top: 28px;-->
-<!--            width: 1488px;-->
-<!--            height: 1048px;-->
-<!--            border: 1px solid #cbcccc;-->
-<!--            border-radius: 5px;-->
-<!--            border-top-left-radius: 0px;-->
-<!--            background: #fff;-->
-<!--            /* 设置层级最低方便选中状态遮挡 */-->
-<!--            z-index: 0;-->
-<!--        }-->
-<!--        /* 用绝对定位使按钮脱离文档流，透明度设置为0将其隐藏 */-->
-<!--        input[type="radio"] {-->
-<!--            position: absolute;-->
-<!--            opacity: 0;-->
-<!--        }-->
-<!--        /* 利用选择器实现  tab切换 */-->
+<!--&lt;!&ndash;        .tab-itom .tab-box {&ndash;&gt;-->
+<!--&lt;!&ndash;            /* 设置绝对定位方便定位相对于tab-list栏的位置，同时为了可以使用z-index属性 */&ndash;&gt;-->
+<!--&lt;!&ndash;            position: absolute;&ndash;&gt;-->
+<!--&lt;!&ndash;            left: 0;&ndash;&gt;-->
+<!--&lt;!&ndash;            top: 28px;&ndash;&gt;-->
+<!--&lt;!&ndash;            width: 1488px;&ndash;&gt;-->
+<!--&lt;!&ndash;            height: 1048px;&ndash;&gt;-->
+<!--&lt;!&ndash;            border: 1px solid #cbcccc;&ndash;&gt;-->
+<!--&lt;!&ndash;            border-radius: 5px;&ndash;&gt;-->
+<!--&lt;!&ndash;            border-top-left-radius: 0px;&ndash;&gt;-->
+<!--&lt;!&ndash;            background: #fff;&ndash;&gt;-->
+<!--&lt;!&ndash;            /* 设置层级最低方便选中状态遮挡 */&ndash;&gt;-->
+<!--&lt;!&ndash;            z-index: 0;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+<!--&lt;!&ndash;        /* 用绝对定位使按钮脱离文档流，透明度设置为0将其隐藏 */&ndash;&gt;-->
+<!--&lt;!&ndash;        input[type="radio"] {&ndash;&gt;-->
+<!--&lt;!&ndash;            position: absolute;&ndash;&gt;-->
+<!--&lt;!&ndash;            opacity: 0;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+<!--&lt;!&ndash;        /* 利用选择器实现  tab切换 */&ndash;&gt;-->
 
-<!--        /* 当radio为选中状态时设置它的test-label兄弟元素的属性 */-->
-<!--        input[type="radio"]:checked + .test-label {-->
-<!--            /* 为了修饰存在的边框背景属性 */-->
-<!--            border-color: #cbcccc;-->
-<!--            border-bottom-color: #fff;-->
-<!--            background: #fff;-->
-<!--            /* 为了修饰存在的层级使下边框遮挡下方div的上边框 */-->
-<!--            z-index: 10;-->
-<!--        }-->
-<!--        /* 当radio为选中状态时设置与它同级的tab-box元素的显示层级 */-->
-<!--        input[type="radio"]:checked ~ .tab-box {-->
-<!--            /* 选中时提升层级，遮挡其他tab页达到选中切换的效果 */-->
-<!--            z-index: 5;-->
-<!--        }-->
-<!--    </style>-->
-<!--</head>-->
+<!--&lt;!&ndash;        /* 当radio为选中状态时设置它的test-label兄弟元素的属性 */&ndash;&gt;-->
+<!--&lt;!&ndash;        input[type="radio"]:checked + .test-label {&ndash;&gt;-->
+<!--&lt;!&ndash;            /* 为了修饰存在的边框背景属性 */&ndash;&gt;-->
+<!--&lt;!&ndash;            border-color: #cbcccc;&ndash;&gt;-->
+<!--&lt;!&ndash;            border-bottom-color: #fff;&ndash;&gt;-->
+<!--&lt;!&ndash;            background: #fff;&ndash;&gt;-->
+<!--&lt;!&ndash;            /* 为了修饰存在的层级使下边框遮挡下方div的上边框 */&ndash;&gt;-->
+<!--&lt;!&ndash;            z-index: 10;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+<!--&lt;!&ndash;        /* 当radio为选中状态时设置与它同级的tab-box元素的显示层级 */&ndash;&gt;-->
+<!--&lt;!&ndash;        input[type="radio"]:checked ~ .tab-box {&ndash;&gt;-->
+<!--&lt;!&ndash;            /* 选中时提升层级，遮挡其他tab页达到选中切换的效果 */&ndash;&gt;-->
+<!--&lt;!&ndash;            z-index: 5;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+<!--&lt;!&ndash;    </style>&ndash;&gt;-->
+<!--&lt;!&ndash;</head>&ndash;&gt;-->
 
-<!--<body class="clearfloat">-->
-<!--    <ul class="tab-list clearfloat">-->
-<!--        <li class="tab-itom">-->
-<!--            <input type="radio" id="testTabRadio1" class="test-radio" name="tab" checked="checked">-->
-<!--            <label class="test-label" for="testTabRadio1">选项卡一</label>-->
-<!--            <div class="tab-box">-->
-<!--                <table border="1">-->
-<!--                    <tr>-->
-<!--                        <td>ddd</td>-->
-<!--                    </tr>-->
-<!--                </table>-->
-<!--            </div>-->
-<!--        </li>-->
-<!--        <li class="tab-itom">-->
-<!--            <input type="radio" id="testTabRadio2" class="test-radio" name="tab">-->
-<!--            <label class="test-label" for="testTabRadio2">选项卡二</label>-->
-<!--            <div class="tab-box">-->
-<!--                2222222222222-->
-<!--            </div>-->
-<!--        </li>-->
-<!--        <li class="tab-itom">-->
-<!--            <input type="radio" id="testTabRadio3" class="test-radio" name="tab">-->
-<!--            <label class="test-label" for="testTabRadio3">选项卡三</label>-->
-<!--            <div class="tab-box">-->
-<!--                33333333333333-->
-<!--            </div>-->
-<!--        </li>-->
-<!--    </ul>-->
-<!--</body>-->
+<!--&lt;!&ndash;<body class="clearfloat">&ndash;&gt;-->
+<!--&lt;!&ndash;    <ul class="tab-list clearfloat">&ndash;&gt;-->
+<!--&lt;!&ndash;        <li class="tab-itom">&ndash;&gt;-->
+<!--&lt;!&ndash;            <input type="radio" id="testTabRadio1" class="test-radio" name="tab" checked="checked">&ndash;&gt;-->
+<!--&lt;!&ndash;            <label class="test-label" for="testTabRadio1">选项卡一</label>&ndash;&gt;-->
+<!--&lt;!&ndash;            <div class="tab-box">&ndash;&gt;-->
+<!--&lt;!&ndash;                <table border="1">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <tr>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <td>ddd</td>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </tr>&ndash;&gt;-->
+<!--&lt;!&ndash;                </table>&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--&lt;!&ndash;        </li>&ndash;&gt;-->
+<!--&lt;!&ndash;        <li class="tab-itom">&ndash;&gt;-->
+<!--&lt;!&ndash;            <input type="radio" id="testTabRadio2" class="test-radio" name="tab">&ndash;&gt;-->
+<!--&lt;!&ndash;            <label class="test-label" for="testTabRadio2">选项卡二</label>&ndash;&gt;-->
+<!--&lt;!&ndash;            <div class="tab-box">&ndash;&gt;-->
+<!--&lt;!&ndash;                2222222222222&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--&lt;!&ndash;        </li>&ndash;&gt;-->
+<!--&lt;!&ndash;        <li class="tab-itom">&ndash;&gt;-->
+<!--&lt;!&ndash;            <input type="radio" id="testTabRadio3" class="test-radio" name="tab">&ndash;&gt;-->
+<!--&lt;!&ndash;            <label class="test-label" for="testTabRadio3">选项卡三</label>&ndash;&gt;-->
+<!--&lt;!&ndash;            <div class="tab-box">&ndash;&gt;-->
+<!--&lt;!&ndash;                33333333333333&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--&lt;!&ndash;        </li>&ndash;&gt;-->
+<!--&lt;!&ndash;    </ul>&ndash;&gt;-->
+<!--&lt;!&ndash;</body>&ndash;&gt;-->
 
-<!--</html>-->
+<!--&lt;!&ndash;</html>&ndash;&gt;-->
 
-<!--<html>-->
-<!--<head>-->
-<!--    <meta charset="UTF-8">-->
-<!--    <style>-->
-<!--        header{-->
-<!--            #background-color: #C50B10;-->
-<!--            color: #FFF;-->
-<!--            /*position: fixed;*/-->
-<!--/*margin:50px 500px;*/-->
-<!--        }-->
-<!--        li{-->
-<!--            line-height: 50px;-->
-<!--            #background-color: #C50B10;-->
-<!--            display: inline-block;-->
-<!--            padding: 0 20px;-->
-<!--        }-->
-<!--        li.active{-->
-<!--            background: rgba(0,0,0,.2);-->
-<!--        }-->
+<!--&lt;!&ndash;<html>&ndash;&gt;-->
+<!--&lt;!&ndash;<head>&ndash;&gt;-->
+<!--&lt;!&ndash;    <meta charset="UTF-8">&ndash;&gt;-->
+<!--&lt;!&ndash;    <style>&ndash;&gt;-->
+<!--&lt;!&ndash;        header{&ndash;&gt;-->
+<!--&lt;!&ndash;            #background-color: #C50B10;&ndash;&gt;-->
+<!--&lt;!&ndash;            color: #FFF;&ndash;&gt;-->
+<!--&lt;!&ndash;            /*position: fixed;*/&ndash;&gt;-->
+<!--&lt;!&ndash;/*margin:50px 500px;*/&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+<!--&lt;!&ndash;        li{&ndash;&gt;-->
+<!--&lt;!&ndash;            line-height: 50px;&ndash;&gt;-->
+<!--&lt;!&ndash;            #background-color: #C50B10;&ndash;&gt;-->
+<!--&lt;!&ndash;            display: inline-block;&ndash;&gt;-->
+<!--&lt;!&ndash;            padding: 0 20px;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+<!--&lt;!&ndash;        li.active{&ndash;&gt;-->
+<!--&lt;!&ndash;            background: rgba(0,0,0,.2);&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
 
-<!--        #div1, #div2, #div3, #div4 {-->
-<!--        height: 800px;-->
-<!--        width: 400px;-->
-<!--        border: 2px solid black;-->
-<!--        }-->
-<!--</style>-->
-<!--<script>-->
-<!--    $(document).ready(function () {-->
-<!--        $(".navbar-nav>li a").each(function () {-->
-<!--            if ($($(this))[0].href == String(window.location))-->
-<!--                $(this).parent().addClass('active');-->
-<!--        });-->
-<!--    });-->
-<!--</script>-->
-<!--</head>-->
-<!--<body>-->
-<!--<div style="position: sticky;">-->
-<!--<header>-->
-<!--    <div class="navbar-nav">-->
-<!--        <li class="active"><a href="#div1">首页</a></li>-->
-<!--        <li><a href="#div2">新闻</a></li>-->
-<!--        <li><a href="#div3">活动</a></li>-->
-<!--        <li><a href="#div4">项目</a></li>-->
-<!--    </div>-->
-<!--</header>-->
-<!--</div>-->
-<!--<div style="border: 2px solid red">-->
-<!--<div id="div1">div1</div>-->
-<!--<div id="div2">div2</div>-->
-<!--<div id="div3">div3</div>-->
-<!--<div id="div4">div4</div>-->
-<!--    </div>-->
-<!--</body>-->
-<!--</html>-->
-
-
-
-<!--<!DOCTYPE html>-->
-<!--<html lang="zh">-->
-<!--	<head>-->
-<!--		<meta charset="UTF-8">-->
-<!--		<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
-<!--		<meta http-equiv="X-UA-Compatible" content="ie=edge">-->
-<!--		<title>导航栏</title>-->
-<!--	</head>-->
-<!--	<body>-->
-<!--		<style>-->
-<!--			*{-->
-<!--				box-sizing: border-box;-->
-<!--			}-->
-<!--			li {-->
-<!--				list-style: none;-->
-<!--			}-->
-
-<!--            #nav a:link,-->
-
-<!--    #nav a:visited {-->
-
-<!--    color:#000;-->
-
-<!--    background:#b2b580;-->
-
-<!--    padding:20px 40px 4px 10px;-->
-
-<!--    float:left;-->
-
-<!--    width:auto;-->
-
-<!--    border-right:1px solid #42432d;-->
-
-<!--    text-decoration:none;-->
-
-<!--    font:bold 1em/1em Arial, Helvetica, sans-serif;-->
-
-<!--    text-transform:uppercase;-->
-
-<!--    text-shadow: 2px 2px 2px #555;-->
-
-<!--    }-->
-
-<!--    #nav li:first-child a {-->
-
-<!--    border-left:1px solid #42432d;-->
-
-<!--    }-->
+<!--&lt;!&ndash;        #div1, #div2, #div3, #div4 {&ndash;&gt;-->
+<!--&lt;!&ndash;        height: 800px;&ndash;&gt;-->
+<!--&lt;!&ndash;        width: 400px;&ndash;&gt;-->
+<!--&lt;!&ndash;        border: 2px solid black;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+<!--&lt;!&ndash;</style>&ndash;&gt;-->
+<!--&lt;!&ndash;<script>&ndash;&gt;-->
+<!--&lt;!&ndash;    $(document).ready(function () {&ndash;&gt;-->
+<!--&lt;!&ndash;        $(".navbar-nav>li a").each(function () {&ndash;&gt;-->
+<!--&lt;!&ndash;            if ($($(this))[0].href == String(window.location))&ndash;&gt;-->
+<!--&lt;!&ndash;                $(this).parent().addClass('active');&ndash;&gt;-->
+<!--&lt;!&ndash;        });&ndash;&gt;-->
+<!--&lt;!&ndash;    });&ndash;&gt;-->
+<!--&lt;!&ndash;</script>&ndash;&gt;-->
+<!--&lt;!&ndash;</head>&ndash;&gt;-->
+<!--&lt;!&ndash;<body>&ndash;&gt;-->
+<!--&lt;!&ndash;<div style="position: sticky;">&ndash;&gt;-->
+<!--&lt;!&ndash;<header>&ndash;&gt;-->
+<!--&lt;!&ndash;    <div class="navbar-nav">&ndash;&gt;-->
+<!--&lt;!&ndash;        <li class="active"><a href="#div1">首页</a></li>&ndash;&gt;-->
+<!--&lt;!&ndash;        <li><a href="#div2">新闻</a></li>&ndash;&gt;-->
+<!--&lt;!&ndash;        <li><a href="#div3">活动</a></li>&ndash;&gt;-->
+<!--&lt;!&ndash;        <li><a href="#div4">项目</a></li>&ndash;&gt;-->
+<!--&lt;!&ndash;    </div>&ndash;&gt;-->
+<!--&lt;!&ndash;</header>&ndash;&gt;-->
+<!--&lt;!&ndash;</div>&ndash;&gt;-->
+<!--&lt;!&ndash;<div style="border: 2px solid red">&ndash;&gt;-->
+<!--&lt;!&ndash;<div id="div1">div1</div>&ndash;&gt;-->
+<!--&lt;!&ndash;<div id="div2">div2</div>&ndash;&gt;-->
+<!--&lt;!&ndash;<div id="div3">div3</div>&ndash;&gt;-->
+<!--&lt;!&ndash;<div id="div4">div4</div>&ndash;&gt;-->
+<!--&lt;!&ndash;    </div>&ndash;&gt;-->
+<!--&lt;!&ndash;</body>&ndash;&gt;-->
+<!--&lt;!&ndash;</html>&ndash;&gt;-->
 
 
+<!--&lt;!&ndash;<!DOCTYPE html>&ndash;&gt;-->
+<!--&lt;!&ndash;<html lang="zh">&ndash;&gt;-->
+<!--&lt;!&ndash;	<head>&ndash;&gt;-->
+<!--&lt;!&ndash;		<meta charset="UTF-8">&ndash;&gt;-->
+<!--&lt;!&ndash;		<meta name="viewport" content="width=device-width, initial-scale=1.0">&ndash;&gt;-->
+<!--&lt;!&ndash;		<meta http-equiv="X-UA-Compatible" content="ie=edge">&ndash;&gt;-->
+<!--&lt;!&ndash;		<title>导航栏</title>&ndash;&gt;-->
+<!--&lt;!&ndash;	</head>&ndash;&gt;-->
+<!--&lt;!&ndash;	<body>&ndash;&gt;-->
+<!--&lt;!&ndash;		<style>&ndash;&gt;-->
+<!--&lt;!&ndash;			*{&ndash;&gt;-->
+<!--&lt;!&ndash;				box-sizing: border-box;&ndash;&gt;-->
+<!--&lt;!&ndash;			}&ndash;&gt;-->
+<!--&lt;!&ndash;			li {&ndash;&gt;-->
+<!--&lt;!&ndash;				list-style: none;&ndash;&gt;-->
+<!--&lt;!&ndash;			}&ndash;&gt;-->
 
-<!--			.nav {-->
-<!--				width: 500px;-->
-<!--				height: 60px;-->
-<!--				margin: 0 auto;-->
-<!--                position: fixed;-->
+<!--&lt;!&ndash;            #nav a:link,&ndash;&gt;-->
 
-<!--                margin:0;-->
+<!--&lt;!&ndash;    #nav a:visited {&ndash;&gt;-->
 
-<!--    padding:0;-->
+<!--&lt;!&ndash;    color:#000;&ndash;&gt;-->
 
-<!--    background:#808259 url(nav_bg.jpg) 0 0 repeat-x;-->
+<!--&lt;!&ndash;    background:#b2b580;&ndash;&gt;-->
 
-<!--    float:left;-->
+<!--&lt;!&ndash;    padding:20px 40px 4px 10px;&ndash;&gt;-->
 
-<!--    width:100%;-->
+<!--&lt;!&ndash;    float:left;&ndash;&gt;-->
 
-<!--    border:1px solid #42432d;-->
+<!--&lt;!&ndash;    width:auto;&ndash;&gt;-->
 
-<!--    border-width:1px 0;-->
+<!--&lt;!&ndash;    border-right:1px solid #42432d;&ndash;&gt;-->
 
-<!--			}-->
-<!--			.nav ul {-->
-<!--				display: flex;-->
-<!--				justify-content: space-around;-->
-<!--				align-items: center;-->
-<!--			}-->
-<!--			.nav li{-->
-<!--				height: 60px;-->
-<!--				line-height: 60px;-->
-<!--                transition: all 0.3s ease;-->
-<!--			}-->
-<!--			.nav li:hover{-->
-<!--				cursor: pointer;-->
-<!--				border-bottom:2px solid #109dff;-->
-<!--			}-->
-<!--			.active{-->
-<!--				border-bottom:2px solid #109dff;-->
-<!--			}-->
+<!--&lt;!&ndash;    text-decoration:none;&ndash;&gt;-->
 
-<!--              .content {-->
-<!--        height: 800px;-->
-<!--        width: 400px;-->
-<!--        border: 2px solid black;-->
-<!--        }-->
+<!--&lt;!&ndash;    font:bold 1em/1em Arial, Helvetica, sans-serif;&ndash;&gt;-->
 
-<!--		</style>-->
-<!--		<div class="nav">-->
-<!--			<ul>-->
-<!--                <li class="active"><a href="#div1">首页</a></li>-->
-<!--                <li><a href="#div2">新闻</a></li>-->
-<!--                <li><a href="#div3">活动</a></li>-->
-<!--                <li><a href="#div4">项目</a></li>-->
-<!--			</ul>-->
-<!--		</div>-->
-<!--        <div id="div1">-->
-<!--            </br>-->
-<!--            </br>-->
-<!--            </br>-->
-<!--            </br>-->
-<!--        </div>-->
-<!--        <div class="content">div1</div>-->
-<!--            <div id="div2">-->
-<!--                </br>-->
-<!--                </br>-->
-<!--                </br>-->
-<!--                </br>-->
-<!--            </div>-->
-<!--            <div class="content">div2</div>-->
-<!--            <div id="div3">-->
-<!--                </br>-->
-<!--                </br>-->
-<!--                </br>-->
-<!--                </br>-->
-<!--            </div>-->
-<!--            <div class="content">div3</div>-->
-<!--            <div id="div4">-->
-<!--                </br>-->
-<!--                </br>-->
-<!--                </br>-->
-<!--                </br>-->
-<!--            </div>-->
-<!--            <div class="content">div4</div>-->
-<!--		<script>-->
-<!--			let lis = document.querySelectorAll('.nav>ul>li')-->
-<!--			console.log(lis)-->
-<!--			for (var i = 0; i < lis.length; i++) {-->
-<!--				lis[i].onclick = function(event) {-->
-<!--					let li = document.getElementsByClassName('active')[0]-->
-<!--					li.classList.remove('active')-->
-<!--					event.target.classList.add('active')-->
-<!--				}-->
-<!--			}-->
-<!--		</script>-->
+<!--&lt;!&ndash;    text-transform:uppercase;&ndash;&gt;-->
 
-<!--	</body>-->
-<!--</html>-->
+<!--&lt;!&ndash;    text-shadow: 2px 2px 2px #555;&ndash;&gt;-->
 
-<!-- <!DOCTYPE html>-->
-<!--<html>-->
-<!--<head>-->
-<!--  <meta charset="utf-8">-->
-<!--  <title>css-directory-animation</title>-->
-<!--  <style type="text/css">-->
-<!--    body {-->
-<!--      padding-top: 20px;-->
-<!--    }-->
-<!--    .nd-animation {-->
-<!--      display: block;-->
-<!--      position: relative;-->
-<!--      width: 22px;-->
-<!--      height: 2px;-->
-<!--      background-color: #25283D;-->
-<!--      transition: background-color .2s linear;-->
-<!--    }-->
-<!--    .nd-animation::before {-->
-<!--      position: absolute;-->
-<!--      content: '';-->
-<!--      width: 22px;-->
-<!--      height: 2px;-->
-<!--      background: #25283D;-->
-<!--      transform: translateY(-6px);-->
-<!--      transition: transform .2s linear;-->
-<!--    }-->
-<!--    .nd-animation::after {-->
-<!--      position: absolute;-->
-<!--      content: '';-->
-<!--      width: 22px;-->
-<!--      height: 2px;-->
-<!--      background: #25283D;-->
-<!--      transform: translateY(6px);-->
-<!--      transition: transform .2s linear;-->
-<!--    }-->
-<!--    .is-open {-->
-<!--      background-color: rgba(255, 255, 255, 0);-->
-<!--    }-->
-<!--    .is-open::before {-->
-<!--      transform: rotate(-45deg);-->
-<!--    }-->
-<!--    .is-open::after {-->
-<!--      transform: rotate(45deg);-->
-<!--    }-->
-<!--  </style>-->
-<!--</head>-->
-<!--<body>-->
-<!--  <span class="nd-animation"></span>-->
-<!--  <script type="text/javascript">-->
-<!--    var node = document.getElementsByClassName('nd-animation')[0];-->
-<!--    window.addEventListener('click', function() {-->
-<!--      if (node.classList.contains('is-open')) {-->
-<!--        node.classList.remove('is-open');-->
-<!--      }-->
-<!--      else {-->
-<!--        node.classList.add('is-open');-->
-<!--      }-->
-<!--    }, false);-->
-<!--  </script>-->
-<!--</body>-->
-<!--</html>-->
+<!--&lt;!&ndash;    }&ndash;&gt;-->
+
+<!--&lt;!&ndash;    #nav li:first-child a {&ndash;&gt;-->
+
+<!--&lt;!&ndash;    border-left:1px solid #42432d;&ndash;&gt;-->
+
+<!--&lt;!&ndash;    }&ndash;&gt;-->
+
+
+<!--&lt;!&ndash;			.nav {&ndash;&gt;-->
+<!--&lt;!&ndash;				width: 500px;&ndash;&gt;-->
+<!--&lt;!&ndash;				height: 60px;&ndash;&gt;-->
+<!--&lt;!&ndash;				margin: 0 auto;&ndash;&gt;-->
+<!--&lt;!&ndash;                position: fixed;&ndash;&gt;-->
+
+<!--&lt;!&ndash;                margin:0;&ndash;&gt;-->
+
+<!--&lt;!&ndash;    padding:0;&ndash;&gt;-->
+
+<!--&lt;!&ndash;    background:#808259 url(nav_bg.jpg) 0 0 repeat-x;&ndash;&gt;-->
+
+<!--&lt;!&ndash;    float:left;&ndash;&gt;-->
+
+<!--&lt;!&ndash;    width:100%;&ndash;&gt;-->
+
+<!--&lt;!&ndash;    border:1px solid #42432d;&ndash;&gt;-->
+
+<!--&lt;!&ndash;    border-width:1px 0;&ndash;&gt;-->
+
+<!--&lt;!&ndash;			}&ndash;&gt;-->
+<!--&lt;!&ndash;			.nav ul {&ndash;&gt;-->
+<!--&lt;!&ndash;				display: flex;&ndash;&gt;-->
+<!--&lt;!&ndash;				justify-content: space-around;&ndash;&gt;-->
+<!--&lt;!&ndash;				align-items: center;&ndash;&gt;-->
+<!--&lt;!&ndash;			}&ndash;&gt;-->
+<!--&lt;!&ndash;			.nav li{&ndash;&gt;-->
+<!--&lt;!&ndash;				height: 60px;&ndash;&gt;-->
+<!--&lt;!&ndash;				line-height: 60px;&ndash;&gt;-->
+<!--&lt;!&ndash;                transition: all 0.3s ease;&ndash;&gt;-->
+<!--&lt;!&ndash;			}&ndash;&gt;-->
+<!--&lt;!&ndash;			.nav li:hover{&ndash;&gt;-->
+<!--&lt;!&ndash;				cursor: pointer;&ndash;&gt;-->
+<!--&lt;!&ndash;				border-bottom:2px solid #109dff;&ndash;&gt;-->
+<!--&lt;!&ndash;			}&ndash;&gt;-->
+<!--&lt;!&ndash;			.active{&ndash;&gt;-->
+<!--&lt;!&ndash;				border-bottom:2px solid #109dff;&ndash;&gt;-->
+<!--&lt;!&ndash;			}&ndash;&gt;-->
+
+<!--&lt;!&ndash;              .content {&ndash;&gt;-->
+<!--&lt;!&ndash;        height: 800px;&ndash;&gt;-->
+<!--&lt;!&ndash;        width: 400px;&ndash;&gt;-->
+<!--&lt;!&ndash;        border: 2px solid black;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+
+<!--&lt;!&ndash;		</style>&ndash;&gt;-->
+<!--&lt;!&ndash;		<div class="nav">&ndash;&gt;-->
+<!--&lt;!&ndash;			<ul>&ndash;&gt;-->
+<!--&lt;!&ndash;                <li class="active"><a href="#div1">首页</a></li>&ndash;&gt;-->
+<!--&lt;!&ndash;                <li><a href="#div2">新闻</a></li>&ndash;&gt;-->
+<!--&lt;!&ndash;                <li><a href="#div3">活动</a></li>&ndash;&gt;-->
+<!--&lt;!&ndash;                <li><a href="#div4">项目</a></li>&ndash;&gt;-->
+<!--&lt;!&ndash;			</ul>&ndash;&gt;-->
+<!--&lt;!&ndash;		</div>&ndash;&gt;-->
+<!--&lt;!&ndash;        <div id="div1">&ndash;&gt;-->
+<!--&lt;!&ndash;            </br>&ndash;&gt;-->
+<!--&lt;!&ndash;            </br>&ndash;&gt;-->
+<!--&lt;!&ndash;            </br>&ndash;&gt;-->
+<!--&lt;!&ndash;            </br>&ndash;&gt;-->
+<!--&lt;!&ndash;        </div>&ndash;&gt;-->
+<!--&lt;!&ndash;        <div class="content">div1</div>&ndash;&gt;-->
+<!--&lt;!&ndash;            <div id="div2">&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--&lt;!&ndash;            <div class="content">div2</div>&ndash;&gt;-->
+<!--&lt;!&ndash;            <div id="div3">&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--&lt;!&ndash;            <div class="content">div3</div>&ndash;&gt;-->
+<!--&lt;!&ndash;            <div id="div4">&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;                </br>&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--&lt;!&ndash;            <div class="content">div4</div>&ndash;&gt;-->
+<!--&lt;!&ndash;		<script>&ndash;&gt;-->
+<!--&lt;!&ndash;			let lis = document.querySelectorAll('.nav>ul>li')&ndash;&gt;-->
+<!--&lt;!&ndash;			console.log(lis)&ndash;&gt;-->
+<!--&lt;!&ndash;			for (var i = 0; i < lis.length; i++) {&ndash;&gt;-->
+<!--&lt;!&ndash;				lis[i].onclick = function(event) {&ndash;&gt;-->
+<!--&lt;!&ndash;					let li = document.getElementsByClassName('active')[0]&ndash;&gt;-->
+<!--&lt;!&ndash;					li.classList.remove('active')&ndash;&gt;-->
+<!--&lt;!&ndash;					event.target.classList.add('active')&ndash;&gt;-->
+<!--&lt;!&ndash;				}&ndash;&gt;-->
+<!--&lt;!&ndash;			}&ndash;&gt;-->
+<!--&lt;!&ndash;		</script>&ndash;&gt;-->
+
+<!--&lt;!&ndash;	</body>&ndash;&gt;-->
+<!--&lt;!&ndash;</html>&ndash;&gt;-->
+
+<!--&lt;!&ndash; <!DOCTYPE html>&ndash;&gt;-->
+<!--&lt;!&ndash;<html>&ndash;&gt;-->
+<!--&lt;!&ndash;<head>&ndash;&gt;-->
+<!--&lt;!&ndash;  <meta charset="utf-8">&ndash;&gt;-->
+<!--&lt;!&ndash;  <title>css-directory-animation</title>&ndash;&gt;-->
+<!--&lt;!&ndash;  <style type="text/css">&ndash;&gt;-->
+<!--&lt;!&ndash;    body {&ndash;&gt;-->
+<!--&lt;!&ndash;      padding-top: 20px;&ndash;&gt;-->
+<!--&lt;!&ndash;    }&ndash;&gt;-->
+<!--&lt;!&ndash;    .nd-animation {&ndash;&gt;-->
+<!--&lt;!&ndash;      display: block;&ndash;&gt;-->
+<!--&lt;!&ndash;      position: relative;&ndash;&gt;-->
+<!--&lt;!&ndash;      width: 22px;&ndash;&gt;-->
+<!--&lt;!&ndash;      height: 2px;&ndash;&gt;-->
+<!--&lt;!&ndash;      background-color: #25283D;&ndash;&gt;-->
+<!--&lt;!&ndash;      transition: background-color .2s linear;&ndash;&gt;-->
+<!--&lt;!&ndash;    }&ndash;&gt;-->
+<!--&lt;!&ndash;    .nd-animation::before {&ndash;&gt;-->
+<!--&lt;!&ndash;      position: absolute;&ndash;&gt;-->
+<!--&lt;!&ndash;      content: '';&ndash;&gt;-->
+<!--&lt;!&ndash;      width: 22px;&ndash;&gt;-->
+<!--&lt;!&ndash;      height: 2px;&ndash;&gt;-->
+<!--&lt;!&ndash;      background: #25283D;&ndash;&gt;-->
+<!--&lt;!&ndash;      transform: translateY(-6px);&ndash;&gt;-->
+<!--&lt;!&ndash;      transition: transform .2s linear;&ndash;&gt;-->
+<!--&lt;!&ndash;    }&ndash;&gt;-->
+<!--&lt;!&ndash;    .nd-animation::after {&ndash;&gt;-->
+<!--&lt;!&ndash;      position: absolute;&ndash;&gt;-->
+<!--&lt;!&ndash;      content: '';&ndash;&gt;-->
+<!--&lt;!&ndash;      width: 22px;&ndash;&gt;-->
+<!--&lt;!&ndash;      height: 2px;&ndash;&gt;-->
+<!--&lt;!&ndash;      background: #25283D;&ndash;&gt;-->
+<!--&lt;!&ndash;      transform: translateY(6px);&ndash;&gt;-->
+<!--&lt;!&ndash;      transition: transform .2s linear;&ndash;&gt;-->
+<!--&lt;!&ndash;    }&ndash;&gt;-->
+<!--&lt;!&ndash;    .is-open {&ndash;&gt;-->
+<!--&lt;!&ndash;      background-color: rgba(255, 255, 255, 0);&ndash;&gt;-->
+<!--&lt;!&ndash;    }&ndash;&gt;-->
+<!--&lt;!&ndash;    .is-open::before {&ndash;&gt;-->
+<!--&lt;!&ndash;      transform: rotate(-45deg);&ndash;&gt;-->
+<!--&lt;!&ndash;    }&ndash;&gt;-->
+<!--&lt;!&ndash;    .is-open::after {&ndash;&gt;-->
+<!--&lt;!&ndash;      transform: rotate(45deg);&ndash;&gt;-->
+<!--&lt;!&ndash;    }&ndash;&gt;-->
+<!--&lt;!&ndash;  </style>&ndash;&gt;-->
+<!--&lt;!&ndash;</head>&ndash;&gt;-->
+<!--&lt;!&ndash;<body>&ndash;&gt;-->
+<!--&lt;!&ndash;  <span class="nd-animation"></span>&ndash;&gt;-->
+<!--&lt;!&ndash;  <script type="text/javascript">&ndash;&gt;-->
+<!--&lt;!&ndash;    var node = document.getElementsByClassName('nd-animation')[0];&ndash;&gt;-->
+<!--&lt;!&ndash;    window.addEventListener('click', function() {&ndash;&gt;-->
+<!--&lt;!&ndash;      if (node.classList.contains('is-open')) {&ndash;&gt;-->
+<!--&lt;!&ndash;        node.classList.remove('is-open');&ndash;&gt;-->
+<!--&lt;!&ndash;      }&ndash;&gt;-->
+<!--&lt;!&ndash;      else {&ndash;&gt;-->
+<!--&lt;!&ndash;        node.classList.add('is-open');&ndash;&gt;-->
+<!--&lt;!&ndash;      }&ndash;&gt;-->
+<!--&lt;!&ndash;    }, false);&ndash;&gt;-->
+<!--&lt;!&ndash;  </script>&ndash;&gt;-->
+<!--&lt;!&ndash;</body>&ndash;&gt;-->
+<!--&lt;!&ndash;</html>&ndash;&gt;-->
 
 <!doctype html>
 <html lang="en">
- <head>
-  <meta charset="UTF-8">
-  <title>laofan</title>
-  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.min.js"></script>
-  <style>
-  .detail_content{
-    display: none;
-	  color:#FF0000;
-	  color:#2E8B57;
-	  color:#fff;
-	  color: #cb4545;
-	  color: rgb(153,0,51);
-	  color: rgb(255,0,85);
-      color: rgb(0,204,68);
-      color: rgb(0,229,76);
-      color: rgb(0,255,85);
-	  color: rgb(26, 196, 26);
-	  color: rgb(54, 203, 54);
-	  color: rgb(83, 212, 83);
-	  color: rgb(141, 248, 141);
-}
+<head>
+    <meta charset="UTF-8">
+    <title>laofan</title>
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.min.js"></script>
+    <style>
+        .detail_content {
+            display: none;
+            color: #FF0000;
+            color: lightcoral;
+            color: #545454;
+            color: #c23531;
+            color: rgb(153, 0, 51);
+            color: rgb(255, 0, 85);
+            color: rgb(0, 204, 68);
+            color: rgb(0, 229, 76);
+            color: rgb(0, 255, 85);
+            color: rgb(26, 196, 26);
+            color: rgb(54, 203, 54);
+            color: rgb(83, 212, 83);
+            color: rgb(141, 248, 141);
+        }
 
-  </style>
- </head>
- <body>
+    </style>
+    <!-- </head>-->
+    <!-- <body>-->
 
-<!--<div>-->
-<!--	<table>-->
-<!--		这是表格内容-->
-<!--	</table>-->
+    <!--&lt;!&ndash;<div>&ndash;&gt;-->
+    <!--&lt;!&ndash;	<table>&ndash;&gt;-->
+    <!--&lt;!&ndash;		这是表格内容&ndash;&gt;-->
+    <!--&lt;!&ndash;	</table>&ndash;&gt;-->
 
-<!--	<div class="detail_click">-->
-<!--	    展开-->
-<!--	</div>-->
+    <!--&lt;!&ndash;	<div class="detail_click">&ndash;&gt;-->
+    <!--&lt;!&ndash;	    展开&ndash;&gt;-->
+    <!--&lt;!&ndash;	</div>&ndash;&gt;-->
 
-<!--	<div class="detail_content">-->
-<!--	 这是详情-->
-<!--	</div>-->
-<!--</div>-->
-
-
-
-<!--<div>-->
-<!--	<table>-->
-<!--		这是表格内容-->
-<!--	</table>-->
-
-<!--	<div class="detail_click">-->
-<!--	    展开-->
-<!--	</div>-->
-
-<!--	<div class="detail_content">-->
-<!--	 这是详情-->
-<!--	</div>-->
-<!--</div>-->
-
-<label for="h">h:<input type="text" id = 'h'>
-<label for="s">s:<input type="text" id = 's'>
-<label for="v">v:<input type="text" id = 'v'>
-<div id = 'color_block' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+    <!--&lt;!&ndash;	<div class="detail_content">&ndash;&gt;-->
+    <!--&lt;!&ndash;	 这是详情&ndash;&gt;-->
+    <!--&lt;!&ndash;	</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
 
 
-<div id = 'color_block1' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<!--<div id = 'color_block12' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<div id = 'color_block2' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<!--<div id = 'color_block23' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<div id = 'color_block3' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<!--<div id = 'color_block34' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<div id = 'color_block4' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<!--<div id = 'color_block45' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<div id = 'color_block5' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<!--<div id = 'color_block56' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
-<div id = 'color_block6' style="width: 100px;height: 100px; border: 1px solid black;"></div>
+    <!--&lt;!&ndash;<div>&ndash;&gt;-->
+    <!--&lt;!&ndash;	<table>&ndash;&gt;-->
+    <!--&lt;!&ndash;		这是表格内容&ndash;&gt;-->
+    <!--&lt;!&ndash;	</table>&ndash;&gt;-->
+
+    <!--&lt;!&ndash;	<div class="detail_click">&ndash;&gt;-->
+    <!--&lt;!&ndash;	    展开&ndash;&gt;-->
+    <!--&lt;!&ndash;	</div>&ndash;&gt;-->
+
+    <!--&lt;!&ndash;	<div class="detail_content">&ndash;&gt;-->
+    <!--&lt;!&ndash;	 这是详情&ndash;&gt;-->
+    <!--&lt;!&ndash;	</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+
+    <!--<label for="h">h:<input type="text" id = 'h'>-->
+    <!--<label for="s">s:<input type="text" id = 's'>-->
+    <!--<label for="v">v:<input type="text" id = 'v'>-->
+    <!--<div id = 'color_block' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
 
 
-<div id = 'color_block11' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<div id = 'color_block22' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<div id = 'color_block33' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<div id = 'color_block44' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<div id = 'color_block55' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<div id = 'color_block66' style="width: 100px;height: 100px; border: 1px solid black;"></div>
-<script type="text/javascript">
-
-	  $('.detail_click').click(function(){
-        //$(this) 为 detail_click 实体
-        $(this).next().slideToggle('1000',function(){
-
-            //$(this) 为 detail_content 实体
-            // $(this).prev() 为 detail_click 实体
-            $(this).prev().text($(this).is(":visible") ? "收起" : "展开" );
+    <!--<div id = 'color_block1' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div id = 'color_block12' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
+    <!--<div id = 'color_block2' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div id = 'color_block23' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
+    <!--<div id = 'color_block3' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div id = 'color_block34' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
+    <!--<div id = 'color_block4' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div id = 'color_block45' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
+    <!--<div id = 'color_block5' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--&lt;!&ndash;<div id = 'color_block56' style="width: 100px;height: 100px; border: 1px solid black;"></div>&ndash;&gt;-->
+    <!--<div id = 'color_block6' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
 
 
-		});
-    })
+    <!--<div id = 'color_block11' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<div id = 'color_block22' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<div id = 'color_block33' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<div id = 'color_block44' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<div id = 'color_block55' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<div id = 'color_block66' style="width: 100px;height: 100px; border: 1px solid black;"></div>-->
+    <!--<script type="text/javascript">-->
+
+    <!--	  $('.detail_click').click(function(){-->
+    <!--        //$(this) 为 detail_click 实体-->
+    <!--        $(this).next().slideToggle('1000',function(){-->
+
+    <!--            //$(this) 为 detail_content 实体-->
+    <!--            // $(this).prev() 为 detail_click 实体-->
+    <!--            $(this).prev().text($(this).is(":visible") ? "收起" : "展开" );-->
 
 
-            $("#h").bind("input propertychange",function (event) {
-                doChange(event)
-            });
-            $("#s").bind("input propertychange",function (event) {
-                doChange(event)
-            });
-            $("#v").bind("input propertychange",function (event) {
-                doChange(event)
-            });
+    <!--		});-->
+    <!--    })-->
 
-            function doChange(event){
-            	rgb = hsv2rgb($("#h").val(), $("#s").val(), $("#v").val())
-				// alert(rgb)
-              $('#color_block').css('background-color', rgb)
-            }
 
-            $('#color_block1').css('background-color', hsv2rgb(700,1, 0.5))
-            // $('#color_block12').css('background-color', hsv2rgb(700,1, 0.55))
-            $('#color_block2').css('background-color', hsv2rgb(700,1, 0.6))
-            // $('#color_block23').css('background-color', hsv2rgb(700,1, 0.65))
-            $('#color_block3').css('background-color', hsv2rgb(700,1, 0.7))
-            // $('#color_block34').css('background-color', hsv2rgb(700,1, 0.75))
-            $('#color_block4').css('background-color', hsv2rgb(700,1, 0.8))
-            // $('#color_block45').css('background-color', hsv2rgb(700,1, 0.85))
-            $('#color_block5').css('background-color', hsv2rgb(700,1, 0.9))
-            // $('#color_block56').css('background-color', hsv2rgb(700,1, 0.95))
-            // $('#color_block6').css('background-color', hsv2rgb(700,1, 1))
-            // $('#color_block67').css('background-color', hsv2rgb(700,1, 0.45))
+    <!--            $("#h").bind("input propertychange",function (event) {-->
+    <!--                doChange(event)-->
+    <!--            });-->
+    <!--            $("#s").bind("input propertychange",function (event) {-->
+    <!--                doChange(event)-->
+    <!--            });-->
+    <!--            $("#v").bind("input propertychange",function (event) {-->
+    <!--                doChange(event)-->
+    <!--            });-->
 
-            $('#color_block11').css('background-color', hsv2rgb(500,1, 0.5))
-            $('#color_block22').css('background-color', hsv2rgb(500,1, 0.6))
-            $('#color_block33').css('background-color', hsv2rgb(500,1, 0.7))
-            $('#color_block44').css('background-color', hsv2rgb(500,1, 0.8))
-            $('#color_block55').css('background-color', hsv2rgb(500,1, 0.9))
-            $('#color_block66').css('background-color', hsv2rgb(500,1, 1))
+    <!--            function doChange(event){-->
+    <!--            	rgb = hsv2rgb($("#h").val(), $("#s").val(), $("#v").val())-->
+    <!--				// alert(rgb)-->
+    <!--              $('#color_block').css('background-color', rgb)-->
+    <!--            }-->
 
-	  function hsv2rgb(h, s, v){
-		// h = float(h)
-		// s = float(s)
-		// v = float(v)
-		h60 = h / 60.0
-		h60f = Math.round(h60, 2)
-		hi = Math.round(h60f, 0) % 6
-		f = h60 - h60f
-		p = v * (1 - s)
-		q = v * (1 - f * s)
-		t = v * (1 - (1 - f) * s)
-		r= g = b = 0
-		if (hi == 0){
-			r=v; g=t; b =  p
-		}
-		else if (hi == 1){
-			r=q; g=v; b = p
-		}
-		else if(hi == 2) {
-			r= p; g= v; b= t
-		}
-		else if (hi == 3) {
-			r= p; g= q; b= v
-		}
-		else if (hi == 4) {
-			r= t; g= p; b= v
-		}
-		else if (hi == 5) {
-			r= v; g= p; b= q
-		}
-    // r, g, b = int(r * 255), int(g * 255), int(b * 255)
-    	return "rgb("+ Math.round(r * 255,0) + "," + Math.round(g * 255,0) + "," + Math.round(b * 255, 0) +")"
-	  }
-</script>
+    <!--            $('#color_block1').css('background-color', hsv2rgb(700,1, 0.5))-->
+    <!--            // $('#color_block12').css('background-color', hsv2rgb(700,1, 0.55))-->
+    <!--            $('#color_block2').css('background-color', hsv2rgb(700,1, 0.6))-->
+    <!--            // $('#color_block23').css('background-color', hsv2rgb(700,1, 0.65))-->
+    <!--            $('#color_block3').css('background-color', hsv2rgb(700,1, 0.7))-->
+    <!--            // $('#color_block34').css('background-color', hsv2rgb(700,1, 0.75))-->
+    <!--            $('#color_block4').css('background-color', hsv2rgb(700,1, 0.8))-->
+    <!--            // $('#color_block45').css('background-color', hsv2rgb(700,1, 0.85))-->
+    <!--            $('#color_block5').css('background-color', hsv2rgb(700,1, 0.9))-->
+    <!--            // $('#color_block56').css('background-color', hsv2rgb(700,1, 0.95))-->
+    <!--            // $('#color_block6').css('background-color', hsv2rgb(700,1, 1))-->
+    <!--            // $('#color_block67').css('background-color', hsv2rgb(700,1, 0.45))-->
 
- </body>
+    <!--            $('#color_block11').css('background-color', hsv2rgb(500,1, 0.5))-->
+    <!--            $('#color_block22').css('background-color', hsv2rgb(500,1, 0.6))-->
+    <!--            $('#color_block33').css('background-color', hsv2rgb(500,1, 0.7))-->
+    <!--            $('#color_block44').css('background-color', hsv2rgb(500,1, 0.8))-->
+    <!--            $('#color_block55').css('background-color', hsv2rgb(500,1, 0.9))-->
+    <!--            $('#color_block66').css('background-color', hsv2rgb(500,1, 1))-->
+
+    <!--	  function hsv2rgb(h, s, v){-->
+    <!--		// h = float(h)-->
+    <!--		// s = float(s)-->
+    <!--		// v = float(v)-->
+    <!--		h60 = h / 60.0-->
+    <!--		h60f = Math.round(h60, 2)-->
+    <!--		hi = Math.round(h60f, 0) % 6-->
+    <!--		f = h60 - h60f-->
+    <!--		p = v * (1 - s)-->
+    <!--		q = v * (1 - f * s)-->
+    <!--		t = v * (1 - (1 - f) * s)-->
+    <!--		r= g = b = 0-->
+    <!--		if (hi == 0){-->
+    <!--			r=v; g=t; b =  p-->
+    <!--		}-->
+    <!--		else if (hi == 1){-->
+    <!--			r=q; g=v; b = p-->
+    <!--		}-->
+    <!--		else if(hi == 2) {-->
+    <!--			r= p; g= v; b= t-->
+    <!--		}-->
+    <!--		else if (hi == 3) {-->
+    <!--			r= p; g= q; b= v-->
+    <!--		}-->
+    <!--		else if (hi == 4) {-->
+    <!--			r= t; g= p; b= v-->
+    <!--		}-->
+    <!--		else if (hi == 5) {-->
+    <!--			r= v; g= p; b= q-->
+    <!--		}-->
+    <!--    // r, g, b = int(r * 255), int(g * 255), int(b * 255)-->
+    <!--    	return "rgb("+ Math.round(r * 255,0) + "," + Math.round(g * 255,0) + "," + Math.round(b * 255, 0) +")"-->
+    <!--	  }-->
+    <!--</script>-->
+
+    <!-- </body>-->
+    <!--</html>-->
+
+    <!--<!DOCTYPE html>-->
+    <!--<head>-->
+    <!--<html>-->
+    <!--  <meta charset="utf-8">-->
+    <!--  <meta http-equiv="X-UA-Compatible" content="IE=edge">-->
+    <!--  <title>模态框 - 开发</title>-->
+
+
+    <!--        <script type="text/javascript" src="../static/js/echarts.min.js"></script>-->
+    <!--        <link rel="icon" href="/static/img/favicon.ico">-->
+
+    <!--        <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.min.css">-->
+    <!--        &lt;!&ndash;<link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">&ndash;&gt;-->
+    <!--        <link rel="stylesheet" type="text/css" href="../static/css/bootsnav.css">-->
+
+
+    <!--        <script src="../static/js/jquery.min.js"></script>-->
+    <!--        <script src="../static/js/bootstrap.min.js"></script>-->
+    <!--        <script src="../static/js/jquery.bootstrap-autohidingnavbar.min.js"></script>-->
+
+    <!--        <script type="text/javascript" src="../static/js/bootsnav.js"></script>-->
+
+
+    <!--  &lt;!&ndash;图标库&ndash;&gt;-->
+    <!--  <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.min.css">-->
+
+    <!--  &lt;!&ndash;图标库&ndash;&gt;-->
+    <!--  <script src="https://cdn.bootcss.com/font-awesome/5.11.2/js/all.min.js"></script>-->
+
+
+    <!--</head>-->
+    <!--<body>-->
+
+    <!--  &lt;!&ndash;核心样式&ndash;&gt;-->
+    <!--  <link rel="stylesheet" href="../static/css/modallayer.min.css">-->
+
+    <!--   &lt;!&ndash;插件&ndash;&gt;-->
+    <!--  <script src="../static/js/modallayer-ie.min.js"></script>-->
+
+    <!--  <style>-->
+    <!--    #test-button-container {-->
+    <!--      position: absolute;-->
+    <!--      top: 50%;-->
+    <!--      left: 0px;-->
+    <!--      right: 0px;-->
+    <!--      width: 145px;-->
+    <!--      margin: 0px auto;-->
+    <!--      text-align: center;-->
+    <!--      transform: translateY(-50%);-->
+    <!--    }-->
+
+    <!--    #test-button-container button {-->
+    <!--      width: 145px;-->
+    <!--      margin: 5px 0px;-->
+    <!--      padding: 10px 0px;-->
+    <!--    }-->
+    <!--  </style>-->
+    <!--  <div id="test-button-container">-->
+    <!--    <button id="msg-button" type="button">测试msg</button>-->
+    <!--    <button id="alert-button" type="button">测试alert</button>-->
+    <!--    <button id="confirm-button" type="button">测试confirm</button>-->
+    <!--    <button id="prompt-button" type="button">测试prompt</button>-->
+    <!--    <button id="page-button-1" type="button">测试page</button>-->
+    <!--    <button id="page-button-2" type="button">测试page</button>-->
+    <!--  </div>-->
+    <!--<script>-->
+    <!--  // 测试msg-->
+    <!--  document.querySelector('#msg-button').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      popupTime: 2,-->
+    <!--      hook: {-->
+    <!--        initStart: function () {-->
+    <!--          // 检查之前老旧实例如果存在则销毁-->
+    <!--          if (document.querySelector('#modal-layer-container'))-->
+    <!--            ModalLayer.removeAll();-->
+    <!--        }-->
+    <!--      },-->
+    <!--      displayProgressBar: true,-->
+    <!--      displayProgressBarPos: 'top',-->
+    <!--      displayProgressBarColor: 'red',-->
+    <!--      content: '<i class="fas fa-check" style="color: deepskyblue"></i>点击遮罩层自动消失!',-->
+    <!--    };-->
+
+    <!--    ModalLayer.msg(option);-->
+    <!--    // ModalLayer.msg('测试一下');-->
+    <!--  }-->
+    <!--  // 测试alert-->
+    <!--  document.querySelector('#alert-button').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      hook: {-->
+    <!--        initStart: function () {-->
+    <!--          // 检查之前老旧实例如果存在则销毁-->
+    <!--          if (document.querySelector('#modal-layer-container'))-->
+    <!--            ModalLayer.removeAll();-->
+    <!--        }-->
+    <!--      },-->
+    <!--      popupTime: 0,-->
+    <!--      type: 'alert',-->
+    <!--      title: '测试',-->
+    <!--      dragOverflow: true,-->
+    <!--      content: '<i class="fas fa-check" style="color: deepskyblue"></i>点击遮罩层自动消失!',-->
+    <!--    };-->
+
+    <!--    ModalLayer.alert(option);-->
+    <!--  }-->
+    <!--  // 测试confirm-->
+    <!--  document.querySelector('#confirm-button').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      title: '测试',-->
+    <!--      popupTime: 10,-->
+    <!--      hook: {-->
+    <!--        initStart: function () {-->
+    <!--          // 检查之前老旧实例如果存在则销毁-->
+    <!--          if (document.querySelector('#modal-layer-container'))-->
+    <!--            ModalLayer.removeAll();-->
+    <!--        }-->
+    <!--      },-->
+    <!--      displayProgressBar: true,-->
+    <!--      displayProgressBarPos: 'left',-->
+    <!--      content: '你认为你能成功吗 ?',-->
+    <!--      okText: '那是必须滴！',-->
+    <!--      noText: '怎么可能 ?',-->
+    <!--      callback: {-->
+    <!--        ok: function () {-->
+    <!--          this.hide();-->
+    <!--          ModalLayer.alert({-->
+    <!--            content: '<i class="fas fa-check-circle" style="color: green"></i> Good Luck!',-->
+    <!--            parentModalLayer: this-->
+    <!--          });-->
+    <!--        },-->
+    <!--        no: function () {-->
+    <!--          ModalLayer.alert({-->
+    <!--            content: '<i class="fas fa-window-close" style="color: red"></i> More Confidence!!<br>五秒后自动关闭该窗口'-->
+    <!--          });-->
+    <!--        }-->
+    <!--      }-->
+    <!--    }-->
+
+    <!--    ModalLayer.confirm(option);-->
+    <!--  }-->
+
+    <!--  // 测试prompt-->
+    <!--  document.querySelector('#prompt-button').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      title: '测试',-->
+    <!--      popupTime: 0,-->
+    <!--      hook: {-->
+    <!--        initStart: function () {-->
+    <!--          // 检查之前老旧实例如果存在则销毁-->
+    <!--          if (document.querySelector('#modal-layer-container'))-->
+    <!--            ModalLayer.removeAll();-->
+    <!--        }-->
+    <!--      },-->
+    <!--      displayProgressBar: true,-->
+    <!--      displayProgressBarColor: 'red',-->
+    <!--      displayProgressBarPos: 'right',-->
+    <!--      content: '<input type="text" style="width: calc(100% - 2px); height: 24px; font-size: 16px; color: red;" placeholder="输入内容进行测试">',-->
+    <!--      okText: '提交',-->
+    <!--      noText: '取消',-->
+    <!--      callback : {-->
+    <!--        ok: function () {-->
+    <!--          this.hide();-->
+    <!--          ModalLayer.alert({-->
+    <!--            parentModalLayer: this,-->
+    <!--            content: '<i class="fas fa-check-circle" style="color: green"></i> 提交成功!<br>你提交的数据为: ' + this.getNodes().container.querySelector('input').value-->
+    <!--          });-->
+    <!--        },-->
+    <!--      }-->
+    <!--    };-->
+
+    <!--    ModalLayer.prompt(option);-->
+    <!--  }-->
+
+
+    <!--  // 测试Page-->
+    <!--  document.querySelector('#page-button-1').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      mask: false,-->
+    <!--      title: '测试测试',-->
+    <!--      popupTime: 0,-->
+    <!--      contentFullContainer: false,-->
+    <!--      pageOption: {-->
+    <!--        src: 'https://baidu.com',-->
+    <!--      }-->
+    <!--    };-->
+    <!--    ModalLayer.page(option);-->
+    <!--  }-->
+    <!--  document.querySelector('#page-button-2').onclick = function () {-->
+    <!--    let option = {-->
+    <!--      mask: false,-->
+    <!--      title: '测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试',-->
+    <!--      popupTime: 0,-->
+    <!--      contentFullContainer: true,-->
+    <!--      pageOption: {-->
+    <!--        scrolling: 'yes',-->
+    <!--        src: 'https://www.taobao.com/',-->
+    <!--      }-->
+    <!--    };-->
+    <!--    ModalLayer.page(option);-->
+    <!--  }-->
+
+    <!--</script>-->
+
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../static/js/popwin.js"></script>
+
+    <script>
+
+        //$(document).ready(function() {
+        //
+        //    $("a").on('click' , function(){
+        //
+        //		popWin.showWin("800","600","通用的iframe弹层插件","http://www.jq22.com");
+        //
+        //	});
+        //
+        //});
+        // url = "/stock_xueqiu.html/update_stock_report/"
+        // ss = url.split('/')
+        //         alert(task_name = ss[ss.length-2])
+    </script>
+
+    <a href="javascript:void(0)">弹出iframe层</a>
+    <table border="0" style="border:0px">
+        <tr style="border: 1px black solid">
+            <td style="color:red">haha</td>
+        </tr>
+    </table>
+
+    <table style="width:180px;border:1px black solid">
+        <tr>
+            <td style="height:20px;background-color:white;border:1px black solid" colspan=2>累积收益率</td>
+        </tr>
+        <tr>
+            <td style="margin-left:0px; width:80px;height:20px;background-color:white;border:1px black solid;text-align: right;color:#37A2DA">我</td>
+            <td style="height:20px;background-color:white;border:1px">0.79%</td>
+        </tr>
+        <tr>
+            <td style="width:80px;height:20px;background-color:white;border:1px black solid;text-align: right;color:#67E0E3">可转债指数
+            </td>
+            <td style="height:20px;background-color:white;border:1px">0.93%</td>
+        </tr>
+        <tr>
+            <td style="width:80px;height:20px;background-color:white;border:1px;text-align: right;color:#FFDB5C">沪深300
+            </td>
+            <td style="height:20px;background-color:white;border:1px">1%</td>
+        </tr>
+    </table>
+    </body>
 </html>

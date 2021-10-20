@@ -1,38 +1,46 @@
 # 从东方财富抓正股的相关数据
-import datetime
+from datetime import datetime
 import re
 import time
 
-from selenium import webdriver
 
+from crawler import crawler_utils
+from models import db
 from utils import trade_utils
-from utils.db_utils import get_cursor
+from utils.db_utils import get_cursor, execute_sql_with_rowcount
+from utils.task_utils import new_or_update_task, process_task_when_finish, process_task_when_error, \
+    process_task_when_normal
 
-driver = None
 
-
-
-def do_update_stock_sum():
+def do_update_stock_sum(driver, task_name):
     # 遍历可转债列表
     # 打开文件数据库
 
+    task = None
     try:
         # 查询可转债
         bond_cursor = get_cursor("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
+        rows = bond_cursor.fetchall()
+        task, status = new_or_update_task(len(rows), task_name)
+        if status == -1:  # 有任务在执行
+            return
+
         # 当前日月
-        y = datetime.datetime.now().year
-        m = datetime.datetime.now().month
-        d = datetime.datetime.now().day
-        t = datetime.datetime(y, m, d)
+        y = datetime.now().year
+        m = datetime.now().month
+        d = datetime.now().day
+        t = datetime(y, m, d)
         # 记录更新时间(秒)
-        s = (t - datetime.datetime(1970, 1, 1)).total_seconds()
+        s = (t - datetime(1970, 1, 1)).total_seconds()
 
         i = 0
-        for bond_row in bond_cursor:
+        for bond_row in rows:
+            process_task_when_normal(task, 1)
+
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
-            stock_cursor = get_cursor("""SELECT modify_date from stock_report where stock_code = ?""", [stock_code])
+            stock_cursor = get_cursor("""SELECT modify_date from stock_report where stock_code = :stock_code""", {'stock_code':stock_code})
             stocks = list(stock_cursor)
             if len(stocks) == 0:
                 continue
@@ -41,67 +49,68 @@ def do_update_stock_sum():
             if stocks[0][0] is not None and stocks[0][0] >= s:
                 continue
 
-            row = get_stock_sum(stock_code)
+            row = get_stock_sum(driver, stock_code)
 
-            result = get_cursor("""update stock_report set pe = ?, 
-                net_asset = ?, 
-                gross_rate = ?, 
-                avg_market_cap = ?, 
-                avg_roe = ?, 
-                avg_net_profit_ratio = ?, 
-                avg_gross_rate = ?, 
-                avg_pb = ?, 
-                avg_pe = ?, 
-                avg_net_margin = ?, 
-                avg_net_asset = ?, 
-                rank_roe = ?, 
-                rank_net_profit_ratio = ?, 
-                rank_gross_rate = ?, 
-                rank_pb = ?, 
-                rank_pe = ?, 
-                rank_net_margin = ?, 
-                rank_net_asset = ?, 
-                rank_market_cap = ?, 
-                level_roe = ?, 
-                level_market_cap = ?, 
-                level_net_asset = ?, 
-                level_net_margin = ?, 
-                level_pe = ?, 
-                level_pb = ?, 
-                level_gross_rate = ?, 
-                level_net_profit_ratio = ?, 
-                modify_date = ? where stock_code = ?""",
-                             (
-                                row['pe'],
-                                row['net_asset'],
-                                row['gross_rate'],
-                                row['avg_market_cap'],
-                                row['avg_roe'],
-                                row['avg_net_profit_ratio'],
-                                row['avg_gross_rate'],
-                                row['avg_pb'],
-                                row['avg_pe'],
-                                row['avg_net_margin'],
-                                row['avg_net_asset'],
-                                row['rank_roe'],
-                                row['rank_net_profit_ratio'],
-                                row['rank_gross_rate'],
-                                row['rank_pb'],
-                                row['rank_pe'],
-                                row['rank_net_margin'],
-                                row['rank_net_asset'],
-                                row['rank_market_cap'],
-                                row['level_roe'],
-                                row['level_market_cap'],
-                                row['level_net_asset'],
-                                row['level_net_margin'],
-                                row['level_pe'],
-                                row['level_pb'],
-                                row['level_gross_rate'],
-                                row['level_net_profit_ratio'],
-                              s, stock_code)
-                             )
-            if result.rowcount == 0:
+            rowcount = execute_sql_with_rowcount("""update stock_report set pe = :pe, 
+                net_asset = :net_asset, 
+                gross_rate = :gross_rate, 
+                avg_market_cap = :avg_market_cap, 
+                avg_roe = :avg_roe, 
+                avg_net_profit_ratio = :avg_net_profit_ratio, 
+                avg_gross_rate = :avg_gross_rate, 
+                avg_pb = :avg_pb, 
+                avg_pe = :avg_pe, 
+                avg_net_margin = :avg_net_margin, 
+                avg_net_asset = :avg_net_asset, 
+                rank_roe = :rank_roe, 
+                rank_net_profit_ratio = :rank_net_profit_ratio, 
+                rank_gross_rate = :rank_gross_rate, 
+                rank_pb = :rank_pb, 
+                rank_pe = :rank_pe, 
+                rank_net_margin = :rank_net_margin, 
+                rank_net_asset = :rank_net_asset, 
+                rank_market_cap = :rank_market_cap, 
+                level_roe = :level_roe, 
+                level_market_cap = :level_market_cap, 
+                level_net_asset = :level_net_asset, 
+                level_net_margin = :level_net_margin, 
+                level_pe = :level_pe, 
+                level_pb = :level_pb, 
+                level_gross_rate = :level_gross_rate, 
+                level_net_profit_ratio = :level_net_profit_ratio, 
+                modify_date = :modify_date where stock_code = :stock_code""",
+                                                 ({
+                                'pe' : row['pe'],
+                                'net_asset' : row['net_asset'],
+                                'gross_rate' : row['gross_rate'],
+                                'avg_market_cap' : row['avg_market_cap'],
+                                'avg_roe' : row['avg_roe'],
+                                'avg_net_profit_ratio' : row['avg_net_profit_ratio'],
+                                'avg_gross_rate' : row['avg_gross_rate'],
+                                'avg_pb' : row['avg_pb'],
+                                'avg_pe' : row['avg_pe'],
+                                'avg_net_margin' : row['avg_net_margin'],
+                                'avg_net_asset' : row['avg_net_asset'],
+                                'rank_roe' : row['rank_roe'],
+                                'rank_net_profit_ratio' : row['rank_net_profit_ratio'],
+                                'rank_gross_rate' : row['rank_gross_rate'],
+                                'rank_pb' : row['rank_pb'],
+                                'rank_pe' : row['rank_pe'],
+                                'rank_net_margin' : row['rank_net_margin'],
+                                'rank_net_asset' : row['rank_net_asset'],
+                                'rank_market_cap' : row['rank_market_cap'],
+                                'level_roe' : row['level_roe'],
+                                'level_market_cap' : row['level_market_cap'],
+                                'level_net_asset' : row['level_net_asset'],
+                                'level_net_margin' : row['level_net_margin'],
+                                'level_pe' : row['level_pe'],
+                                'level_pb' : row['level_pb'],
+                                'level_gross_rate' : row['level_gross_rate'],
+                                'level_net_profit_ratio' : row['level_net_profit_ratio'],
+                                 'modify_date':s,
+                                 'stock_code':stock_code})
+                                                 )
+            if rowcount == 0:
                 print("not update stock:" + stock_name + ' in stock_report')
             else:
                 print("update " + stock_name + " is successful. count:" + str(i + 1))
@@ -110,15 +119,21 @@ def do_update_stock_sum():
             time.sleep(5)
             i += 1
 
-        print("共处理" + str(i) + "条记录")
-
+        ok_desc = "共处理" + str(i) + "条记录"
+        print(ok_desc)
+        process_task_when_finish(task, ok_desc)
     except Exception as e:
         print("db操作出现异常" + str(e), e)
+        process_task_when_error(task, "db操作出现异常")
+        raise e
     except TimeoutError as e:
         print("网络超时, 请手工重试")
+        process_task_when_error(task, "网络超时")
+        raise e
+
 
 # 更新概念题材的配置信息
-def update_theme_config():
+def update_theme_config(driver):
     # 打开配置文件数据库表
     # 打开东财题材列表(5日, 10日)页面, 抓取数据
     # 删除已有的题材概念信息
@@ -127,33 +142,33 @@ def update_theme_config():
 
     try:
         # 删除已有的数据
-        result = get_cursor("""delete from config where key = 'gn_1' """)
-        if result.rowcount == 0:
+        rowcount = execute_sql_with_rowcount("""delete from config where key = 'gn_1' """)
+        if rowcount == 0:
             print("not delete gn_1 config")
         else:
-            print("delete old gn_1 is successful. count:" + str(result.rowcount))
+            print("delete old gn_1 is successful. count:" + str(rowcount))
 
         # 删除已有的数据
-        result = get_cursor("""delete from config where key = 'gn_5' """)
-        if result.rowcount == 0:
+        rowcount = execute_sql_with_rowcount("""delete from config where key = 'gn_5' """)
+        if rowcount == 0:
             print("not delete gn_5 config")
         else:
-            print("delete old gn_5 is successful. count:" + str(result.rowcount))
+            print("delete old gn_5 is successful. count:" + str(rowcount))
 
-        result = get_cursor("""delete from config where key = 'gn_10' """)
-        if result.rowcount == 0:
+        rowcount = execute_sql_with_rowcount("""delete from config where key = 'gn_10' """)
+        if rowcount == 0:
             print("not delete gn_10 config")
         else:
-            print("delete old gn_10 is successful. count:" + str(result.rowcount))
+            print("delete old gn_10 is successful. count:" + str(rowcount))
 
         i = 0
         # 添加当日数据
-        rows = fetch_theme_data(3, '')
+        rows = fetch_theme_data(driver, 3, '')
         for row in rows:
-            result = get_cursor("""insert into config(order_index,key,value,field_name)values(?, 'gn_1', ?, 'theme')""",
-                                      (row[0], row[1])
-                                      )
-            if result.rowcount == 0:
+            rowcount = execute_sql_with_rowcount("""insert into config(order_index,key,value,field_name)values(:order_index, 'gn_1',:value, 'theme')""",
+                                                 {'order_index':row[0], 'value':row[1]}
+                                                 )
+            if rowcount == 0:
                 print("not insert gn_1 config:" + row)
             else:
                 print("insert gn_1 is successful. count:" + str(i + 1))
@@ -165,10 +180,10 @@ def update_theme_config():
         # 添加5日数据
         rows = fetch_theme_data(5, '_5')
         for row in rows:
-            result = get_cursor("""insert into config(order_index,key,value,field_name)values(?, 'gn_5', ?, 'theme')""",
-                                      (row[0], row[1])
-                                      )
-            if result.rowcount == 0:
+            rowcount = execute_sql_with_rowcount("""insert into config(order_index,key,value,field_name)values(:order_index, 'gn_5',:value, 'theme')""",
+                                                 {'order_index':row[0], 'value':row[1]}
+                                                 )
+            if rowcount == 0:
                 print("not insert gn_5 config:" + row)
             else:
                 print("insert gn_5 is successful. count:" + str(i + 1))
@@ -180,10 +195,10 @@ def update_theme_config():
         # 添加10日数据
         rows = fetch_theme_data(10, '_10')
         for row in rows:
-            result = get_cursor("""insert into config(order_index,key,value,field_name)values(?, 'gn_10', ?, 'theme')""",
-                                      (row[0], row[1])
-                                      )
-            if result.rowcount == 0:
+            rowcount = execute_sql_with_rowcount("""insert into config(order_index,key,value,field_name)values(:order_index, 'gn_10',:value, 'theme')""",
+                                                 {'order_index':row[0], 'value':row[1]}
+                                                 )
+            if rowcount == 0:
                 print("not insert gn_10 config:" + row)
             else:
                 print("insert gn_10 is successful. count:" + str(i + 1))
@@ -196,7 +211,7 @@ def update_theme_config():
     except TimeoutError as e:
         print("网络超时, 请手工重试")
 
-def update_stock_theme():
+def update_stock_theme(driver):
     # 遍历可转债列表
 
     try:
@@ -209,12 +224,12 @@ def update_stock_theme():
             stock_code = bond_row[2]
             stock_name = bond_row[3]
 
-            theme = fetch_stock_theme(stock_code)
+            theme = fetch_stock_theme(driver, stock_code)
 
-            result = get_cursor("""update changed_bond_extend set theme = ? where bond_code = ?""",
-                             (theme, bond_code)
-                             )
-            if result.rowcount == 0:
+            rowcount = execute_sql_with_rowcount("""update changed_bond_extend set theme = :theme where bond_code = :bond_code""",
+                                                 {'theme':theme, 'bond_code':bond_code}
+                                                 )
+            if rowcount == 0:
                 print("not update stock:" + stock_name + ' in changed_bond_extend')
             else:
                 print("update " + stock_name + " is successful. count:" + str(i + 1))
@@ -250,11 +265,14 @@ def modify_data_unit_error():
 
             avg_net_margin = change_data_unit(avg_net_margin, no_clean_text)
 
-            get_cursor("""update stock_report set avg_net_margin = ? where stock_name = ?""",
-                             (avg_net_margin, stock_name))
+            rowcount = execute_sql_with_rowcount("""update stock_report set avg_net_margin = :avg_net_margin where stock_name = :stock_name""",
+                                                 {'avg_net_margin':avg_net_margin, 'stock_name':stock_name})
 
             i += 1
-            print("update " + stock_name + " is successful. count:" + str(i))
+            if rowcount == 0:
+                print("update " + stock_name + " is failure. count:" + str(i))
+            else:
+                print("update " + stock_name + " is successful. count:" + str(i))
 
         print("共处理" + str(i) + "条记录")
 
@@ -264,7 +282,7 @@ def modify_data_unit_error():
         print("网络超时, 请手工重试")
 
 # http://data.eastmoney.com/bkzj/gn_5.html
-def fetch_theme_data(count, days):
+def fetch_theme_data(driver, count, days):
     rows = []
     url = "http://data.eastmoney.com/bkzj/gn" + days + ".html"
 
@@ -318,7 +336,7 @@ def fetch_theme_data(count, days):
 
 # 抓取题材信息
 # http://f10.eastmoney.com/f10_v2/CoreConception.aspx?code=sz002472
-def fetch_stock_theme(stock_code):
+def fetch_stock_theme(driver, stock_code):
 
     stock_code = trade_utils.rebuild_stock_code(stock_code)
 
@@ -502,7 +520,7 @@ def change_data_unit(s, default_change=default_clean_text):
         return default_change(s)
 
 
-def get_stock_sum(stock_code):
+def get_stock_sum(driver, stock_code):
     stock_code = trade_utils.rebuild_stock_code(stock_code)
 
     url = "http://quote.eastmoney.com/" + stock_code + '.html'
@@ -514,17 +532,12 @@ def get_stock_sum(stock_code):
 
     return get_sum_data(driver)
 
-def fetch_data():
-    options = webdriver.ChromeOptions()
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(chrome_options=options)
 
-    driver.implicitly_wait(10)
+def fetch_data(task_name):
+    driver = crawler_utils.get_chrome_driver(None)
 
     print('更新股票的关键指标信息')
-    do_update_stock_sum()
+    do_update_stock_sum(driver, task_name)
 
     # print('更新概念题材信息')
     # update_stock_theme()

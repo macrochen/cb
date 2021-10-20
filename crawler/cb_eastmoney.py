@@ -1,6 +1,7 @@
 #抓取集思录的数据(实时, 仅部分实时数据)
 
 import json
+import re
 import time
 
 import requests
@@ -16,9 +17,10 @@ header = {
 
 
 def get_content():
-    url = "https://www.jisilu.cn/data/cbnew/cb_list/?___jsl=LST___t=" + str(int(round(time.time() * 1000))) + "&btype=C"
+    # https://32.push2.eastmoney.com/api/qt/clist/get?cb=jQuery1124045700749086112435_1634389030530&pn=3&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f243&fs=b:MK0354&fields=f2,f3,f12,f14,f229,f230,f237&_=1634389030541
+    url = "http://32.push2.eastmoney.com/api/qt/clist/get?cb=jQuery1124045700749086112435_" + str(int(round(time.time() * 1000))) + "&pn=1&pz=400&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f243&fs=b:MK0354&fields=f2,f3,f12,f14,f229,f230,f237&_=" + str(int(round(time.time() * 1000)))
 
-    response = requests.get(url, headers=header)
+    response = requests.get(url)
     code = response.status_code
     if code != 200:
         print("获取数据失败， 状态码：" + code)
@@ -29,19 +31,23 @@ def get_content():
 
 
 def parse_content(content):
-    data = json.loads(content)
+    data = None
+    try:
+        data = json.loads(re.match(".*?({.*}).*", content, re.S).group(1))
+    except:
+        raise ValueError('Invalid Input')
 
     print("load data is successful")
 
     # 所有数据行
-    rows = data['rows']
+    rows = data['data']['diff']
 
     if len(rows) == 0:
         print("未获取到数据。")
 
-    if len(rows) == 30:
-        # print("目前是游客身份，只能获取30条记录，请先登录")
-        raise Exception("目前是游客身份，只能获取30条记录，请先登录")
+    # if len(rows) == 30:
+    #     # print("目前是游客身份，只能获取30条记录，请先登录")
+    #     raise Exception("目前是游客身份，只能获取30条记录，请先登录")
 
     return build_rows(rows)
 
@@ -51,7 +57,7 @@ def build_rows(rows):
     for row in rows:
         new_row = {}
         try:
-            build_row(new_row, row['cell'])
+            build_row(new_row, row)
         except Exception as e:
             print("数据解析出错.row=" + str(new_row), e)
             raise e
@@ -61,36 +67,24 @@ def build_rows(rows):
 
 def build_row(row, cell):
 
-    row['cb_name_id'] = cell['bond_nm']
-
+    row['cb_name_id'] = cell['f14']
     # 建立映射转换关系
-    row['bond_code'] = cell['bond_id']
+    row['bond_code'] = cell['f12']
     # 转债价格
-    row['cb_price2_id'] = cell['price']
+    if cell['f2'] != '-':
+        row['cb_price2_id'] = cell['f2']
     # 可转债涨跌  需要将百分数转换成小数
-    row['cb_mov2_id'] = percentage2float(cell, 'increase_rt')
+    if cell['f3'] != '-':
+        row['cb_mov2_id'] = round(cell['f3']/100, 4)
     # 正股涨跌  需要将百分数转换成小数
-    row['cb_mov_id'] = percentage2float(cell, 'sincrease_rt')
+    if cell['f230'] != '-':
+        row['cb_mov_id'] = round(cell['f230']/100, 4)
     # 正股价格
-    row['stock_price_id'] = cell['sprice']
-    # 转股价值
-    row['cb_value_id'] = cell['convert_value']
+    if cell['f229'] != '-':
+        row['stock_price_id'] = round(cell['f229']/100, 4)
     # 转股溢价率  需要将百分数转换成小数
-    row['cb_premium_id'] = percentage2float(cell, 'premium_rt')
-    # 转债余额
-    row['remain_amount'] = cell['curr_iss_amt']
-    # 转债成交额  jsl单位是万元, 要转换成百万
-    row['cb_trade_amount_id'] = round(float(cell['volume'])/100, 1)
-    # 可转债换手率  需要将百分数转换成小数
-    if cell['turnover_rt'] is not None:
-        row['cb_trade_amount2_id'] = round(float(cell['turnover_rt'])/100, 3)
-    else:
-        print(cell['bond_nm'] + "可转债换手率为空")
-    # 税前收益率  需要将百分数转换成小数
-    # fixme 目前看到的数据不正确, 舍弃
-    # row['bt_yield'] = percentage2float(cell, 'ytm_rt')
-    # if row['bt_yield'] is None or row['bt_yield'] == '-':
-    #     print(cell['bond_nm'] + "税前收益率为空:" + cell['ytm_rt'])
+    if cell['f237'] != '-':
+        row['cb_premium_id'] = round(cell['f237']/100, 4)
 
     return row
 
@@ -111,30 +105,34 @@ def update_db(rows):
     try:
 
         for row in rows:
+           cur = get_cursor("select count(*) from changed_bond where bond_code=:bond_code", {'bond_code':row['bond_code']})
+           one = cur.fetchone()
+           if one[0] == 0:
+               print("not update cb:" + row['cb_name_id'])
+               continue
+
             # execute执行脚本
            rowcount = execute_sql_with_rowcount("""update changed_bond 
                 set cb_price2_id = :cb_price2_id,
                 cb_mov2_id = :cb_mov2_id,
                 cb_mov_id = :cb_mov_id,
                 stock_price_id = :stock_price_id,
-                cb_value_id = :cb_value_id,
-                cb_premium_id = :cb_premium_id,
-                remain_amount = :remain_amount,
-                cb_trade_amount_id = :cb_trade_amount_id,
-                cb_trade_amount2_id = :cb_trade_amount2_id
-                --,
-                --bt_yield = :bt_yield
+                cb_premium_id = :cb_premium_id
                 where bond_code = :bond_code""",
-                                                {'cb_price2_id': row['cb_price2_id'], 'cb_mov2_id': row['cb_mov2_id'], 'cb_mov_id': row['cb_mov_id'], 'stock_price_id': row['stock_price_id'], 'cb_value_id': row['cb_value_id'],
-              'cb_premium_id': row['cb_premium_id'], 'remain_amount': row['remain_amount'], 'cb_trade_amount_id': row['cb_trade_amount_id'], 'cb_trade_amount2_id': row.get('cb_trade_amount2_id'),
-              #row["bt_yield"],
-                 'bond_code': row['bond_code']})
+                                                {'cb_price2_id': row.get('cb_price2_id', None),
+                 'cb_mov2_id': row.get('cb_mov2_id', None),
+                 'cb_mov_id': row.get('cb_mov_id', None),
+                 'stock_price_id': row.get('stock_price_id', None),
+                 'cb_premium_id': row.get('cb_premium_id', None),
+                 'bond_code': row['bond_code']}
+                                                )
            if rowcount == 0:
                 print("not update cb:" + row['cb_name_id'])
 
     except Exception as e:
         print("db操作出现异常", e)
         raise e
+
 
 def fetch_data():
     rows = get_content()
@@ -153,4 +151,5 @@ def fetch_data_from_source_code(source_code):
     return 'OK'
 
 if __name__ == "__main__":
-    fetch_data()
+    # fetch_data()
+    print(str(time.time()*1000))

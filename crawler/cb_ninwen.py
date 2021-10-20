@@ -351,19 +351,20 @@ def insertDb(rows):
 
         for row in rows:
             err_row = row
-            # execute执行脚本
-            get_cursor("""insert into changed_bond(cb_num_id,bond_code,cb_name_id,bond_date_id,stock_code,stock_name,industry,sub_industry,cb_price2_id,cb_mov2_id,cb_mov3_id,stock_price_id,cb_mov_id,cb_price3_id,cb_strike_id,cb_premium_id,cb_value_id,cb_t_id,bond_t1,red_t,remain_amount,cb_trade_amount_id,cb_trade_amount2_id,cb_to_share,cb_to_share_shares,market_cap,stock_pb,BT_yield,AT_yield,BT_red,AT_red,npv_red,npv_value,rating,discount_rate,elasticity,cb_ol_value,cb_ol_rank,cb_nl_value,cb_nl_rank,cb_ma20_deviate,cb_hot,duration,enforce_get,buy_back,down_revise,data_id)
-                             values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                             (row["cb_num_id"], row["bond_code"], row["cb_name_id"], row["bond_date_id"], row["stock_code"],
-                              row["stock_name"], row["industry"], row["sub_industry"], row["cb_price2_id"],
-                              row["cb_mov2_id"], row["cb_mov3_id"], row["stock_price_id"], row["cb_mov_id"],
-                              row["cb_price3_id"], row["cb_strike_id"], row["cb_premium_id"], row["cb_value_id"],
-                              row["cb_t_id"], row["bond_t1"], row["red_t"], row["remain_amount"], row["cb_trade_amount_id"],
-                              row["cb_trade_amount2_id"], row["cb_to_share"], row["cb_to_share_shares"], row["market_cap"],
-                              row["stock_pb"], row["BT_yield"], row["AT_yield"], row["BT_red"], row["AT_red"],
-                              row["npv_red"], row["npv_value"], row["rating"], row["discount_rate"], row["elasticity"],
-                              row["cb_ol_value"], row["cb_ol_rank"], row["cb_nl_value"], row["cb_nl_rank"],
-                              row["cb_ma20_deviate"], row["cb_hot"], row["duration"], row.get("enforce_get"), row.get("buy_back"), row.get("down_revise"), row['data_id'])
+            # execute执行脚本 cb_num_id
+            get_cursor("""insert into 
+            changed_bond( cb_num_id, bond_code, cb_name_id, bond_date_id, stock_code, stock_name, industry, sub_industry, cb_price2_id, cb_mov2_id, cb_mov3_id, stock_price_id, cb_mov_id, cb_price3_id, cb_strike_id, cb_premium_id, cb_value_id, cb_t_id, bond_t1, red_t, remain_amount, cb_trade_amount_id, cb_trade_amount2_id, cb_to_share, cb_to_share_shares, market_cap, stock_pb, BT_yield, AT_yield, BT_red, AT_red, npv_red, npv_value, rating, discount_rate, elasticity, cb_ol_value, cb_ol_rank, cb_nl_value, cb_nl_rank, cb_ma20_deviate, cb_hot, duration, enforce_get, buy_back, down_revise, data_id)
+                  values(:cb_num_id,:bond_code,:cb_name_id,:bond_date_id,:stock_code,:stock_name,:industry,:sub_industry,:cb_price2_id,:cb_mov2_id,:cb_mov3_id,:stock_price_id,:cb_mov_id,:cb_price3_id,:cb_strike_id,:cb_premium_id,:cb_value_id,:cb_t_id,:bond_t1,:red_t,:remain_amount,:cb_trade_amount_id,:cb_trade_amount2_id,:cb_to_share,:cb_to_share_shares,:market_cap,:stock_pb,:BT_yield,:AT_yield,:BT_red,:AT_red,:npv_red,:npv_value,:rating,:discount_rate,:elasticity,:cb_ol_value,:cb_ol_rank,:cb_nl_value,:cb_nl_rank,:cb_ma20_deviate,:cb_hot,:duration,:enforce_get,:buy_back,:down_revise,:data_id)""",
+                       {'cb_num_id' : row['cb_num_id'], 'bond_code' : row['bond_code'], 'cb_name_id' : row['cb_name_id'], 'bond_date_id' : row['bond_date_id'], 'stock_code' : row['stock_code'],
+                              'stock_name' : row['stock_name'], 'industry' : row['industry'], 'sub_industry' : row['sub_industry'], 'cb_price2_id' : row['cb_price2_id'],
+                              'cb_mov2_id' : row['cb_mov2_id'], 'cb_mov3_id' : row['cb_mov3_id'], 'stock_price_id' : row['stock_price_id'], 'cb_mov_id' : row['cb_mov_id'],
+                              'cb_price3_id' : row['cb_price3_id'], 'cb_strike_id' : row['cb_strike_id'], 'cb_premium_id' : row['cb_premium_id'], 'cb_value_id' : row['cb_value_id'],
+                              'cb_t_id' : row['cb_t_id'], 'bond_t1' : row['bond_t1'], 'red_t' : row['red_t'], 'remain_amount' : row['remain_amount'], 'cb_trade_amount_id' : row['cb_trade_amount_id'],
+                              'cb_trade_amount2_id' : row['cb_trade_amount2_id'], 'cb_to_share' : row['cb_to_share'], 'cb_to_share_shares' : row['cb_to_share_shares'], 'market_cap' : row['market_cap'],
+                              'stock_pb' : row['stock_pb'], 'BT_yield' : row['BT_yield'], 'AT_yield' : row['AT_yield'], 'BT_red' : row['BT_red'], 'AT_red' : row['AT_red'],
+                              'npv_red' : row['npv_red'], 'npv_value' : row['npv_value'], 'rating' : row['rating'], 'discount_rate' : row['discount_rate'], 'elasticity' : row['elasticity'],
+                              'cb_ol_value' : row['cb_ol_value'], 'cb_ol_rank' : row['cb_ol_rank'], 'cb_nl_value' : row['cb_nl_value'], 'cb_nl_rank' : row['cb_nl_rank'],
+                              'cb_ma20_deviate' : row['cb_ma20_deviate'], 'cb_hot' : row['cb_hot'], 'duration' : row['duration'], 'enforce_get' : row.get('enforce_get'), 'buy_back' : row.get('buy_back'), 'down_revise' : row.get('down_revise'), 'data_id' : row['data_id']}
                              )
     except Exception as e:
         # cur_file.close()

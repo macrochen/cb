@@ -11,18 +11,22 @@ MID_X = 124.08
 MID_Y = 33.4
 MID_YIELD = -3.92
 
+
 def get_date_type():
     date = datetime.now().strftime('%Y-%m-%d')
     url = 'http://tool.bitefu.net/jiari/?d=' + date
-    resp = request.urlopen(url, timeout=3)
-    content = resp.read()
-    if content:
-        try:
-            day_type = int(content)
-        except ValueError:
-            return -1
-        else:
-            return day_type
+    try:
+        resp = request.urlopen(url, timeout=5)
+        content = resp.read()
+        if content:
+            try:
+                day_type = int(content)
+            except ValueError:
+                return -1
+            else:
+                return day_type
+    except Exception as e:
+        print("get_date_type is timeout", e)
 
     return -1
 
@@ -76,11 +80,10 @@ def rebuild_bond_code(bond_code):
 
 
 def calc_mid_data():
-
     # 打开文件数据库
     cur = get_cursor("""
 SELECT mid_price, mid_premium from (
-    SELECT  AVG(cb_price2_id)  as mid_price, row_number() OVER () as rn
+    SELECT  round(AVG(cb_price2_id), 2)  as mid_price, row_number() OVER () as rn
     FROM (SELECT cb_price2_id
           FROM changed_bond
           ORDER BY cb_price2_id
@@ -88,7 +91,7 @@ SELECT mid_price, mid_premium from (
           OFFSET (SELECT (COUNT(*) - 1) / 2
                   FROM changed_bond))) a
 left join(
-    SELECT AVG(cb_premium_id)*100 as mid_premium, row_number() OVER () as rn
+    SELECT round(AVG(cb_premium_id)*100, 2) as mid_premium, row_number() OVER () as rn
     FROM (SELECT cb_premium_id
           FROM changed_bond
           ORDER BY cb_premium_id
@@ -104,19 +107,7 @@ on a.rn = b.rn
     MID_Y = row[1]
     print('init mid data is successful.MID_X:' + str(MID_X) + ', MID_Y:' + str(MID_Y))
 
-    # for row in rows:
-
-        # if key == 'mid_premium':
-        #     MID_Y = value
-        # elif key == 'mid_price':
-        #     MID_X = value
-        # elif key == 'mid_yield':
-        #     mid_yield = value
-        # else:
-        #     raise Exception('unknow key:' + key)
-
-    # return mid_y, mid_x #, mid_yield
-
+    return row[0], row[1]
 
 def get_ymd():
     today = datetime.now()
@@ -138,6 +129,37 @@ def calc_hold_price(hold_bond, direction, trade_amount, trade_price):
         hold_bond.hold_amount -= int(trade_amount)
         hold_bond.sum_sell += trade_num - fee
         cost_num -= trade_num
+    # 重新计算持有价格: 持仓成本/持仓数量
+    if hold_bond.hold_amount == 0:
+        hold_bond.hold_price = 0
+    else:
+        hold_bond.hold_price = round(cost_num / hold_bond.hold_amount, 3)
+    return fee
+
+
+# 撤销重新计算金额, 价格
+def re_calc_hold_price(hold_bond, trade_history):
+    trade_amount = trade_history.amount
+    trade_price = trade_history.price
+
+    # 交易金额
+    trade_num = round(float(trade_price) * int(trade_amount), 3)
+    # 无论买卖, 费用都会加在持有成本上, 所以要减掉
+    hold_bond.sum_buy -= trade_history.fee
+
+    # 如果原来是卖出, 交易金额会加在sum_sell上, 这里要减掉, 因为trade_amount是负数, 直接加上即可
+    if trade_amount < 0:
+        hold_bond.sum_sell += trade_num
+        hold_bond.hold_amount -= trade_amount  # 数量加回去
+    else:
+        # 如果是买入, 交易金额会加在sum_buy上, 这里要减掉
+        hold_bond.sum_buy -= trade_num
+        hold_bond.hold_amount -= trade_amount  # 数量减掉
+
+    # 重新计算持仓成本
+
+    # 持仓金额
+    cost_num = hold_bond.sum_buy - hold_bond.sum_sell
     # 重新计算持有价格: 持仓成本/持仓数量
     if hold_bond.hold_amount == 0:
         hold_bond.hold_price = 0

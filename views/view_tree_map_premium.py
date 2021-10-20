@@ -3,7 +3,7 @@
 # https://gallery.pyecharts.org/#/README
 
 # https://blog.csdn.net/idomyway/article/details/82390040
-
+import views.nav_utils
 from utils.db_utils import get_cursor
 from utils.echarts_html_utils import generate_scatter_html_with_one_table
 from utils.table_html_utils import generate_table_html_with_data
@@ -127,15 +127,15 @@ FROM (
 
          from (select *
                from (SELECT DISTINCT c.*
-                     from changed_bond c WHERE cb_premium_id*100 > ? and cb_premium_id*100 <= ?
+                     from changed_bond c WHERE cb_premium_id*100 > :start and cb_premium_id*100 <= :end
                      order by cb_mov2_id DESC
-                     limit ?) 
+                     limit :up_size) 
                UNION
                select *
                from (SELECT DISTINCT c.*
-                     from changed_bond c WHERE cb_premium_id*100 > ? and cb_premium_id*100 <= ?
+                     from changed_bond c WHERE cb_premium_id*100 > :start and cb_premium_id*100 <= :end
                      order by cb_mov2_id ASC
-                     limit ?)) c
+                     limit :down_size)) c
                   LEFT join stock_report s on c.stock_code = s.stock_code
          where c.enforce_get not in ('强赎中')
             or c.enforce_get is null) d
@@ -152,10 +152,10 @@ FROM (
      ) e
      on d.bond_code = e.bond_code
 order by _sign desc, abs(cb_mov2_id) DESC
-                                """, (start, end, up, start, end, down))
+                                """, {'start':start, 'end':end, 'up_size':up, 'down_size':down})
 
             table, table_html = generate_table_html_with_data('', cur, '', need_title=False,
-                                       remark_fields_color=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
+                                       remark_fields=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                        is_login_user=is_login_user)
             html += "<div id='cb_detail_list'>"
             html += generate_scatter_html_with_one_table(table,
@@ -166,7 +166,7 @@ order by _sign desc, abs(cb_mov2_id) DESC
             html += '</div>'
 
         return '可转债涨跌分布', \
-               view_utils.build_analysis_nav_html('/view_tree_map_premium.html'), \
+               views.nav_utils.build_analysis_nav_html('/view_tree_map_premium.html'), \
                html
 
     except Exception as e:

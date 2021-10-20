@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import os
 import sys
 from datetime import datetime
@@ -11,15 +12,17 @@ from prettytable import from_db_cursor
 
 import utils.table_html_utils
 import utils.trade_utils
-from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney
-from jobs import do_update_bond_yield
-from models import User, ChangedBond, HoldBond, ChangedBondSelect, db
+from config import db_file_path
+from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney, cb_eastmoney
+from jobs import do_update_data_when_trade_is_end
+from models import User, ChangedBond, HoldBond, ChangedBondSelect, db, TradeHistory, HoldBondHistory, Task
 from utils import trade_utils
 from utils.db_utils import get_connect, get_cursor
 from utils.html_utils import get_strategy_options_html
 from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
     view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_tree_map_price, \
-    view_tree_map_premium
+    view_tree_map_premium, view_my_price_list, view_my_trade_history, view_cb_trend, view_up_down_range
+from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html
 
 cb = Blueprint('cb', __name__)
 
@@ -90,7 +93,6 @@ def edit_hold_bond(id='', bond_code=''):
 @login_required
 def find_bond_by_code():
     bond_code = request.args.get("bond_code")
-    bond_name = request.args.get("bond_name")
     account = request.args.get("account")
     # fixme 打新和其他策略可能同时存在
     # 先找hold_amount>-1的,没有再找hold_amount=-1的
@@ -100,17 +102,10 @@ def find_bond_by_code():
             bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code, HoldBond.account == account).first()
         else:
             bond = db.session.query(HoldBond).filter(HoldBond.bond_code == bond_code).first()
-    elif bond_name != '':
-        if account != '':
-            bond = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%'), HoldBond.account == account).first()
-        else:
-            bond = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%')).first()
 
     if bond is None:
         if bond_code != '':
             bond = ChangedBond.query.filter_by(bond_code=bond_code).first()
-        elif bond_name != '':
-            bond = ChangedBond.query.filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).first()
 
         if bond is not None:
             # 先关闭session, 再修改model, 否则会触发update
@@ -122,12 +117,43 @@ def find_bond_by_code():
         return dict(bond)
 
 
+@cb.route('/find_bond_by_name.html/<bond_name>/', methods=['GET'])
+@login_required
+def find_bond_by_name(bond_name):
+    bonds = []
+    if bond_name != '':
+        bonds = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%')).all()
+
+    if len(bonds) == 0:
+        bonds = ChangedBond.query.filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).all()
+
+        if len(bonds) > 0:  # changedbond的id非holdbond的id, 故排除
+            return json.dumps(bonds, default=lambda o: o.to_dict('id'))
+    else:
+        return json.dumps(bonds, default=lambda o: o.to_dict())
+
+
 @cb.route('/view_my_select.html')
 @login_required
 def my_select_view():
     user_id = session.get('_user_id')
     title, navbar, content = view_my_select.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/delete_selected_bond.html/<ids>/')
+@login_required
+def delete_selected_bond(ids):
+    if ids is None or ids.strip(' ') == '':
+        print("parameter ids is invalid.")
+
+    ss = ids.split(',')
+    db.session.query(ChangedBondSelect)\
+        .filter(ChangedBondSelect.id.in_(ss))\
+        .update({ChangedBondSelect.is_deleted: 1})
+    db.session.commit()
+
+    return 'OK'
 
 
 @cb.route('/edit_changed_bond_select.html')
@@ -143,7 +169,9 @@ def edit_changed_bond_select(bond_code=''):
         type = bond.strategy_type
     options = get_strategy_options_html(type)
 
-    return render_template("edit_changed_bond_select.html", bond=bond, strategy_options=options)
+    navbar = build_select_nav_html('/edit_changed_bond_select.html')
+
+    return render_template("edit_changed_bond_select.html", bond=bond, strategy_options=options, navbar=navbar)
 
 
 @cb.route('/find_changed_bond_select_by_code.html', methods=['GET'])
@@ -173,6 +201,19 @@ def find_changed_bond_select_by_code():
         raise Exception('not find bond by code/name: ' + bond_code + "," + bond_name)
     else:
         return dict(bond)
+
+@cb.route('/find_changed_bond_select_by_name.html/<bond_name>/', methods=['GET'])
+@login_required
+def find_changed_bond_select_by_name(bond_name):
+    bonds = None
+    if bond_name != '':
+        bonds = db.session.query(ChangedBondSelect).filter(ChangedBondSelect.cb_name_id.like('%' + bond_name + '%'), ChangedBondSelect.is_deleted != 1).all()
+        if len(bonds) == 0:
+            bonds = db.session.query(ChangedBond).filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).all()
+            if len(bonds) > 0:  # changed bond的id非select的id, 故排除
+                return json.dumps(bonds, default=lambda o: o.to_dict('id'))
+
+    return json.dumps(bonds, default=lambda o: o.to_dict())
 
 @cb.route('/save_changed_bond_select.html', methods=['POST'])
 @login_required
@@ -210,7 +251,9 @@ def save_changed_bond_select():
 
     options = get_strategy_options_html(None)
 
-    return render_template("edit_changed_bond_select.html", result='save is successful', strategy_options=options)
+    navbar = build_select_nav_html('/edit_changed_bond_select.html')
+
+    return render_template("edit_changed_bond_select.html", result='save is successful', strategy_options=options, navbar=navbar)
 
 
 #fixme 废弃掉, 用sync_trade_data代替
@@ -299,7 +342,7 @@ def save_trade_data():
     hold_bond = None
     is_new = id is None or id.strip(' ') == ''
     if is_new:
-        #新增操作
+        # 新增操作
         hold_bond = HoldBond()
     else:
         # 更新操作
@@ -339,7 +382,8 @@ def save_trade_data():
     if direction is None or direction.strip(' ') == '':
         raise Exception('必须指定买卖方向')
 
-    if direction == 'sell':
+    is_sell = direction == 'sell'
+    if is_sell:
         if int(trade_amount) > hold_bond.hold_amount:
             raise Exception("成交量(" + trade_amount + ")不能超过持有量(" + str(hold_bond.hold_amount) + ")")
 
@@ -350,7 +394,7 @@ def save_trade_data():
     hold_bond.account = account
 
     # 计算持仓成本
-    trade_utils.calc_hold_price(hold_bond, direction, trade_amount, trade_price)
+    fee = trade_utils.calc_hold_price(hold_bond, direction, trade_amount, trade_price)
 
     strategy_type = request.form['strategy_type']
     if strategy_type is None or strategy_type.strip(' ') == '':
@@ -363,13 +407,67 @@ def save_trade_data():
         # 增加开始时间
         hold_bond.start_date = ymd
         db.session.add(hold_bond)
+        # 获取id, 强刷
+        db.session.flush()
     else:
         hold_bond.modify_date = ymd
+
+    # 保存成交记录
+    trade_history = TradeHistory()
+    trade_history.bond_code = bond_code
+    trade_history.fee = fee
+    user_id = session.get('_user_id')
+    trade_history.owner_id = user_id
+    trade_history.cb_name_id = cb_name_id
+    trade_history.account = account
+    trade_history.strategy_type = strategy_type
+    trade_history.price = trade_price
+    trade_history.amount = -int(trade_amount) if is_sell else trade_amount
+    trade_history.hold_id = hold_bond.id
+    db.session.add(trade_history)
+
     db.session.commit()
 
     options = get_strategy_options_html(None)
 
-    return render_template("sync_trade_data.html", bond=None, result='save is successful', strategy_options=options)
+
+    return render_template("sync_trade_data.html", bond=None, navbar=build_personal_nav_html(), result='operation is successful', strategy_options=options)
+
+
+@cb.route('/un_save_trade_data.html/<id>', methods=['GET'])
+@login_required
+def un_save_trade_data(id):
+    trade_history = db.session.query(TradeHistory).filter(TradeHistory.id == id).first()
+    if trade_history is None:
+        raise Exception("not get trade_history by id:"+str(id))
+
+    hold_id = trade_history.hold_id
+    hold_bond = db.session.query(HoldBond).filter(HoldBond.id == hold_id).first()
+    is_new_hold_bond = False
+    if hold_bond is None:
+        # 可能被归档了, 需要先从归档中恢复
+        hold_bond_history = db.session.query(HoldBondHistory).filter(HoldBondHistory.id == hold_id).first()
+        if hold_bond_history is None:
+            raise Exception('not get hold_bond by id:' + str(hold_id))
+        else:
+            hold_bond = HoldBond()
+            hold_bond.copy(hold_bond_history)
+            is_new_hold_bond = True
+
+    # 重新计算持仓成本
+    trade_utils.re_calc_hold_price(hold_bond, trade_history)
+
+    try:
+        if is_new_hold_bond:
+            db.session.add(hold_bond)
+            db.session.query(HoldBondHistory).filter(HoldBondHistory.id == hold_id).delete()
+        trade_history.is_delete = 1
+        db.session.commit()
+    except Exception as err:
+        print('un_save_trade_data is failure. err:' + str(err))
+        db.session.rollback()
+
+    return 'OK'
 
 
 @cb.route('/sync_jsl_bond_data.html')
@@ -392,15 +490,24 @@ def sync_trade_data(id='', bond_code=''):
         db.session.close()
         bond.id = ''
 
-    options = get_strategy_options_html(None if bond is None else bond.strategy_type)
+    options = get_strategy_options_html(None
+                                        if bond is None
+                                        else (bond.strategy_type if hasattr(bond, 'strategy_type') else None))
 
-    return render_template("sync_trade_data.html", bond=bond, strategy_options=options)
+    return render_template("sync_trade_data.html", bond=bond, navbar=build_personal_nav_html(), strategy_options=options)
 
 
 @cb.route('/view_up_down.html')
 def up_down_view():
     user_id = session.get('_user_id')
     title, navbar, content = view_up_down.draw_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_up_down_range.html')
+def up_down_range_view():
+    user_id = session.get('_user_id')
+    title, navbar, content = view_up_down_range.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -443,7 +550,7 @@ def parse_range_value(key, suffix):
             ss = key.split('~')
             start = int(ss[0])
             end = int(ss[1])
-        elif key.find('<=') > 0:
+        elif key.find('<=') >= 0:
             start = -sys.maxsize
             end = int(key.replace('<=', ''))
         else:
@@ -484,6 +591,15 @@ def my_up_down_view():
     title, navbar, content = view_my_up_down.draw_view(user_id is not None)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
+
+@cb.route('/view_my_price_list.html')
+@login_required
+def my_price_list_view():
+    user_id = session.get('_user_id')
+    utils.trade_utils.calc_mid_data()
+    title, navbar, content = view_my_price_list.draw_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
 @cb.route('/view_my_strategy.html')
 @login_required
 def my_strategy_view():
@@ -497,6 +613,14 @@ def my_strategy_view():
 @login_required
 def my_yield_view():
     title, navbar, content = view_my_yield.draw_my_view()
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_my_trade_history.html')
+@login_required
+def my_trade_history_view():
+    user_id = session.get('_user_id')
+    title, navbar, content = view_my_trade_history.draw_my_view(user_id)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -516,7 +640,20 @@ def market_view():
     title, navbar, content = view_market.draw_market_view(user_id)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
-@cb.route('/jsl_update_data.html')
+@cb.route('/view_trend.html')
+def trend_view():
+    # current_user = None
+    utils.trade_utils.calc_mid_data()
+    title, navbar, content = view_cb_trend.draw_view()
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+@cb.route('/eastmoney_update_data.html')
+@cb.route('/realtime_update_data.html')
+# @login_required
+def realtime_update_data():
+    return cb_eastmoney.fetch_data()
+
+@cb.route('/easy_update_data.html')
 @login_required
 def jsl_update_data():
     return cb_jsl.fetch_data()
@@ -526,25 +663,37 @@ def jsl_update_data():
 def ninwen_update_data():
     return cb_ninwen.fetch_data()
 
-@cb.route('/cb_ninwen_detail.html')
+@cb.route('/cb_ninwen_detail.html/<task_name>/', methods=['GET'])
 @login_required
-def ninwen_detail_update_data():
-    return cb_ninwen_detail.fetch_data()
+def ninwen_detail_update_data(task_name):
+    cb_ninwen_detail.fetch_data(task_name)
+    return 'OK'
 
-@cb.route('/stock_10jqka.html')
+@cb.route('/stock_10jqka.html/<task_name>/', methods=['GET'])
 @login_required
-def stock_10jqka_update_data():
-    return stock_10jqka.fetch_data()
+def stock_10jqka_update_data(task_name):
+    stock_10jqka.fetch_data(task_name)
+    return 'OK'
 
-@cb.route('/stock_eastmoney.html')
+@cb.route('/stock_eastmoney.html/<task_name>/', methods=['GET'])
 @login_required
-def stock_eastmoney_update_data():
-    return stock_eastmoney.fetch_data()
+def stock_eastmoney_update_data(task_name):
+    stock_eastmoney.fetch_data(task_name)
+    return 'OK'
 
-@cb.route('/stock_xueqiu.html')
+@cb.route('/stock_xueqiu.html/<task_name>/', methods=['GET'])
 @login_required
-def stock_xueqiu_update_data():
-    return stock_xueqiu.fetch_data()
+def stock_xueqiu_update_data(task_name):
+    stock_xueqiu.fetch_data(task_name)
+    return 'OK'
+
+@cb.route('/get_task_data.html/<task_name>/', methods=['GET'])
+@login_required
+def get_task_data(task_name):
+    task = db.session.query(Task).filter(Task.name == task_name).first()
+    if task is None:
+        task = Task()
+    return dict(task)
 
 @cb.route('/download_db_data.html')
 @login_required
@@ -571,7 +720,7 @@ def upload_db_data():
 @login_required
 def save_db_data():
     # 删除整个db
-    os.unlink("db/cb.db3")
+    os.unlink(db_file_path)
     # 获取文件(字符串?)
     file = request.files['file']
     s = file.read().decode('utf-8')
@@ -629,8 +778,8 @@ def execute_sql():
     return 'OK'
 
 
-@cb.route('/update_bond_yield.html')
+@cb.route('/update_data_when_trade_is_end.html')
 @login_required
-def update_bond_yield():
-    return do_update_bond_yield()
+def update_data_when_trade_is_end():
+    return do_update_data_when_trade_is_end()
 

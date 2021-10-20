@@ -7,7 +7,9 @@ import time
 import bs4
 from selenium import webdriver
 
-from utils.db_utils import get_cursor
+from crawler import crawler_utils
+from utils.db_utils import get_cursor, execute_sql_with_rowcount
+from utils.task_utils import *
 
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {
@@ -16,8 +18,7 @@ header = {
     'Cookie': "csrf_token=4d924a8e39c98eee; __51cke__=; P0s_Pw_verify_code=lNwst736TYc%3D; P0s_winduser=RaqSRnBfFwDoLZv5tGFqXXLD4fXwVZQynHEOTJOsq1fzXIiXiCJW%2FWYIGis%3D; P0s_visitor=Cmse9dUtYW7cclzpENrqCj4gRIGuNSePKoJ%2Bng6EdKzPslngncrLoDtmlqg%3D; __tins__4771153=%7B%22sid%22%3A%201615874339009%2C%20%22vd%22%3A%204%2C%20%22expires%22%3A%201615876387793%7D; __51laig__=98; P0s_lastvisit=269%091615874605%09%2Findex.php%3Fm%3DmyAdmin%26c%3Dlog"
 }
 
-driver = None
-def getContent(bond_num):
+def getContent(driver, bond_num):
     url = "http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + str(bond_num)
 
     driver.get(url)
@@ -294,80 +295,99 @@ def insertDb(rows):
 
         for row in rows:
             # execute执行脚本
+            #
             get_cursor("""insert into changed_bond(cb_num_id,bond_code,cb_name_id,bond_date_id,stock_code,stock_name,industry,sub_industry,cb_price2_id,cb_mov2_id,cb_mov3_id,stock_price_id,cb_mov_id,cb_price3_id,cb_strike_id,cb_premium_id,cb_value_id,cb_t_id,bond_t1,red_t,remain_amount,cb_trade_amount_id,cb_trade_amount2_id,cb_to_share,cb_to_share_shares,market_cap,stock_pb,BT_yield,AT_yield,BT_red,AT_red,npv_red,npv_value,rating,discount_rate,elasticity,cb_ol_value,cb_ol_rank,cb_nl_value,cb_nl_rank,cb_ma20_deviate,cb_hot,duration,enforce_get,buy_back,down_revise,data_id)
-                             values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                             (row["cb_num_id"], row["bond_code"], row["cb_name_id"], row["bond_date_id"], row["stock_code"],
-                              row["stock_name"], row["industry"], row["sub_industry"], row["cb_price2_id"],
-                              row["cb_mov2_id"], row["cb_mov3_id"], row["stock_price_id"], row["cb_mov_id"],
-                              row["cb_price3_id"], row["cb_strike_id"], row["cb_premium_id"], row["cb_value_id"],
-                              row["cb_t_id"], row["bond_t1"], row["red_t"], row["remain_amount"], row["cb_trade_amount_id"],
-                              row["cb_trade_amount2_id"], row["cb_to_share"], row["cb_to_share_shares"], row["market_cap"],
-                              row["stock_pb"], row["BT_yield"], row["AT_yield"], row["BT_red"], row["AT_red"],
-                              row["npv_red"], row["npv_value"], row["rating"], row["discount_rate"], row["elasticity"],
-                              row["cb_ol_value"], row["cb_ol_rank"], row["cb_nl_value"], row["cb_nl_rank"],
-                              row["cb_ma20_deviate"], row["cb_hot"], row["duration"], row.get("enforce_get"), row.get("buy_back"), row.get("down_revise"), row['data_id'])
+                             values(:cb_num_id,:bond_code,:cb_name_id,:bond_date_id,:stock_code,:stock_name,:industry,:sub_industry,:cb_price2_id,:cb_mov2_id,:cb_mov3_id,:stock_price_id,:cb_mov_id,:cb_price3_id,:cb_strike_id,:cb_premium_id,:cb_value_id,:cb_t_id,:bond_t1,:red_t,:remain_amount,:cb_trade_amount_id,:cb_trade_amount2_id,:cb_to_share,:cb_to_share_shares,:market_cap,:stock_pb,:BT_yield,:AT_yield,:BT_red,:AT_red,:npv_red,:npv_value,:rating,:discount_rate,:elasticity,:cb_ol_value,:cb_ol_rank,:cb_nl_value,:cb_nl_rank,:cb_ma20_deviate,:cb_hot,:duration,:enforce_get,:buy_back,:down_revise,:data_id)""",
+                       {'cb_num_id' : row['cb_num_id'], 'bond_code' : row['bond_code'], 'cb_name_id' : row['cb_name_id'], 'bond_date_id' : row['bond_date_id'], 'stock_code' : row['stock_code'],
+                              'stock_name' : row['stock_name'], 'industry' : row['industry'], 'sub_industry' : row['sub_industry'], 'cb_price2_id' : row['cb_price2_id'],
+                              'cb_mov2_id' : row['cb_mov2_id'], 'cb_mov3_id' : row['cb_mov3_id'], 'stock_price_id' : row['stock_price_id'], 'cb_mov_id' : row['cb_mov_id'],
+                              'cb_price3_id' : row['cb_price3_id'], 'cb_strike_id' : row['cb_strike_id'], 'cb_premium_id' : row['cb_premium_id'], 'cb_value_id' : row['cb_value_id'],
+                              'cb_t_id' : row['cb_t_id'], 'bond_t1' : row['bond_t1'], 'red_t' : row['red_t'], 'remain_amount' : row['remain_amount'], 'cb_trade_amount_id' : row['cb_trade_amount_id'],
+                              'cb_trade_amount2_id' : row['cb_trade_amount2_id'], 'cb_to_share' : row['cb_to_share'], 'cb_to_share_shares' : row['cb_to_share_shares'], 'market_cap' : row['market_cap'],
+                              'stock_pb' : row['stock_pb'], 'BT_yield' : row['BT_yield'], 'AT_yield' : row['AT_yield'], 'BT_red' : row['BT_red'], 'AT_red' : row['AT_red'],
+                              'npv_red' : row['npv_red'], 'npv_value' : row['npv_value'], 'rating' : row['rating'], 'discount_rate' : row['discount_rate'], 'elasticity' : row['elasticity'],
+                              'cb_ol_value' : row['cb_ol_value'], 'cb_ol_rank' : row['cb_ol_rank'], 'cb_nl_value' : row['cb_nl_value'], 'cb_nl_rank' : row['cb_nl_rank'],
+                              'cb_ma20_deviate' : row['cb_ma20_deviate'], 'cb_hot' : row['cb_hot'], 'duration' : row['duration'], 'enforce_get' : row.get('enforce_get'), 'buy_back' : row.get('buy_back'), 'down_revise' : row.get('down_revise'), 'data_id' : row['data_id']}
                              )
     except Exception as e:
         # cur_file.close()
         print("db操作出现异常", e)
 
-def do_fetch_data():
-    # 打开文件数据库
+
+def do_fetch_data(driver, task_name):
+    task = None
     try:
         # 遍历整个可转债列表, 拿到bond_num
         bond_cursor = get_cursor("""SELECT data_id, bond_code, cb_name_id from changed_bond""")
+
+        rows = bond_cursor.fetchall()
+        task, status = new_or_update_task(len(rows), task_name)
+        if status == -1:  # 有任务在执行
+            return
+
         i = 0
         j = 0
-        for bond_row in bond_cursor:
+        for bond_row in rows:
+            process_task_when_normal(task, 1)
+
             num_id = bond_row[0]
             bond_code = bond_row[1]
             bond_name = bond_row[2]
 
-            bond_ex_cursor = get_cursor("""SELECT id, bond_name from changed_bond_extend where bond_num = ?""", (num_id,))
+            bond_ex_cursor = get_cursor("""SELECT id, bond_name from changed_bond_extend where bond_num = :num_id""", {'num_id':num_id,})
             ex_list = list(bond_ex_cursor)
             if len(ex_list) == 0:
                 # 检查是否存在extend信息, 没有则去抓数据
-                row = getContent(num_id)
+                row = getContent(driver, num_id)
                 # 插入数据
+
                 get_cursor("""insert into changed_bond_extend(bond_num, bond_code, 
-                interest, ensure, enforce_get_term, buy_back_term, down_revise_term)
-                                        values(?,?,?,?,?,?,?)""",
-                                 (num_id, bond_code,
-                                  row.get('interest'),
-                                  row.get('ensure'),
-                                  row.get('enforce_get_term'),
-                                  row.get('buy_back_term'),
-                                  row.get('down_revise_term'),
-                                  )
+                                interest, ensure, enforce_get_term, buy_back_term, down_revise_term)
+                                        values(:bond_num, :bond_code, 
+                :interest, :ensure, :enforce_get_term, :buy_back_term, :down_revise_term)""",
+                           {
+                               'bond_num':num_id, 'bond_code':bond_code,
+                               'interest': row.get('interest'),
+                                'ensure': row.get('ensure'),
+                                'enforce_get_term': row.get('enforce_get_term'),
+                                'buy_back_term': row.get('buy_back_term'),
+                                'down_revise_term': row.get('down_revise_term'),
+                           }
                                  )
                 print("insert " + bond_name + " is successful. count:" + str(i + 1))
                 i += 1
                 # 暂停5s再执行， 避免被网站屏蔽掉
                 time.sleep(5)
             elif ex_list[0][1] is None:
-                get_cursor("""update changed_bond_extend set bond_name = ? where bond_num = ?""",
-                                 (bond_name, num_id)
-                                 )
-                print("update " + bond_name + " is successful. count:" + str(j + 1))
+                rowcount = execute_sql_with_rowcount("""update changed_bond_extend set bond_name = :bond_name where bond_num = :num_id""",
+                                                     {'bond_name':bond_name, 'num_id':num_id}
+                                                     )
+                if rowcount == 0:
+                    print("update " + bond_name + " is failure. count:" + str(j + 1))
+                else:
+                    print("update " + bond_name + " is successful. count:" + str(j + 1))
                 j += 1
+
+        ok_desc = "共处理" + str(i+j) + "条记录"
+        print(ok_desc)
+        process_task_when_finish(task, ok_desc)
     except Exception as e:
         print("db操作出现异常" + str(e), e)
+        process_task_when_error(task, "db操作出现异常")
         raise e
     except TimeoutError as e:
         print("网络超时, 请手工重试")
+        process_task_when_error(task, "网络超时")
         raise e
 
-def fetch_data():
+
+def fetch_data(task_name):
     options = webdriver.ChromeOptions()
     options.add_argument('user-agent="' + userAgent + '"')
     options.add_argument('Referer="http://www.ninwin.cn/index.php?m=profile"')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(options=options)
+    driver = crawler_utils.get_chrome_driver(None, options=options)
 
-    driver.implicitly_wait(10)
-    do_fetch_data()
+    do_fetch_data(driver, task_name)
 
     driver.close()
 

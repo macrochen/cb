@@ -6,6 +6,7 @@ import json
 # 单选
 import utils.echarts_html_utils
 import utils.table_html_utils
+import views.nav_utils
 from models import db, Config
 from utils import db_utils
 from utils.db_utils import get_cursor
@@ -38,7 +39,7 @@ def draw_my_view(is_login_user):
     try:
 
         html = ''
-        nav_html_list = view_utils.build_personal_nav_html_list('/view_my_strategy.html')
+        nav_html_list = views.nav_utils.build_personal_nav_html_list('/view_my_strategy.html')
 
         # =========我的强赎=========
         cur = get_cursor("""
@@ -86,13 +87,13 @@ def draw_my_view(is_login_user):
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code AND h.strategy_type = '回售' and h.hold_owner = 'me' and h.hold_amount != -1
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '回售' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 回售收益率
             """)
 
         html = generate_table_html("回售", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '回售年限', '回售收益率'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '回售年限', '回售收益率'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -128,8 +129,8 @@ def draw_my_view(is_login_user):
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code 
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code
     AND h.strategy_type = '低余额' 
     and h.hold_owner = 'me' 
     and h.hold_amount != -1
@@ -137,7 +138,7 @@ def draw_my_view(is_login_user):
             """)
 
         html = generate_table_html("低余额", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '正股涨跌'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '正股涨跌'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -172,13 +173,13 @@ def draw_my_view(is_login_user):
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and  c.bond_code = h.bond_code AND h.strategy_type = '高收益' and h.hold_owner = 'me' and h.hold_amount != -1
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '高收益' and h.hold_owner = 'me' and h.hold_amount != -1
     ORDER by 性价比 desc
             """)
 
         html = generate_table_html("高收益", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -213,13 +214,13 @@ def draw_my_view(is_login_user):
             trade_suggest as 操作建议,
 
             rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-        from changed_bond c, stock_report s, hold_bond h
-        WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '双低' and h.hold_owner = 'me' and h.hold_amount != -1
+        from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '双低' and h.hold_owner = 'me' and h.hold_amount != -1
         order by 双低值
                 """)
 
         html = generate_table_html("双低", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -254,13 +255,13 @@ def draw_my_view(is_login_user):
             trade_suggest as 操作建议,
 
             rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-        from changed_bond c, stock_report s, hold_bond h
-        WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '双低轮动' and h.hold_owner = 'me' and h.hold_amount != -1
+        from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '双低轮动' and h.hold_owner = 'me' and h.hold_amount != -1
         order by 双低值
                 """)
 
         html = generate_table_html("双低轮动", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -296,13 +297,13 @@ def draw_my_view(is_login_user):
             trade_suggest as 操作建议,
 
             rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-        from changed_bond c, stock_report s, hold_bond h
-        WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '多因子' and h.hold_owner = 'me' and h.hold_amount != -1
+        from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '多因子' and h.hold_owner = 'me' and h.hold_amount != -1
         order by 双低值
                 """)
 
         html = generate_table_html("多因子", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -338,13 +339,13 @@ def draw_my_view(is_login_user):
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '打新' and h.hold_owner = 'me' and h.hold_amount != -1
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '打新' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格
             """)
 
         html = generate_table_html("打新", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -380,13 +381,13 @@ def draw_my_view(is_login_user):
         trade_suggest as 操作建议,
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    WHERE c.stock_code = s.stock_code and c.bond_code = h.bond_code AND h.strategy_type = '网格' and h.hold_owner = 'me' and h.hold_amount != -1
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code AND h.strategy_type = '网格' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格
             """)
 
         html = generate_table_html("网格", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -423,14 +424,14 @@ def draw_my_view(is_login_user):
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
         h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    where c.stock_code = s.stock_code and c.bond_code = h.bond_code
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code
      AND h.strategy_type = '基本面' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格
         """)
 
         html = generate_table_html("基本面", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -467,14 +468,14 @@ def draw_my_view(is_login_user):
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
         h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    where c.stock_code = s.stock_code and c.bond_code = h.bond_code
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code
      AND h.strategy_type = '猪肉概念' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格
         """)
 
         html = generate_table_html("猪肉概念", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '正股涨跌'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '正股涨跌'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -492,8 +493,8 @@ def draw_my_view(is_login_user):
         round(s.al_ratio,2) || '%' as 负债率, s.yoy_al_ratio_rate || '%' as '负债率同比', s.pe as '市盈率(动)', c.stock_pb as 市净率,
         market_cap as '市值(亿元)', remain_amount as '余额(亿元)', round(cb_to_share_shares * 100,2) || '%'  as '余额/股本(%)',
         cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
-        from changed_bond c, stock_report s, hold_bond h
-    	where c.stock_code = s.stock_code and c.bond_code = h.bond_code 
+        from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code 
     	AND h.strategy_type = '每周精选' and h.hold_owner = 'me' and h.hold_amount != -1
     order by 转债价格
             """)
@@ -531,15 +532,15 @@ def draw_my_view(is_login_user):
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
         h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    where c.stock_code = s.stock_code and c.bond_code = h.bond_code
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code
     AND h.strategy_type = '活性债' and h.hold_owner = 'me' and h.hold_amount != -1 
     --and h.hold_owner = '水晶杯'
     order by 转债价格
             """)
 
         html = generate_table_html("活性债", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -575,14 +576,14 @@ def draw_my_view(is_login_user):
         
         rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度,
         h.account as 账户, h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    where c.stock_code = s.stock_code and c.bond_code = h.bond_code 
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code 
     AND h.strategy_type = '其他' and h.hold_owner = 'me' and h.hold_amount != -1
 order by 双低值
         """)
 
         html = generate_table_html("其他", cur, html,
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, tables=tables,
                                    is_login_user=is_login_user)
 
@@ -590,9 +591,9 @@ order by 双低值
         for config in configs:
             cur = get_cursor(config.value)
             ext_config = json.loads(config.ext_value)
-            remark_fields_color = ext_config['remark_fields_color']
+            remark_fields = ext_config['remark_fields']
             html = generate_table_html(config.key, cur, html,
-                                       remark_fields_color=remark_fields_color,
+                                       remark_fields=remark_fields,
                                        nav_html_list=nav_html_list, tables=tables,
                                        is_login_user=is_login_user)
 
@@ -608,8 +609,8 @@ order by 双低值
         h.account as 账户, h.strategy_type as 策略,
         c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业', 
         h.memo as 备注
-    from changed_bond c, stock_report s, hold_bond h
-    where c.stock_code = s.stock_code and c.bond_code = h.bond_code 
+    from changed_bond c left join stock_report s on c.stock_code = s.stock_code, hold_bond h
+    WHERE c.bond_code = h.bond_code 
         AND (
         cb_price2_id < 100 and cb_premium_id > 0.9 	
         or cb_price2_id > 130 
@@ -621,7 +622,7 @@ order by 双低值
 
         html = generate_table_html("清仓建议", cur, html,
                                    subtitle='(价格<100且溢价率>90%或100<价格<110且溢价率>60%或价格>130)',
-                                   remark_fields_color=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
+                                   remark_fields=['盈亏', '溢价率', '可转债涨跌', '到期收益率', '双低值'],
                                    nav_html_list=nav_html_list, is_login_user=is_login_user)
 
         # 数据汇总
@@ -686,7 +687,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
         pie_html = utils.echarts_html_utils.generate_pie_html(dict_rows, '策略', '投入金额')
 
         sum_html = utils.table_html_utils.generate_table_html("汇总", cur, '', need_title=False, ext_field_names=['投入占比'],
-                                                              remark_fields_color=['日收益', '日收益率', '累积收益率', '累积收益'],
+                                                              remark_fields=['日收益', '日收益率', '累积收益率', '累积收益'],
                                                               ignore_fields=['投入金额'],
                                                               rows=new_rows)
 
@@ -694,6 +695,9 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
         scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select)
 
         html = """
+            <br/>
+            <br/>
+            <br/>
             <br/>
             <br/>
             <br/>
@@ -712,13 +716,13 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
 
 def generate_table_html(title, cur, html,
                         subtitle='',
-                        remark_fields_color=[],
+                        remark_fields=[],
                         nav_html_list=None,
                         tables=None,
                         is_login_user=False):
     return utils.table_html_utils.generate_table_html(title, cur, html,
                                                       subtitle=subtitle,
-                                                      remark_fields_color=remark_fields_color,
+                                                      remark_fields=remark_fields,
                                                       ignore_fields=['持有数量'],
                                                       nav_html_list=nav_html_list, tables=tables,
                                                       is_login_user=is_login_user)
