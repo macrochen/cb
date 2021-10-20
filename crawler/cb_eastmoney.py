@@ -55,80 +55,101 @@ def build_rows(rows):
     new_rows = []
     # 遍历所有行
     for row in rows:
-        new_row = {}
+        new_row = None
         try:
-            build_row(new_row, row)
+            new_row = build_row(row)
         except Exception as e:
             print("数据解析出错.row=" + str(new_row), e)
             raise e
 
-        new_rows.append(new_row)
+        if new_row is not None:
+            new_rows.append(new_row)
+
     return new_rows
 
-def build_row(row, cell):
-
+def build_row(cell):
+    row = {}
     row['cb_name_id'] = cell['f14']
     # 建立映射转换关系
     row['bond_code'] = cell['f12']
-    # 转债价格
-    if cell['f2'] != '-':
-        row['cb_price2_id'] = cell['f2']
-    # 可转债涨跌  需要将百分数转换成小数
-    if cell['f3'] != '-':
-        row['cb_mov2_id'] = round(cell['f3']/100, 4)
-    # 正股涨跌  需要将百分数转换成小数
-    if cell['f230'] != '-':
-        row['cb_mov_id'] = round(cell['f230']/100, 4)
-    # 正股价格
-    if cell['f229'] != '-':
-        row['stock_price_id'] = round(cell['f229']/100, 4)
-    # 转股溢价率  需要将百分数转换成小数
-    if cell['f237'] != '-':
-        row['cb_premium_id'] = round(cell['f237']/100, 4)
+    key = None
+    try:
+        # 转债价格
+        if cell['f2'] != '-':
+            row['cb_price2_id'] = cell['f2']
+        else:
+            key = 'cb_price2_id'
+            return None
+
+        # 可转债涨跌  需要将百分数转换成小数
+        if cell['f3'] != '-':
+            row['cb_mov2_id'] = round(cell['f3']/100, 4)
+        else:
+            row['cb_mov2_id'] = 0
+            # key = 'cb_mov2_id'
+            # return None
+
+        # 正股涨跌  需要将百分数转换成小数
+        if cell['f230'] != '-':
+            row['cb_mov_id'] = round(cell['f230']/100, 4)
+        else:
+            row['cb_mov_id'] = 0
+            # key = 'cb_mov_id'
+            # return None
+
+        # 正股价格
+        if cell['f229'] != '-':
+            row['stock_price_id'] = round(cell['f229']/100, 4)
+        else:
+            key = 'stock_price_id'
+            return None
+
+        # 转股溢价率  需要将百分数转换成小数
+        if cell['f237'] != '-':
+            row['cb_premium_id'] = round(cell['f237']/100, 4)
+        else:
+            key = 'cb_premium_id'
+            return None
+    finally:
+        if key is not None:
+            print('update row is invalid. field_name:' + key + ', bond_code:' + row['cb_name_id'])
 
     return row
 
 
-# 百分比转换成小数
-def percentage2float(cell, name, default_value=0):
-    text = cell[name]
-    if text.endswith("%"):
-        # 去掉千分位
-        if text.find(","):
-            text = text.replace(",", "")
-        return round(float(text.strip("%")) / 100, 5)
-    else:
-        print(cell['bond_nm'] + "没有找到对应的值。 name：" + name)
-        return default_value
-
 def update_db(rows):
     try:
-
+        i = 0
         for row in rows:
-           cur = get_cursor("select count(*) from changed_bond where bond_code=:bond_code", {'bond_code':row['bond_code']})
-           one = cur.fetchone()
-           if one[0] == 0:
-               print("not update cb:" + row['cb_name_id'])
-               continue
+            cur = get_cursor("select count(*) from changed_bond where bond_code=:bond_code",
+                             {'bond_code': row['bond_code']})
+            one = cur.fetchone()
+            if one[0] == 0:
+                print("not update cb:" + row['cb_name_id'])
+                continue
 
             # execute执行脚本
-           rowcount = execute_sql_with_rowcount("""update changed_bond 
-                set cb_price2_id = :cb_price2_id,
-                cb_mov2_id = :cb_mov2_id,
-                cb_mov_id = :cb_mov_id,
-                stock_price_id = :stock_price_id,
-                cb_premium_id = :cb_premium_id
-                where bond_code = :bond_code""",
-                                                {'cb_price2_id': row.get('cb_price2_id', None),
-                 'cb_mov2_id': row.get('cb_mov2_id', None),
-                 'cb_mov_id': row.get('cb_mov_id', None),
-                 'stock_price_id': row.get('stock_price_id', None),
-                 'cb_premium_id': row.get('cb_premium_id', None),
-                 'bond_code': row['bond_code']}
-                                                )
-           if rowcount == 0:
-                print("not update cb:" + row['cb_name_id'])
+            rowcount = execute_sql_with_rowcount("""update changed_bond 
+                            set cb_price2_id = :cb_price2_id,
+                            cb_mov2_id = :cb_mov2_id,
+                            cb_mov_id = :cb_mov_id,
+                            stock_price_id = :stock_price_id,
+                            cb_premium_id = :cb_premium_id
+                            where bond_code = :bond_code""",
+                                                 {'cb_price2_id': row.get('cb_price2_id', None),
+                                                  'cb_mov2_id': row.get('cb_mov2_id', None),
+                                                  'cb_mov_id': row.get('cb_mov_id', None),
+                                                  'stock_price_id': row.get('stock_price_id', None),
+                                                  'cb_premium_id': row.get('cb_premium_id', None),
+                                                  'bond_code': row['bond_code']}
+                                                 )
+            if rowcount == 0:
+                print("not update cb:" + str(row))
+            else:
+                print("update cb:" + str(row))
+                i += 1
 
+        print('Successfully updated row count:' + str(i))
     except Exception as e:
         print("db操作出现异常", e)
         raise e

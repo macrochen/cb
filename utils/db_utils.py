@@ -54,5 +54,15 @@ def get_cursor(sql, params=None):
 
 def execute_sql_with_rowcount(sql, params=None):
     # fixme update这种sql语句不会返回cursor, 直接返回更新数
-    result = db.session.execute(sql, params)
-    return result.rowcount
+    result = None
+    try:
+        result = db.session.execute(sql, params)
+        db.session.commit()
+    except Exception as e:
+        print('execute sql is failure. sql:' + sql + ', params:' + params, e)
+        db.session.rollback()
+        raise e
+    finally:
+        db.session.close()
+
+    return 0 if result is None else result.rowcount
