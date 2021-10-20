@@ -58,7 +58,7 @@ order by cb_mov2_id""")
         html += '<br/><br/><br/><br/>' + generate_bar_html(rows, '全网可转债涨跌幅')
 
         return '可转债涨跌幅分布', \
-               views.nav_utils.build_analysis_nav_html('/view_tree_map_industry.html'), \
+               views.nav_utils.build_analysis_nav_html('/view_up_down_range.html'), \
                html
 
     except Exception as e:
