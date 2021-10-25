@@ -222,18 +222,18 @@ def generate_head_column_html(field, is_login_user, record, head_column_link_mak
         prefix = "<a href = 'javascript:void(0)' onclick=\"popWin.showWin('1200','600', '" + new_bond_code +"');return false\"" + ">"
 
         prefix_append += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + str(
-            nid) + "'><img src='../static/img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' width='14' height='14' class='site-link'/></a>"
+            nid) + "'><img src='/static/img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' width='14' height='14' class='site-link'/></a>"
 
-        prefix_append += "&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/" + bond_code + "'><img src='../static/img/jsl.png' alt='集思录' title='集思录查看转债信息' width='14' height='14' class='site-link'/></a>"
+        prefix_append += "&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_code + "'><img src='/static/img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='site-link'/></a>"
 
         # https://xueqiu.com/S/SH600998
-        suffix = "<br/><a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_code + "'><img src='../static/img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='next-site-link'/></a>"
-        suffix += "&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='../static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
-        suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='../static/img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
+        suffix = "<br/>"
+        suffix += "<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='/static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
+        suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='/static/img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
 
         # http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157
         suffix += "&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + str(
-            nid) + "'><img src='../static/img/trend.png' alt='走势图' title='宁稳网查看转债&正股走势(非会员20次/天)' width='14' height='14' class='next-site-link'/></a>"
+            nid) + "'><img src='/static/img/trend.png' alt='走势图' title='宁稳网查看转债&正股走势(非会员20次/天)' width='14' height='14' class='next-site-link'/></a>"
 
         if is_login_user:
             hold_id = record.get('hold_id', None)
@@ -242,5 +242,6 @@ def generate_head_column_html(field, is_login_user, record, head_column_link_mak
                 suffix += operation_html_content.maker(id, hold_id, bond_code)
             else:
                 suffix += "&nbsp;<a href='" + default_edit_link_maker(hold_id,
-                                                                      bond_code) + "'><img src='../static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
+                                                                      bond_code) + "'><img src='/static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
+            suffix += "&nbsp;<a href='/view_my_trade_history.html/"+bond_code+"/'><img src='/static/img/detail.png' alt='交易明细' title='交易明细' width='14' height='14' class='next-site-link'/></a>"
     return prefix, prefix_append, suffix

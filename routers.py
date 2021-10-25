@@ -621,11 +621,12 @@ def my_yield_view():
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
+@cb.route('/view_my_trade_history.html/<bond_code>/')
 @cb.route('/view_my_trade_history.html')
 @login_required
-def my_trade_history_view():
+def my_trade_history_view(bond_code=''):
     user_id = session.get('_user_id')
-    title, navbar, content = view_my_trade_history.draw_my_view(user_id)
+    title, navbar, content = view_my_trade_history.draw_my_view(user_id, bond_code)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
