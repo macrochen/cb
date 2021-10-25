@@ -12,7 +12,7 @@ def create_app(config_name='default'):
     app.config.from_object(config.config[config_name])
     config.config[config_name].init_app(app)
 
-    init_job()
+    init_job(app)
     init_db(app)
     init_router(app)
 

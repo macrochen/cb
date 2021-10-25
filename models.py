@@ -115,12 +115,15 @@ class ChangedBondSelect(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bond_code = db.Column(db.String(20))
     cb_name_id = db.Column(db.String(20))
+    pinyin = db.Column(db.String(20))
     strategy_type = db.Column(db.String(20))
     memo = db.Column(db.String(2048))
     is_deleted = db.Column(db.Integer, default=0)
+    create_date = db.Column(db.DateTime)
+    modify_date = db.Column(db.DateTime)
 
     def keys(self):
-        return ('id', 'bond_code', 'cb_name_id', 'strategy_type', 'memo', 'is_deleted')
+        return ('id', 'bond_code', 'cb_name_id', 'pinyin', 'strategy_type', 'memo', 'is_deleted', 'modify_date', 'create_date')
 
     def to_dict(self):
         dict = {}
@@ -137,6 +140,7 @@ class BaseHoldBond(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bond_code = db.Column(db.String(20))
     cb_name_id = db.Column(db.String(20))
+    pinyin = db.Column(db.String(20))
     hold_price = db.Column(db.Float())
     hold_amount = db.Column(db.Integer)
     hold_unit = db.Column(db.Integer)
@@ -155,7 +159,7 @@ class BaseHoldBond(db.Model):
         self.memo = ''
 
     def keys(self):
-        return ('id', 'bond_code', 'cb_name_id', 'hold_price', 'hold_amount', 'account', 'strategy_type', 'sum_buy', 'sum_sell', 'memo', 'start_date')
+        return ('id', 'bond_code', 'cb_name_id', 'hold_price', 'hold_amount', 'account', 'strategy_type', 'sum_buy', 'sum_sell', 'memo', 'start_date', 'pinyin')
 
 
 class HoldBond(BaseHoldBond):

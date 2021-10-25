@@ -686,10 +686,13 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
 
         pie_html = utils.echarts_html_utils.generate_pie_html(dict_rows, '策略', '投入金额')
 
+        head_column_link_maker = lambda record, field: '#' + record[field] if field == '策略' else None
+
         sum_html = utils.table_html_utils.generate_table_html("汇总", cur, '', need_title=False, ext_field_names=['投入占比'],
                                                               remark_fields=['日收益', '日收益率', '累积收益率', '累积收益'],
                                                               ignore_fields=['投入金额'],
-                                                              rows=new_rows)
+                                                              rows=new_rows,
+                                                              head_column_link_maker=head_column_link_maker)
 
         # 用柱状图从大到小展示持有可转债涨跌幅情况
         scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select)

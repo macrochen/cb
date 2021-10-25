@@ -2,9 +2,11 @@
 
 import datetime
 import sqlite3
+from itertools import product
 
 import bs4
 import requests
+from pypinyin import pinyin, Style
 
 from utils import db_utils
 from utils.db_utils import get_cursor
@@ -16,7 +18,7 @@ header = {
 }
 
 
-def getContent():
+def get_content():
     url = "http://www.ninwin.cn/index.php?m=cb&a=cb_all&show_cb_only=Y&show_listed_only=Y"
 
     cookies = {}
@@ -42,14 +44,14 @@ def getContent():
     if len(trs) == 0:
         print("未获取到数据。")
 
-    rows = buildRows(trs)
+    rows = build_rows(trs)
 
     # print(rows)
 
     return rows
 
 
-def buildRows(trs):
+def build_rows(trs):
     rows = []
     # 遍历所有行
     for tr in trs:
@@ -61,7 +63,7 @@ def buildRows(trs):
             if type(td) == bs4.element.NavigableString:
                 continue
             try:
-                buildRow(row, td)
+                build_row(row, td)
             except Exception as e:
                 print("数据解析出错.row=" + str(row), e)
                 raise e
@@ -111,7 +113,8 @@ def buildTag(row, td):
                 if tag.attrs['style'].find('color:blue') > -1:
                     row['down_revise'] = 1
 
-def buildRow(row, td):
+
+def build_row(row, td):
     cls = td.attrs['class']
     text = td.text.strip()
     # cb_num_id
@@ -124,7 +127,18 @@ def buildRow(row, td):
     elif 'cb_name_id' in cls:
         buildTag(row, td)
         text = text.replace('!', '')
-        row['cb_name_id'] = text.replace('*', '')
+        text = text.replace('*', '')
+        row['cb_name_id'] = text
+        # 增加拼音首字母处理
+        o = pinyin(text, heteronym=True, style=Style.FIRST_LETTER)
+        ps = []
+        for i in product(*o):  # 用笛卡尔积解决多音字问题
+            if type(i) == tuple:
+                ps.append(''.join(list(i)))
+            else:
+                ps.append(''.join[i])
+
+        row['pinyin'] = ','.join(ps)
     # bond_date_id
     elif 'bond_date_id' in cls:
         # 今日上市需要转换成当前日期
@@ -285,7 +299,7 @@ def percentage2float(bond_name, name, text):
         return None
 
 
-def createDb():
+def create_db():
     # 使用:memory:标识打开的是内存数据库
     # con = sqlite3.connect(":memory:")
 
@@ -341,11 +355,12 @@ def createDb():
                 enforce_get text,
                 buy_back int,
                 down_revise int,
-                data_id INTEGER
+                data_id INTEGER,
+                pinyin text
                 )""")
 
 
-def insertDb(rows):
+def insert_db(rows):
     err_row = None
     try:
 
@@ -353,28 +368,30 @@ def insertDb(rows):
             err_row = row
             # execute执行脚本 cb_num_id
             get_cursor("""insert into 
-            changed_bond( cb_num_id, bond_code, cb_name_id, bond_date_id, stock_code, stock_name, industry, sub_industry, cb_price2_id, cb_mov2_id, cb_mov3_id, stock_price_id, cb_mov_id, cb_price3_id, cb_strike_id, cb_premium_id, cb_value_id, cb_t_id, bond_t1, red_t, remain_amount, cb_trade_amount_id, cb_trade_amount2_id, cb_to_share, cb_to_share_shares, market_cap, stock_pb, BT_yield, AT_yield, BT_red, AT_red, npv_red, npv_value, rating, discount_rate, elasticity, cb_ol_value, cb_ol_rank, cb_nl_value, cb_nl_rank, cb_ma20_deviate, cb_hot, duration, enforce_get, buy_back, down_revise, data_id)
-                  values(:cb_num_id,:bond_code,:cb_name_id,:bond_date_id,:stock_code,:stock_name,:industry,:sub_industry,:cb_price2_id,:cb_mov2_id,:cb_mov3_id,:stock_price_id,:cb_mov_id,:cb_price3_id,:cb_strike_id,:cb_premium_id,:cb_value_id,:cb_t_id,:bond_t1,:red_t,:remain_amount,:cb_trade_amount_id,:cb_trade_amount2_id,:cb_to_share,:cb_to_share_shares,:market_cap,:stock_pb,:BT_yield,:AT_yield,:BT_red,:AT_red,:npv_red,:npv_value,:rating,:discount_rate,:elasticity,:cb_ol_value,:cb_ol_rank,:cb_nl_value,:cb_nl_rank,:cb_ma20_deviate,:cb_hot,:duration,:enforce_get,:buy_back,:down_revise,:data_id)""",
+            changed_bond( cb_num_id, bond_code, cb_name_id, bond_date_id, stock_code, stock_name, industry, sub_industry, cb_price2_id, cb_mov2_id, cb_mov3_id, stock_price_id, cb_mov_id, cb_price3_id, cb_strike_id, cb_premium_id, cb_value_id, cb_t_id, bond_t1, red_t, remain_amount, cb_trade_amount_id, cb_trade_amount2_id, cb_to_share, cb_to_share_shares, market_cap, stock_pb, BT_yield, AT_yield, BT_red, AT_red, npv_red, npv_value, rating, discount_rate, elasticity, cb_ol_value, cb_ol_rank, cb_nl_value, cb_nl_rank, cb_ma20_deviate, cb_hot, duration, enforce_get, buy_back, down_revise, data_id, pinyin)
+                  values(:cb_num_id,:bond_code,:cb_name_id,:bond_date_id,:stock_code,:stock_name,:industry,:sub_industry,:cb_price2_id,:cb_mov2_id,:cb_mov3_id,:stock_price_id,:cb_mov_id,:cb_price3_id,:cb_strike_id,:cb_premium_id,:cb_value_id,:cb_t_id,:bond_t1,:red_t,:remain_amount,:cb_trade_amount_id,:cb_trade_amount2_id,:cb_to_share,:cb_to_share_shares,:market_cap,:stock_pb,:BT_yield,:AT_yield,:BT_red,:AT_red,:npv_red,:npv_value,:rating,:discount_rate,:elasticity,:cb_ol_value,:cb_ol_rank,:cb_nl_value,:cb_nl_rank,:cb_ma20_deviate,:cb_hot,:duration,:enforce_get,:buy_back,:down_revise,:data_id, :pinyin)""",
                        {'cb_num_id' : row['cb_num_id'], 'bond_code' : row['bond_code'], 'cb_name_id' : row['cb_name_id'], 'bond_date_id' : row['bond_date_id'], 'stock_code' : row['stock_code'],
-                              'stock_name' : row['stock_name'], 'industry' : row['industry'], 'sub_industry' : row['sub_industry'], 'cb_price2_id' : row['cb_price2_id'],
-                              'cb_mov2_id' : row['cb_mov2_id'], 'cb_mov3_id' : row['cb_mov3_id'], 'stock_price_id' : row['stock_price_id'], 'cb_mov_id' : row['cb_mov_id'],
-                              'cb_price3_id' : row['cb_price3_id'], 'cb_strike_id' : row['cb_strike_id'], 'cb_premium_id' : row['cb_premium_id'], 'cb_value_id' : row['cb_value_id'],
-                              'cb_t_id' : row['cb_t_id'], 'bond_t1' : row['bond_t1'], 'red_t' : row['red_t'], 'remain_amount' : row['remain_amount'], 'cb_trade_amount_id' : row['cb_trade_amount_id'],
-                              'cb_trade_amount2_id' : row['cb_trade_amount2_id'], 'cb_to_share' : row['cb_to_share'], 'cb_to_share_shares' : row['cb_to_share_shares'], 'market_cap' : row['market_cap'],
-                              'stock_pb' : row['stock_pb'], 'BT_yield' : row['BT_yield'], 'AT_yield' : row['AT_yield'], 'BT_red' : row['BT_red'], 'AT_red' : row['AT_red'],
-                              'npv_red' : row['npv_red'], 'npv_value' : row['npv_value'], 'rating' : row['rating'], 'discount_rate' : row['discount_rate'], 'elasticity' : row['elasticity'],
-                              'cb_ol_value' : row['cb_ol_value'], 'cb_ol_rank' : row['cb_ol_rank'], 'cb_nl_value' : row['cb_nl_value'], 'cb_nl_rank' : row['cb_nl_rank'],
-                              'cb_ma20_deviate' : row['cb_ma20_deviate'], 'cb_hot' : row['cb_hot'], 'duration' : row['duration'], 'enforce_get' : row.get('enforce_get'), 'buy_back' : row.get('buy_back'), 'down_revise' : row.get('down_revise'), 'data_id' : row['data_id']}
-                             )
+                          'stock_name' : row['stock_name'], 'industry' : row['industry'], 'sub_industry' : row['sub_industry'], 'cb_price2_id' : row['cb_price2_id'],
+                          'cb_mov2_id' : row['cb_mov2_id'], 'cb_mov3_id' : row['cb_mov3_id'], 'stock_price_id' : row['stock_price_id'], 'cb_mov_id' : row['cb_mov_id'],
+                          'cb_price3_id' : row['cb_price3_id'], 'cb_strike_id' : row['cb_strike_id'], 'cb_premium_id' : row['cb_premium_id'], 'cb_value_id' : row['cb_value_id'],
+                          'cb_t_id' : row['cb_t_id'], 'bond_t1' : row['bond_t1'], 'red_t' : row['red_t'], 'remain_amount' : row['remain_amount'], 'cb_trade_amount_id' : row['cb_trade_amount_id'],
+                          'cb_trade_amount2_id' : row['cb_trade_amount2_id'], 'cb_to_share' : row['cb_to_share'], 'cb_to_share_shares' : row['cb_to_share_shares'], 'market_cap' : row['market_cap'],
+                          'stock_pb' : row['stock_pb'], 'BT_yield' : row['BT_yield'], 'AT_yield' : row['AT_yield'], 'BT_red' : row['BT_red'], 'AT_red' : row['AT_red'],
+                          'npv_red' : row['npv_red'], 'npv_value' : row['npv_value'], 'rating' : row['rating'], 'discount_rate' : row['discount_rate'], 'elasticity' : row['elasticity'],
+                          'cb_ol_value' : row['cb_ol_value'], 'cb_ol_rank' : row['cb_ol_rank'], 'cb_nl_value' : row['cb_nl_value'], 'cb_nl_rank' : row['cb_nl_rank'],
+                          'cb_ma20_deviate' : row['cb_ma20_deviate'], 'cb_hot' : row['cb_hot'], 'duration' : row['duration'], 'enforce_get' : row.get('enforce_get'),
+                          'buy_back': row.get('buy_back'), 'down_revise' : row.get('down_revise'), 'data_id' : row['data_id'], 'pinyin': row['pinyin']
+                        }
+            )
     except Exception as e:
         # cur_file.close()
         print("db操作出现异常. err_row" + str(err_row), e)
         raise e
 
 def fetch_data():
-    createDb()
-    rows = getContent()
-    insertDb(rows)
+    create_db()
+    rows = get_content()
+    insert_db(rows)
     return 'OK'
 
 if __name__ == "__main__":

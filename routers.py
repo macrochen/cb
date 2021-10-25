@@ -9,6 +9,7 @@ from flask import render_template, request, url_for, redirect, flash, send_from_
 from flask_login import LoginManager
 from flask_login import login_user, login_required, logout_user
 from prettytable import from_db_cursor
+from sqlalchemy import or_
 
 import utils.table_html_utils
 import utils.trade_utils
@@ -122,10 +123,10 @@ def find_bond_by_code():
 def find_bond_by_name(bond_name):
     bonds = []
     if bond_name != '':
-        bonds = db.session.query(HoldBond).filter(HoldBond.cb_name_id.like('%' + bond_name + '%')).all()
+        bonds = db.session.query(HoldBond).filter(or_(HoldBond.cb_name_id.like('%' + bond_name + '%'), HoldBond.pinyin.like('%' + bond_name + '%'))).all()
 
     if len(bonds) == 0:
-        bonds = ChangedBond.query.filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).all()
+        bonds = ChangedBond.query.filter(or_(ChangedBond.cb_name_id.like('%' + bond_name + '%'), ChangedBond.pinyin.like('%' + bond_name + '%'))).all()
 
         if len(bonds) > 0:  # changedbond的id非holdbond的id, 故排除
             return json.dumps(bonds, default=lambda o: o.to_dict('id'))
@@ -207,9 +208,9 @@ def find_changed_bond_select_by_code():
 def find_changed_bond_select_by_name(bond_name):
     bonds = None
     if bond_name != '':
-        bonds = db.session.query(ChangedBondSelect).filter(ChangedBondSelect.cb_name_id.like('%' + bond_name + '%'), ChangedBondSelect.is_deleted != 1).all()
+        bonds = db.session.query(ChangedBondSelect).filter(or_(ChangedBondSelect.cb_name_id.like('%' + bond_name + '%'), ChangedBondSelect.pinyin.like('%' + bond_name + '%')), ChangedBondSelect.is_deleted != 1).all()
         if len(bonds) == 0:
-            bonds = db.session.query(ChangedBond).filter(ChangedBond.cb_name_id.like('%' + bond_name + '%')).all()
+            bonds = db.session.query(ChangedBond).filter(or_(ChangedBond.cb_name_id.like('%' + bond_name + '%'), ChangedBond.pinyin.like('%' + bond_name + '%'))).all()
             if len(bonds) > 0:  # changed bond的id非select的id, 故排除
                 return json.dumps(bonds, default=lambda o: o.to_dict('id'))
 
@@ -236,6 +237,7 @@ def save_changed_bond_select():
         raise Exception('转债名称不能为空')
 
     changed_bond_select.cb_name_id = cb_name_id
+    changed_bond_select.pinyin = request.form['pinyin']
 
     strategy_type = request.form['strategy_type']
     if strategy_type is not None and strategy_type.strip(' ') != '':
@@ -245,7 +247,9 @@ def save_changed_bond_select():
     # if memo is not None and memo.strip(' ') != '':
     changed_bond_select.memo = memo
 
+    changed_bond_select.modify_date = datetime.now()
     if id is None or id.strip(' ') == '':
+        changed_bond_select.create_date = datetime.now()
         db.session.add(changed_bond_select)
     db.session.commit()
 
@@ -286,6 +290,7 @@ def save_hold_bond():
         raise Exception('转债名称不能为空')
 
     hold_bond.cb_name_id = cb_name_id
+    hold_bond.cb_name_id = request.form['pinyin']
 
     hold_amount = request.form['hold_amount']
     if hold_amount is None or hold_amount.strip(' ') == '':

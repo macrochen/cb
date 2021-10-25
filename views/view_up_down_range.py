@@ -55,7 +55,7 @@ group by case
              end
 order by cb_mov2_id""")
         rows = cur.fetchall()
-        html += '<br/><br/><br/><br/>' + generate_bar_html(rows, '全网可转债涨跌幅')
+        html += '<br/><br/><br/><br/>' + generate_bar_html(rows, '全网可转债涨跌幅情况')
 
         return '可转债涨跌幅分布', \
                views.nav_utils.build_analysis_nav_html('/view_up_down_range.html'), \
@@ -69,10 +69,16 @@ order by cb_mov2_id""")
 def generate_bar_html(rows, title):
     x = []
     y = []
-
+    up_count = 0
+    down_count = 0
     for row in rows:
         x.append(row[0])
         y.append({'value': row[1], 'range': [row[2], row[3]]})
+
+        if row[3] < 0:
+            down_count += row[1]
+        elif row[2] > 0:
+            up_count += row[1]
 
     bar = Bar(init_opts=opts.InitOpts(height='700px', width='1424px', theme=ThemeType.SHINE, chart_id="cb_tree_map"))
     bar.add_xaxis(x)
@@ -98,6 +104,8 @@ def generate_bar_html(rows, title):
     bar.set_global_opts(
         title_opts=opts.TitleOpts(
             title="=========" + title + "=========",
+            subtitle="(跌:" + str(down_count) + " 涨:" + str(up_count) + ")",
+            subtitle_textstyle_opts=opts.TextStyleOpts(font_weight='bold', font_size='15px'),
             pos_left='center',
             pos_top='-1px',
         ),

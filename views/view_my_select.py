@@ -41,6 +41,8 @@ def draw_view(is_login_user):
         c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
         cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
+        remain_amount as '余额(亿元)',
+        create_date as 创建时间, create_date as 最近修改,
          
         c.stock_name as 正股名称, c.industry as '行业',round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
         round(bt_yield*100,2) || '%' as 到期收益率,

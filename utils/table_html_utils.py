@@ -23,6 +23,7 @@ def build_table_html(table, remark_fields=[],
                      table_rows_size=10,
                      table_width=None,
                      support_selected_operation=None,  # 对应显示操作名称和后台的操作url. {'name':'删除', 'url', '/delete_selected_bond.html'}
+                     head_column_link_maker=None,
                      ):
     new_remark_fields = ['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌']
     new_remark_fields.extend([] if remark_fields is None else remark_fields)
@@ -89,7 +90,7 @@ def build_table_html(table, remark_fields=[],
                     if field == key:
                         datum = value(datum, record)
 
-            prefix, prefix_append, suffix = generate_head_tail_html(field, is_login_user, record)
+            prefix, prefix_append, suffix = generate_head_column_html(field, is_login_user, record, head_column_link_maker)
 
             lines.append(
                 ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % datum.replace("\n", linebreak)
@@ -153,8 +154,12 @@ def generate_table_html(type, cur, html, need_title=True, ext_field_names=None, 
                         subtitle='',
                         ignore_fields=[],
                         field_links={},
-                        is_login_user=False):
-    table, html = generate_table_html_with_data(type, cur, html, need_title, ext_field_names, rows, remark_fields, nav_html_list, tables, subtitle, ignore_fields, field_links, is_login_user)
+                        is_login_user=False,
+                        head_column_link_maker=None):
+    table, html = generate_table_html_with_data(type, cur, html, need_title, ext_field_names, rows,
+                                                remark_fields, nav_html_list, tables, subtitle, ignore_fields,
+                                                field_links, is_login_user,
+                                                head_column_link_maker=head_column_link_maker)
     return html
 
 
@@ -166,7 +171,8 @@ def generate_table_html_with_data(type, cur, html, need_title=True, ext_field_na
                                   ignore_fields=[],
                                   field_links={},
                                   is_login_user=False,
-                                  table_width=None
+                                  table_width=None,
+                                  head_column_link_maker=None
                                   ):
 
     table = from_db(cur, ext_field_names, rows)
@@ -189,17 +195,23 @@ def generate_table_html_with_data(type, cur, html, need_title=True, ext_field_na
                + ('' if len(subtitle) == 0 else """<center> """ + subtitle + """</center>""") + """<br>"""
         title_suffix = """</div>"""
 
-    return table, html + title + build_table_html(table, remark_fields, ignore_fields, is_login_user, field_links, table_width=table_width) + title_suffix
+    return table, html + title + \
+           build_table_html(table, remark_fields, ignore_fields,
+                            is_login_user, field_links, table_width=table_width,
+                            head_column_link_maker=head_column_link_maker) + \
+           title_suffix
 
 
-def generate_head_tail_html(field, is_login_user, record):
+def generate_head_column_html(field, is_login_user, record, head_column_link_maker=None):
     # 标题增加链接
     # 可转债: http://quote.eastmoney.com/bond/sz128051.html
     # 正股: http://quote.eastmoney.com/sz002741.html
     prefix = ''
     prefix_append = ''
     suffix = ''
-    if field == '名称':
+    if head_column_link_maker is not None and head_column_link_maker(record, field) is not None:
+        return "<a href='" + head_column_link_maker(record, field) + "'>", "</a>", ""
+    elif field == '名称':
         bond_code = record.get('bond_code')
         new_bond_code = rebuild_bond_code(bond_code)
         nid = record['nid']
