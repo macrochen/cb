@@ -23,7 +23,7 @@ def init_router(app):
     login_manager.init_app(app)  # 实例化扩展类
     app.register_blueprint(cb)
 
-app = create_app()
+app = create_app('production')
 
 if __name__ == "__main__":
     # development 开发环境
