@@ -110,6 +110,7 @@
     <div class="container">
         <form class="needs-validation" novalidate action="/save_hold_bond.html" method="post">
             <input type="hidden" name="id" id="id" value="{{ bond['id']}}">
+            <input type="hidden" name="pinyin" id="pinyin" value="{{ bond['pinyin']}}">
             <input type="hidden" name="back_url" value="{{ request.referrer}}">
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -222,6 +223,7 @@
                     $("#id").val(data['id']);
                     $("#bond_code").val(data['bond_code']);
                     $("#bond_name").val(data['cb_name_id']);
+                    $("#pinyin").val(data['pinyin']);
                     $("#hold_price").val(data['hold_price']);
                     $("#hold_amount").val(data['hold_amount']);
                     $("#account").val(data['account']);

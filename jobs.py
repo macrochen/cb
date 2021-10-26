@@ -12,32 +12,35 @@ from utils.db_utils import get_cursor, execute_sql_with_rowcount
 from utils.trade_utils import get_ymd, calc_mid_data
 
 
-def init_job():
+def init_job(app):
     scheduler = BackgroundScheduler()
     # 每天上午交易结束之后执行可转债数据同步
-    scheduler.add_job(sync_cb_data_job, 'cron', hour='11', minute='35')
+    scheduler.add_job(sync_cb_data_job, 'cron', hour='11', minute='35', args=[app])
     # 每天下午交易结束之后执行可转债数据同步并更新收益率
-    scheduler.add_job(update_data_job_when_trade_is_end, 'cron', hour='15', minute='35')
+    scheduler.add_job(update_data_job_when_trade_is_end, 'cron', hour='15', minute='35', args=[app])
     scheduler.start()
 
 
-def sync_cb_data_job():
+def sync_cb_data_job(app):
     print("begin to sync data job...")
     try:
-        # 检查是否交易日
-        if trade_utils.is_trade_date() is False:
-            return 'OK'
 
-        # 先同步一下可转债数据
-        cb_ninwen.fetch_data()
+        with app.app_context():
+            # 检查是否交易日
+            if trade_utils.is_trade_date() is False:
+                return 'OK'
+
+            # 先同步一下可转债数据
+            cb_ninwen.fetch_data()
     except Exception as e:
         print('sync_cb_data_job is failure. ', e)
 
 
-def update_data_job_when_trade_is_end():
+def update_data_job_when_trade_is_end(app):
     print('begin to update yield job...')
     try:
-        do_update_data_when_trade_is_end()
+        with app.app_context():
+            do_update_data_when_trade_is_end()
     except Exception as e:
         print('update_bond_yield_job is failure', e)
 

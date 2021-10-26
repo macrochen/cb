@@ -114,6 +114,7 @@
     <div class="container">
         <form class="needs-validation" novalidate action="/save_trade_data.html" method="post">
             <input type="hidden" name="id" id="id" value="{{ bond['id']}}">
+            <input type="hidden" name="pinyin" id="pinyin" value="{{ bond['pinyin']}}">
             <input type="hidden" name="direction" id="direction" value="">
             <input type="hidden" name="back_url" value="{{ request.referrer}}">
             <div class="row">
@@ -197,8 +198,9 @@
           (function() {
             'use strict';
             window.addEventListener('load', function() {
-              var forms = document.getElementsByClassName('needs-validation');
-              var validation = Array.prototype.filter.call(forms, function(form) {
+                // $('#bond_name').focus()
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
                 form.addEventListener('submit', function(event) {
                   if (form.checkValidity() === false) {
                     event.preventDefault();
@@ -206,19 +208,19 @@
                   }
                   form.classList.add('was-validated');
                 }, false);
-              });
+                });
 
-              $("#btn_buy").bind('click', function (event) {
+                $("#btn_buy").bind('click', function (event) {
                   $("#direction").val('buy')
                   forms[0].submit()
-              })
-              $("#btn_sell").bind('click', function (event) {
+                })
+                $("#btn_sell").bind('click', function (event) {
                   $("#direction").val('sell')
                   forms[0].submit()
-              })
+                })
 
 
-            $('#bond_name').typeahead({
+                $('#bond_name').typeahead({
                 autoSelect: false,//自动选择
                 items: 10,//下拉选项个数
                 fitToElement: false,
@@ -236,6 +238,7 @@
                     $("#id").val(data['id']);
                     $("#bond_code").val(data['bond_code']);
                     $("#bond_name").val(data['cb_name_id']);
+                    $("#pinyin").val(data['pinyin']);
                     $("#trade_amount").attr('placeholder', data['hold_amount']);
                     $("#trade_price").attr('placeholder', data['hold_price']);
                     if (data['account'] != null) {
@@ -257,10 +260,11 @@
                             }
 
                             var list = result.map(function (item) {
-                                var data = {"name": item.cb_name_id + "(" + item.account + ")" ,
+                                var data = {"name": item.cb_name_id + "(" + item.pinyin + ")[" + item.account + "]" ,
                                     'id': item.id,
                                     "bond_code": item.bond_code ,
                                     "cb_name_id": item.cb_name_id ,
+                                    "pinyin": item.pinyin ,
                                     "hold_amount": item.hold_amount ,
                                     "hold_price": item.hold_price ,
                                     "account": item.account ,
@@ -276,18 +280,19 @@
                         }
                     });
                 }
-            });
+                });
 
-            // $("#bond_name").bind("input propertychange",dd);
-            $("#bond_code").bind("input propertychange",dd);
+                // $("#bond_name").bind("input propertychange",dd);
+                $("#bond_code").bind("input propertychange",dd);
 
-            function dd(event){
+                function dd(event){
               $.get("/find_bond_by.html?bond_code=" + $("#bond_code").val() + "&bond_name=" + $("#bond_name").val() + "&account=" + $("#account").val(), function (data, status) {
                 // alert(data)
                 if (status == 'success') {
                     $("#id").val(data['id']);
                     $("#bond_code").val(data['bond_code']);
                     $("#bond_name").val(data['cb_name_id']);
+                    $("#pinyin").val(data['pinyin']);
                     $("#trade_amount").attr('placeholder', data['hold_amount']);
                     $("#trade_price").attr('placeholder', data['hold_price']);
                     if (data['account'] != null) {

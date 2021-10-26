@@ -23,6 +23,7 @@ def build_table_html(table, remark_fields=[],
                      table_rows_size=10,
                      table_width=None,
                      support_selected_operation=None,  # 对应显示操作名称和后台的操作url. {'name':'删除', 'url', '/delete_selected_bond.html'}
+                     head_column_link_maker=None,
                      ):
     new_remark_fields = ['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌']
     new_remark_fields.extend([] if remark_fields is None else remark_fields)
@@ -89,7 +90,7 @@ def build_table_html(table, remark_fields=[],
                     if field == key:
                         datum = value(datum, record)
 
-            prefix, prefix_append, suffix = generate_head_tail_html(field, is_login_user, record)
+            prefix, prefix_append, suffix = generate_head_column_html(field, is_login_user, record, head_column_link_maker)
 
             lines.append(
                 ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % datum.replace("\n", linebreak)
@@ -153,8 +154,12 @@ def generate_table_html(type, cur, html, need_title=True, ext_field_names=None, 
                         subtitle='',
                         ignore_fields=[],
                         field_links={},
-                        is_login_user=False):
-    table, html = generate_table_html_with_data(type, cur, html, need_title, ext_field_names, rows, remark_fields, nav_html_list, tables, subtitle, ignore_fields, field_links, is_login_user)
+                        is_login_user=False,
+                        head_column_link_maker=None):
+    table, html = generate_table_html_with_data(type, cur, html, need_title, ext_field_names, rows,
+                                                remark_fields, nav_html_list, tables, subtitle, ignore_fields,
+                                                field_links, is_login_user,
+                                                head_column_link_maker=head_column_link_maker)
     return html
 
 
@@ -166,7 +171,8 @@ def generate_table_html_with_data(type, cur, html, need_title=True, ext_field_na
                                   ignore_fields=[],
                                   field_links={},
                                   is_login_user=False,
-                                  table_width=None
+                                  table_width=None,
+                                  head_column_link_maker=None
                                   ):
 
     table = from_db(cur, ext_field_names, rows)
@@ -189,17 +195,23 @@ def generate_table_html_with_data(type, cur, html, need_title=True, ext_field_na
                + ('' if len(subtitle) == 0 else """<center> """ + subtitle + """</center>""") + """<br>"""
         title_suffix = """</div>"""
 
-    return table, html + title + build_table_html(table, remark_fields, ignore_fields, is_login_user, field_links, table_width=table_width) + title_suffix
+    return table, html + title + \
+           build_table_html(table, remark_fields, ignore_fields,
+                            is_login_user, field_links, table_width=table_width,
+                            head_column_link_maker=head_column_link_maker) + \
+           title_suffix
 
 
-def generate_head_tail_html(field, is_login_user, record):
+def generate_head_column_html(field, is_login_user, record, head_column_link_maker=None):
     # 标题增加链接
     # 可转债: http://quote.eastmoney.com/bond/sz128051.html
     # 正股: http://quote.eastmoney.com/sz002741.html
     prefix = ''
     prefix_append = ''
     suffix = ''
-    if field == '名称':
+    if head_column_link_maker is not None and head_column_link_maker(record, field) is not None:
+        return "<a href='" + head_column_link_maker(record, field) + "'>", "</a>", ""
+    elif field == '名称':
         bond_code = record.get('bond_code')
         new_bond_code = rebuild_bond_code(bond_code)
         nid = record['nid']
@@ -210,18 +222,18 @@ def generate_head_tail_html(field, is_login_user, record):
         prefix = "<a href = 'javascript:void(0)' onclick=\"popWin.showWin('1200','600', '" + new_bond_code +"');return false\"" + ">"
 
         prefix_append += "</a>&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=detail&a=detail&id=" + str(
-            nid) + "'><img src='../static/img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' width='14' height='14' class='site-link'/></a>"
+            nid) + "'><img src='/static/img/nw.png' alt='宁稳网' title='宁稳网查看转债信息' width='14' height='14' class='site-link'/></a>"
 
-        prefix_append += "&nbsp;<a target='_blank' href='https://www.jisilu.cn/data/convert_bond_detail/" + bond_code + "'><img src='../static/img/jsl.png' alt='集思录' title='集思录查看转债信息' width='14' height='14' class='site-link'/></a>"
+        prefix_append += "&nbsp;<a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_code + "'><img src='/static/img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='site-link'/></a>"
 
         # https://xueqiu.com/S/SH600998
-        suffix = "<br/><a target = '_blank' href = 'https://xueqiu.com/S/" + market + bond_code + "'><img src='../static/img/xueqiu.png' alt='雪球' title='雪球查看转债讨论' width='14' height='14' class='next-site-link'/></a>"
-        suffix += "&nbsp;<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='../static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
-        suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='../static/img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
+        suffix = "<br/>"
+        suffix += "<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='/static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
+        suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='/static/img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
 
         # http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157
         suffix += "&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + str(
-            nid) + "'><img src='../static/img/trend.png' alt='走势图' title='宁稳网查看转债&正股走势(非会员20次/天)' width='14' height='14' class='next-site-link'/></a>"
+            nid) + "'><img src='/static/img/trend.png' alt='走势图' title='宁稳网查看转债&正股走势(非会员20次/天)' width='14' height='14' class='next-site-link'/></a>"
 
         if is_login_user:
             hold_id = record.get('hold_id', None)
@@ -230,5 +242,6 @@ def generate_head_tail_html(field, is_login_user, record):
                 suffix += operation_html_content.maker(id, hold_id, bond_code)
             else:
                 suffix += "&nbsp;<a href='" + default_edit_link_maker(hold_id,
-                                                                      bond_code) + "'><img src='../static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
+                                                                      bond_code) + "'><img src='/static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
+            suffix += "&nbsp;<a href='/view_my_trade_history.html/"+bond_code+"/'><img src='/static/img/detail.png' alt='交易明细' title='交易明细' width='14' height='14' class='next-site-link'/></a>"
     return prefix, prefix_append, suffix

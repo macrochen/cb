@@ -21,6 +21,7 @@ akshare = "==1.1.53"
 beautifulsoup4 = "==4.10.0"
 demjson = "==2.2.4"
 lxml = "==4.6.3"
+xpinyin = "*"
 
 [dev-packages]
 
