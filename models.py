@@ -29,9 +29,10 @@ class ChangedBond(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bond_code = db.Column(db.String(20))
     cb_name_id = db.Column(db.String(20))
+    pinyin = db.Column(db.String(20))
 
     def keys(self):
-        return ('id', 'bond_code', 'cb_name_id')
+        return ('id', 'bond_code', 'cb_name_id', 'pinyin')
 
     def to_dict(self, expect_name=None):
         dict = {}
