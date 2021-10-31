@@ -74,9 +74,8 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
           order by cb_mov2_id DESC limit 10)     
         UNION  
         select *
-         from (SELECT DISTINCT c. * from changed_bond c 
-           order by cb_mov2_id ASC limit 10) ) c LEFT join stock_report s on c.stock_code = s.stock_code 
-    where c.enforce_get not in ('强赎中') or c.enforce_get is null ) d left join 
+         from (SELECT DISTINCT c. * from changed_bond_view c 
+           order by cb_mov2_id ASC limit 10) ) c LEFT join stock_report s on c.stock_code = s.stock_code ) d left join 
         (select id as hold_id, bond_code, hold_price, hold_amount, strategy_type 
             from hold_bond where id in (select id from hold_bond where id 
                 in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount != -1 group by bond_code) ) 

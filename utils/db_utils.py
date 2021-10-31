@@ -62,7 +62,7 @@ def execute_sql_with_rowcount(sql, params=None):
         print('execute sql is failure. sql:' + sql + ', params:' + params, e)
         db.session.rollback()
         raise e
-    finally:
-        db.session.close()
+    # finally:
+    #     db.session.close()
 
     return 0 if result is None else result.rowcount

@@ -40,8 +40,15 @@ def new_or_update_task(total_num, task_name):
     return task, 1
 
 def process_task_when_normal(task, num):
-    task.update(num)
-    db.session.commit()  # 把task信息更新到db, 以便轮询能看到
+    if task not in db.session:
+        db.session.merge(task)
+
+    if task in db.session:
+        task.increment(num)
+        db.session.commit()  # 把task信息更新到db, 以便轮询能看到
+    else:
+        print("task is not bond to a session")
+
 
 def process_task_when_error(task, err_msg):
     task.error(err_msg)

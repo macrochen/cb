@@ -47,7 +47,9 @@ order by 涨跌 desc
    
         round(cb_premium_id*100,2) || '%' as 溢价率, round(cb_mov_id * 100, 2) || '%' as 正股涨跌,
         remain_amount as '余额(亿元)',round(cb_trade_amount2_id * 100,2) || '%' as '换手率(%)', 
-        h.strategy_type as 策略, c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
+        h.account as 账户,h.strategy_type as 策略,  
+        
+        c.stock_name as 正股名称, c.industry as '行业', c.sub_industry as '子行业',
         round(cb_price2_id + cb_premium_id * 100,2) as 双低值, 
         round(cb_to_share_shares * 100,2)  as '余额/股本(%)',
         round(bt_yield*100,2) || '%' as 到期收益率,
@@ -72,7 +74,7 @@ order by 涨跌 desc
         fact_trend || '|' || fact_money || '|' || fact_news || '|' || fact_industry || '|' || fact_base as '技术|资金|消息|行业|基本面',  
         trade_suggest as 操作建议,
         
-        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.account as 账户, h.memo as 备注
+        rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, h.memo as 备注
     from (select * from (SELECT DISTINCT c. *, h.id from changed_bond c, (select * 
             from hold_bond where id in (SELECT min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)
              ) h where  c.bond_code = h.bond_code  order by cb_mov2_id DESC limit 10)     

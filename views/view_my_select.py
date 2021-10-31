@@ -37,18 +37,22 @@ def draw_view(is_login_user):
 
         # =========我的转债自选集=========
         cur = get_cursor("""
-    SELECT b.id, h.id as hold_id, h.hold_amount as 持有数量,
+    SELECT b.id, h.id as hold_id,  h.hold_amount as 持有数量,
         c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,   
-        cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
+        cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率,
+        h.hold_price || ' (' || h.hold_amount || ')' as '成本(量)', 
+        round(c.cb_price2_id * h.hold_amount + sum_sell - sum_buy, 2) || '(' || round((c.cb_price2_id - h.hold_price) / c.cb_price2_id * 100, 2) || '%)' as 盈亏, 
         remain_amount as '余额(亿元)',
-        create_date as 创建时间, create_date as 最近修改,
          
         c.stock_name as 正股名称, c.industry as '行业',round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
         round(bt_yield*100,2) || '%' as 到期收益率,
-        --remain_amount as '余额(亿元)',
         
-        b.strategy_type as 策略, b.memo as 备注
+        b.strategy_type as 策略,
+        
+        strftime('%Y-%m-%d %H:%M', b.create_date) as 创建时间, strftime('%Y-%m-%d %H:%M', b.modify_date) as 最近修改,
+         
+        b.memo as 备注
     from changed_bond_select b left join (select * from hold_bond where id in (select min(id) from hold_bond where hold_owner = 'me' and hold_amount > 0 group by bond_code)) h on b.bond_code = h.bond_code,  
         changed_bond c
     WHERE  c.bond_code = b.bond_code and b.is_deleted != 1 

@@ -15,14 +15,15 @@ import utils.table_html_utils
 import utils.trade_utils
 from config import db_file_path
 from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney, cb_eastmoney
-from jobs import do_update_data_when_trade_is_end
+from jobs import do_update_data_after_trade_is_end, do_update_data_before_trade_is_start
 from models import User, ChangedBond, HoldBond, ChangedBondSelect, db, TradeHistory, HoldBondHistory, Task
 from utils import trade_utils
 from utils.db_utils import get_connect, get_cursor
 from utils.html_utils import get_strategy_options_html
 from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
     view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_tree_map_price, \
-    view_tree_map_premium, view_my_price_list, view_my_trade_history, view_cb_trend, view_up_down_range
+    view_tree_map_premium, view_my_price_list, view_my_trade_history, view_cb_trend, view_up_down_range, view_all_cb, \
+    view_enforce_list, view_strategy_group
 from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html
 
 cb = Blueprint('cb', __name__)
@@ -572,6 +573,14 @@ def discount_view():
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
+@cb.route('/view_all_cb.html')
+def all_cb_view():
+    user_id = session.get('_user_id')
+    utils.trade_utils.calc_mid_data()
+    title, navbar, content = view_all_cb.draw_view(user_id is not None)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
 @cb.route('/view_stock.html')
 def stock_view():
     user_id = session.get('_user_id')
@@ -644,6 +653,24 @@ def market_view():
     user_id = session.get('_user_id')
     utils.trade_utils.calc_mid_data()
     title, navbar, content = view_market.draw_market_view(user_id)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_strategy_group.html')
+def strategy_group_view():
+    # current_user = None
+    user_id = session.get('_user_id')
+    utils.trade_utils.calc_mid_data()
+    title, navbar, content = view_strategy_group.draw_view(user_id)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_enforce_list.html')
+def enforce_list_view():
+    # current_user = None
+    user_id = session.get('_user_id')
+    utils.trade_utils.calc_mid_data()
+    title, navbar, content = view_enforce_list.draw_view(user_id)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @cb.route('/view_trend.html')
@@ -784,8 +811,14 @@ def execute_sql():
     return 'OK'
 
 
-@cb.route('/update_data_when_trade_is_end.html')
+@cb.route('/update_data_after_trade_is_end.html')
 @login_required
-def update_data_when_trade_is_end():
-    return do_update_data_when_trade_is_end()
+def update_data_after_trade_is_end():
+    return do_update_data_after_trade_is_end()
+
+
+@cb.route('/update_data_before_trade_is_start.html')
+@login_required
+def update_data_before_trade_is_start():
+    return do_update_data_before_trade_is_start()
 
