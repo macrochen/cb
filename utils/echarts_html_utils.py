@@ -187,7 +187,9 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
                 coord=[x1, y1],
                 symbol_size=amount,
                 itemstyle_opts=opts.ItemStyleOpts(
-                    opacity=0.5
+                        opacity=0.5,
+                        border_color='#000',
+                        border_width=1,
                 ),
                 value=[get_label(record), x1, y1, bond_code, amount]
             ))
