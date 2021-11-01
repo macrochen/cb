@@ -14,32 +14,6 @@ from utils.echarts_html_utils import generate_scatter_html_with_one_table, gener
 from utils.html_utils import default_get_label
 
 
-# config = {'type': [
-#     '双低策略',
-#     '高收益策略',
-#     '回售策略',
-#     # '活性债策略',
-#     '低余额策略',
-#     '低溢价率策略',
-#     # '溢价率折价策略',
-#     # '高收益率策略',
-#     # '下修博弈策略',
-#     # '广撒网策略',
-#     '快到期保本策略',
-#     '正股优选策略',
-#     '高成长策略',
-#     '股性策略',
-#     # '换手率排行榜',
-#     # '正股涨幅榜',
-#     # '妖债策略',
-#     # '抄作业',
-#     # '非200不卖',
-#     # '自选集',
-#     '凌波双低轮动',
-# ],
-# }
-
-
 def draw_view(user_id):
     use_personal_features = user_id is not None
 
@@ -55,7 +29,7 @@ def draw_view(user_id):
     cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率,
     round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,remain_amount as '余额(亿元)',  
     c.stock_name as 正股名称, c.industry as '行业',c.sub_industry as '子行业',round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
-    strftime('%Y-%m-%d', c.enforce_last_date) as 最后交易日,
+    case when c.enforce_last_date is null then '暂未公告' else strftime('%Y-%m-%d', c.enforce_last_date) end as 最后交易日,
     c.enforce_price as 强赎价格
         --,c.declare_desc as 强赎详情
     from (select * from changed_bond where enforce_get in ('强赎中')) c left join 
@@ -78,7 +52,7 @@ def draw_view(user_id):
     round(cb_mov2_id * 100, 2) || '%' as 可转债涨跌,remain_amount as '余额(亿元)',  
     c.stock_name as 正股名称, c.industry as '行业',c.sub_industry as '子行业',round(cb_mov_id * 100, 2) || '%' as 正股涨跌, 
     strftime('%Y-%m-%d', c.enforce_start_date) as 强赎起始日,
-    strftime('%Y-%m-%d', c.enforce_stop_date) as 不强赎截止日
+    case when c.enforce_stop_date is null then '暂未公告' else strftime('%Y-%m-%d', c.enforce_stop_date) end as 不强赎截止日
         --,c.declare_desc as 强赎详情
     from (select * from changed_bond where enforce_get in ('满足强赎') and not declare_desc like '%已过%'and not declare_desc like '%超过一个月未公告%') c left join 
         (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount 

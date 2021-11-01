@@ -17,7 +17,7 @@ def generate_simple_table_html(cur, html, is_login_user=False):
     return html + build_table_html(table, is_login_user=is_login_user)
 
 
-def build_table_html(table, remark_fields=[],
+def build_table_html(table, remark_fields=[], remark_strategy_1=lambda value: value.startswith('-'), remark_strategy_2=lambda value: True,
                      ignore_fields=[], is_login_user=False,
                      field_links={},
                      table_rows_size=10,
@@ -80,9 +80,9 @@ def build_table_html(table, remark_fields=[],
 
             remark_color = ''
             if new_remark_fields.count(field) > 0:
-                if datum.startswith('-'):
+                if remark_strategy_1(datum):
                     remark_color = 'class="remarked-down"'
-                else:
+                elif remark_strategy_2(datum):
                     remark_color = 'class="remarked-up"'
 
             if len(field_links) > 0 and id is not None:
@@ -196,8 +196,8 @@ def generate_table_html_with_data(type, cur, html, need_title=True, ext_field_na
         title_suffix = """</div>"""
 
     return table, html + title + \
-           build_table_html(table, remark_fields, ignore_fields,
-                            is_login_user, field_links, table_width=table_width,
+           build_table_html(table, remark_fields, ignore_fields=ignore_fields,
+                            is_login_user=is_login_user, field_links=field_links, table_width=table_width,
                             head_column_link_maker=head_column_link_maker) + \
            title_suffix
 

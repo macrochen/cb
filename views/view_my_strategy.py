@@ -695,7 +695,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
                                                               head_column_link_maker=head_column_link_maker)
 
         # 用柱状图从大到小展示持有可转债涨跌幅情况
-        scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select)
+        scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select=select)
 
         html = """
             <br/>

@@ -111,7 +111,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by �
                                                               rows=new_rows, ignore_fields=['投入金额'],
                                                               is_login_user=is_login_user)
 
-        scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select)
+        scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select=select)
 
         html = """
             <br/>

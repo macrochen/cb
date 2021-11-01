@@ -81,7 +81,7 @@ def draw_view(user_id):
         # =========低价格策略=========
         if "低价格策略" in strategy_list:
             sql = """
-        SELECT DISTINCT d.* , e.hold_id--, e.hold_amount as 持有数量
+        SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
   FROM (
       SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, 
         cb_price2_id as '转债价格', round(cb_premium_id*100,2) || '%' as 溢价率--,round(cb_price2_id + cb_premium_id * 100, 2) as 双低值
@@ -154,7 +154,7 @@ def draw_view(user_id):
 
 def get_low_premium_strategy_table(create_date_s):
     sql = """
-SELECT DISTINCT d.*, e.hold_id--, e.hold_amount as 持有数量
+SELECT DISTINCT d.*, e.hold_id, e.hold_amount as 持有数量
 FROM (
          SELECT c.data_id                                                                     as nid,
                 c.bond_code,
@@ -259,7 +259,7 @@ FROM (
          left join
      (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
       from hold_bond
-      where strategy_type = '低溢价率策略轮动'
+      --where strategy_type = '低溢价率策略轮动'
      ) e
      on d.bond_code = e.bond_code
                   """
@@ -268,7 +268,7 @@ FROM (
 
 def get_high_yield_strategy_table(create_date_s):
     sql = """
-        SELECT DISTINCT d.*, e.hold_id--, e.hold_amount as 持有数量
+        SELECT DISTINCT d.*, e.hold_id, e.hold_amount as 持有数量
 FROM (
          SELECT c.data_id                                                                                       as nid,
                 c.bond_code,
@@ -368,7 +368,7 @@ FROM (
          left join
      (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
       from hold_bond
-      where strategy_type = '高收益率策略轮动'
+      --where strategy_type = '高收益率策略轮动'
      ) e
      on d.bond_code = e.bond_code;
             """
@@ -377,7 +377,7 @@ FROM (
 
 def get_double_low_strategy_table(create_date_s):
     sql = """
-SELECT DISTINCT d.*, e.hold_id--, e.hold_amount as 持有数量
+SELECT DISTINCT d.*, e.hold_id, e.hold_amount as 持有数量
 FROM (
          SELECT c.data_id                                                                     as nid,
                 c.bond_code,
@@ -483,7 +483,9 @@ FROM (
          left join
      (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
       from hold_bond
-      where strategy_type = '双低策略组合'
+      --where 
+      --strategy_type = '双低策略组合'
+      
      ) e
      on d.bond_code = e.bond_code
         
@@ -516,7 +518,7 @@ def get_strategy_list():
 
 
 def generate_strategy_table_html(type, table, html, tables,
-                                 nav_html_list=None, remark_fields=[],
+                                 nav_html_list=None, remark_fields=['轮动'],
                                  use_personal_features=False):
 
     if len(table._rows) == 0:
@@ -535,7 +537,11 @@ def generate_strategy_table_html(type, table, html, tables,
     <div id=\"""" + type + """\">
         """ + "</br></br><center>=========<font size=4><b>" + type + "</b></font>=========</center>"\
             + scatter_html \
-            + utils.table_html_utils.build_table_html(table, remark_fields, ignore_fields=['持有数量'], is_login_user=use_personal_features, table_rows_size=6) + """
+            + utils.table_html_utils.build_table_html(table, remark_fields,
+                                                      remark_strategy_1=lambda value: value == '调入' or value.startswith('-'),
+                                                      remark_strategy_2=lambda value: value == '调出',
+                                                      ignore_fields=['持有数量'], is_login_user=use_personal_features,
+                                                      table_rows_size=6) + """
     </div>
     """
 
@@ -566,7 +572,7 @@ def get_yield_rate_of_strategy(table):
 
 def build_low_remain_block(html, nav_html_list, sort_field, sub_strategy, tables, use_personal_features=False):
     sql = """
-    SELECT DISTINCT d.* , e.hold_id--, e.hold_amount as 持有数量
+    SELECT DISTINCT d.* , e.hold_id, e.hold_amount as 持有数量
   FROM (
       SELECT c.data_id as nid, c.bond_code, c.stock_code, c.cb_name_id as 名称, remain_amount as '余额(亿元)', 
         cb_price2_id as 转债价格, round(cb_premium_id*100,2) || '%' as 溢价率, 
