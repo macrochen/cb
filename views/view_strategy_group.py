@@ -11,8 +11,7 @@ import utils.trade_utils
 from models import db, Config
 from utils import html_utils
 from utils.db_utils import get_record, get_cursor
-from utils.echarts_html_utils import generate_scatter_html_with_one_table, generate_scatter_html_with_multi_tables
-from utils.html_utils import default_get_label
+from utils.echarts_html_utils import generate_scatter_html_with_multi_tables
 from views import view_strategy_group_yield
 
 strategy_list = ['双低策略',

@@ -32,12 +32,14 @@ def get_nav_html(type):
     return '<li><a href="#' + type + '">' + type + '</a></li>'
 
 
-def default_edit_link_maker(hold_id, bond_code):
+def default_edit_link_maker(id, hold_id, bond_code):
+    s = "&nbsp;<a href='"
     if hold_id is not None:
-        return '/sync_trade_data.html/' + str(hold_id) + '/'
-
-    return '/new_sync_trade_data.html/' + bond_code + '/'
-
+        s += '/sync_trade_data.html/' + str(hold_id) + '/'
+    else:
+        s += '/new_sync_trade_data.html/' + bond_code + '/'
+    s += "'><img src='/static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
+    return s
 
 env = Environment(
             keep_trailing_newline=True,

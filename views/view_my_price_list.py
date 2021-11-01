@@ -13,9 +13,6 @@ from pyecharts.globals import ThemeType
 import views.nav_utils
 from utils import html_utils, trade_utils, table_html_utils
 from utils.db_utils import get_cursor
-from views import view_utils
-
-
 # import matplotlib.pyplot as plt
 from views.view_utils import add_popwin_js_code
 

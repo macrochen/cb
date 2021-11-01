@@ -6,7 +6,6 @@
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 import views.nav_utils
-from views import view_utils
 from views.view_market import generate_strategy_html
 
 

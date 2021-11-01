@@ -2,16 +2,14 @@
 
 
 # 需导入要用到的库文件
-import json
 
 from prettytable import from_db_cursor
 
 import utils.table_html_utils
 import utils.trade_utils
-from models import db, Config
+from models import db
 from utils import html_utils
-from utils.echarts_html_utils import generate_scatter_html_with_one_table, generate_scatter_html_with_multi_tables
-from utils.html_utils import default_get_label
+from utils.echarts_html_utils import generate_scatter_html_with_multi_tables
 
 
 def draw_view(user_id):

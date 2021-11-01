@@ -3,9 +3,7 @@ import datetime
 import re
 import time
 
-
 from crawler import crawler_utils
-from models import db
 from utils.db_utils import get_cursor, execute_sql_with_rowcount
 from utils.task_utils import new_or_update_task, process_task_when_normal, process_task_when_finish, \
     process_task_when_error

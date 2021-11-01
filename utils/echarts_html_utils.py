@@ -9,7 +9,6 @@ import utils.trade_utils
 from utils import db_utils, trade_utils
 from utils.db_utils import get_record
 from utils.html_utils import env, default_get_label
-from utils.treemap_utils import calc_range
 
 colors = [
         "#c23531",

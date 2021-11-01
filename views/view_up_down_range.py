@@ -10,12 +10,12 @@ from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType
 
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
-import utils.table_html_utils
 import views.nav_utils
-from utils import html_utils, trade_utils, table_html_utils, echarts_html_utils
+from utils import html_utils
 from utils.db_utils import get_cursor
+
+
 # import matplotlib.pyplot as plt
-from views import view_utils
 
 
 def draw_view(is_login_user):

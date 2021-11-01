@@ -2,7 +2,6 @@
 
 import datetime
 import re
-import sqlite3
 from itertools import product
 
 import bs4

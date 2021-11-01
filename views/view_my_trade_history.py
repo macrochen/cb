@@ -4,17 +4,10 @@
 
 # https://blog.csdn.net/idomyway/article/details/82390040
 
-from pyecharts import options as opts
-from pyecharts.charts import Bar
-from pyecharts.commons.utils import JsCode
-from pyecharts.globals import ThemeType
-
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
-import utils.table_html_utils
 import views.nav_utils
-from utils import db_utils, html_utils, trade_utils, table_html_utils
+from utils import table_html_utils
 from utils.db_utils import get_cursor
-from views import view_utils
 
 
 # import matplotlib.pyplot as plt
@@ -66,9 +59,9 @@ def draw_my_view(user_id, bond_code):
               and owner_id = :user_id and h.is_delete = 0
             order by create_date desc
             limit 20""", {'user_id': user_id})
-        table_html_utils.operation_html_content.maker = operation_html_content_maker
 
-        html = table_html_utils.generate_simple_table_html(cur, html, is_login_user=is_login_user)
+        html = table_html_utils.generate_simple_table_html(cur, html, is_login_user=is_login_user,
+                                                           edit_link_maker=operation_html_content_maker)
 
         html += """
         <script>

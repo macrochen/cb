@@ -1,12 +1,3 @@
-import datetime
-import json
-import sqlite3
-
-import demjson
-import requests
-import bs4
-
-
 import akshare as ak
 stock_zh_a_daily_qfq_df = ak.stock_zh_a_daily(symbol="sz000002", start_date="20101103", end_date="20201116", adjust="qfq")
 print(stock_zh_a_daily_qfq_df)
