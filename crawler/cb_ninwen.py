@@ -311,6 +311,10 @@ def parse_enforce_data(row, td):
             r = re.findall(r"([\d\-]+)已满足强赎条件，且满足强赎条件后，超过一个月未公告是否行使强赎权利！", title)
             if len(r) == 1:
                 row["enforce_start_date"] = datetime.datetime.strptime(r[0], '%Y-%m-%d')
+            # 2021-11-02已满足强赎条件，且暂未公告是否行使强赎权利！
+            r = re.findall(r"([\d\-]+)已满足强赎条件，且暂未公告是否行使强赎权利！", title)
+            if len(r) == 1:
+                row["enforce_start_date"] = datetime.datetime.strptime(r[0], '%Y-%m-%d')
 
             # 强赎中
             # 2021-10-29已满足强赎条件，且公司已经发出公告，将行使强赎权利！

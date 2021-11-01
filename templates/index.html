@@ -142,23 +142,18 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                         <li><a href="/view_my_price_list.html">可转债价格排行</a></li>
                         <li><a href="/view_my_yield.html">我的收益率</a></li>
                         <li><a href="/view_my_trade_history.html">我的成交记录</a></li>
-                        <li><a href="#" onclick="process_wrapper('/update_data_after_trade_is_end.html');return false">收盘后更新数据</a></li>
-                        <li><a href="#" onclick="process_wrapper('/update_data_before_trade_is_start.html');return false">开盘前更新数据</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">系统管理</a>
                     <ul class="dropdown-menu">
-<!--                      <li class="dropdown">-->
-<!--                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">实时更新&nbsp;&nbsp;▸</a>-->
-<!--                            <ul class="dropdown-menu">-->
-<!--&lt;!&ndash;                              <li><a target="_blank" href="https://www.jisilu.cn/account/login/">登录集思录</a></li>&ndash;&gt;-->
-<!--&lt;!&ndash;                              <li><a href="#" onclick="process_wrapper('/jsl_update_data.html');return false">直接同步集思录可转债数据</a></li>&ndash;&gt;-->
-<!--&lt;!&ndash;                              <li><a href="#" onclick="process_wrapper('/eastmoney_update_data.html');return false">同步东方财富可转债数据</a></li>&ndash;&gt;-->
-<!--                              <li><a target="_blank" href="https://www.jisilu.cn/data/cbnew/cb_list/">访问集思录JSON格式数据</a></li>-->
-<!--                              <li><a href="/sync_jsl_bond_data.html">提交集思录JSON格式数据</a></li>-->
-<!--                            </ul>-->
-<!--                        </li>-->
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">数据更新&nbsp;&nbsp;▸</a>
+                            <ul class="dropdown-menu">
+                        <li><a href="#" onclick="process_wrapper('/update_data_after_trade_is_end.html');return false">收盘后更新数据</a></li>
+                        <li><a href="#" onclick="process_wrapper('/update_data_before_trade_is_start.html');return false">开盘前更新数据</a></li>
+                            </ul>
+                        </li>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">数据同步&nbsp;&nbsp;▸</a>
                             <ul class="dropdown-menu">

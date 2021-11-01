@@ -102,7 +102,7 @@ def draw_view(user_id):
                     </center>
                 """ + html
 
-        return '市场策略', ''.join(nav_html_list), html
+        return '强赎可转债列表', ''.join(nav_html_list), html
 
     except Exception as e:
         print("processing is failure. " + str(e), e)
