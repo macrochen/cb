@@ -91,7 +91,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by �
             total_profit += dict_row['累积收益']
             total_now_profit += dict_row['日收益']
             total_num += dict_row['个数']
-            total_amount += dict_row['个数'] * dict_row['数量']
+            total_amount += dict_row['数量']
 
         money_rows.reverse()
         new_rows = []
