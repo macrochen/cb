@@ -166,7 +166,10 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
                                          field_name='溢价率',
                                          get_label=default_get_label,
                                          label_y='转股溢价率(%)',
-                                         use_personal_features=False):
+                                         use_personal_features=False,
+                                         hover_maker=None,
+                                         hover_content_field=None,
+                                         ):
     x = []
     y = []
     point_items = []
@@ -181,6 +184,10 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
         y1 = float(field_value.replace('%', ''))
         y.append(y1)
 
+        hover_content = None
+        if hover_content_field is not None:
+            hover_content = record[hover_content_field]
+
         if use_personal_features and record.get('hold_id') is not None:
             amount = record.get("持有数量", 0)
             point_items.append(opts.MarkPointItem(
@@ -191,19 +198,19 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
                         border_color='#000',
                         border_width=1,
                 ),
-                value=[get_label(record), x1, y1, bond_code, amount]
+                value=[get_label(record), x1, y1, bond_code, amount, hover_content]
             ))
         else:
             point_items.append(opts.MarkPointItem(
                 coord=[x1, y1],
                 itemstyle_opts=opts.ItemStyleOpts(color='#fff', border_color='#000'),
-                value=[get_label(record), x1, y1, bond_code]
+                value=[get_label(record), x1, y1, bond_code, None, hover_content]
             ))
 
     if draw_figure is False:
         return ''
 
-    return create_scatter(title, sub_title, field_name, label_y, point_items, x, y)
+    return create_scatter(title, sub_title, field_name, label_y, point_items, x, y, hover_maker=hover_maker)
 
 
 def get_hover_js_code(field_name='溢价率'):
@@ -218,7 +225,7 @@ def get_hover_js_code(field_name='溢价率'):
     return JsCode(hover_text)
 
 
-def create_scatter(title, sub_title, field_name, label_y, point_items, x, y):
+def create_scatter(title, sub_title, field_name, label_y, point_items, x, y, hover_maker=None):
     chart_id = str(abs(hash(title)))
     scatter = Scatter(opts.InitOpts(
         height='700px',
@@ -265,11 +272,13 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y):
     )
     if title is not None and title.strip(' ') != '':
         title = "=========" + title + "========="
+    if hover_maker is None:
+        hover_maker = get_hover_js_code
 
     scatter.set_global_opts(
         title_opts=opts.TitleOpts(title=title, subtitle=sub_title, pos_left='center'),
         tooltip_opts=opts.TooltipOpts(
-            formatter=get_hover_js_code(field_name)
+            formatter=hover_maker(field_name),
         ),
         toolbox_opts=opts.ToolboxOpts(feature={
             'dataZoom': {},
