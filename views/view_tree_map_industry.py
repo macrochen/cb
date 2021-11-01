@@ -113,12 +113,10 @@ FROM (
                UNION
                select *
                from (SELECT DISTINCT c.*
-                     from changed_bond c WHERE industry = :industry
+                     from changed_bond_view c WHERE industry = :industry
                      order by cb_mov2_id ASC
                      limit :down_size)) c
-                  LEFT join stock_report s on c.stock_code = s.stock_code
-         where c.enforce_get not in ('强赎中')
-            or c.enforce_get is null) d
+                  LEFT join stock_report s on c.stock_code = s.stock_code) d
          left join
      (select id as hold_id, bond_code, hold_price, hold_amount, strategy_type
       from hold_bond

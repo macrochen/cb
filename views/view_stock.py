@@ -53,10 +53,9 @@ def draw_view(is_login_user):
 
             rating as '信用', duration as 续存期, cb_ma20_deviate as 'ma20乖离', cb_hot as 热门度, cb_trade_amount_id as '成交额(百万)', 
             e.interest as 各期利息, case when e.ensure is not null then  '有' else  '无' END as 担保, case when e.buy_back_term is not null then  e.buy_back_term else  '无' END as 回售条款, 
-            case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款, 
-            case when e.memo is not null then  e.memo else  '' END as 备注
+            case when e.down_revise_term is not null then  e.down_revise_term else  '无' END as 下修条款, case when e.enforce_get_term is not null then  e.enforce_get_term else  '无' END as 强赎条款 
 
-            from ((select * from changed_bond where enforce_get not in ('强赎中') or enforce_get is null) c left join stock_report s on c.stock_code = s.stock_code)
+            from (changed_bond_view c left join stock_report s on c.stock_code = s.stock_code)
                   left join changed_bond_extend e on c.bond_code = e.bond_code
          -- and yoy_margin_rate > 0 
           --and margin > 0 

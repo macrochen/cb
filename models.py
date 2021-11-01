@@ -25,13 +25,15 @@ class User(db.Model, UserMixin):
     def validate_password(self, password):
         return check_password_hash(self.password, password)
 
+
 class ChangedBond(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bond_code = db.Column(db.String(20))
     cb_name_id = db.Column(db.String(20))
+    pinyin = db.Column(db.String(20))
 
     def keys(self):
-        return ('id', 'bond_code', 'cb_name_id')
+        return ('id', 'bond_code', 'cb_name_id', 'pinyin')
 
     def to_dict(self, expect_name=None):
         dict = {}
@@ -74,15 +76,24 @@ class InvestYield(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Integer)
     date_string = db.Column(db.String(20))
-    all_yield = db.Column(db.Float)
+    my_real_yield = db.Column(db.Float)
 
-    day_yield = db.Column(db.Float)
+    my_day_yield = db.Column(db.Float)
     cb_day_yield = db.Column(db.Float)
     hs_day_yield = db.Column(db.Float)
 
-    my_net_value = db.Column(db.Float)
-    cb_net_value = db.Column(db.Float)
-    hs_net_value = db.Column(db.Float)
+    my_all_yield = db.Column(db.Float)
+    cb_all_yield = db.Column(db.Float)
+    hs_all_yield = db.Column(db.Float)
+
+    strategy_double_low_day_yield = db.Column(db.Float)
+    strategy_high_yield_day_yield = db.Column(db.Float)
+    strategy_low_premium_day_yield = db.Column(db.Float)
+
+    strategy_double_low_all_yield = db.Column(db.Float)
+    strategy_high_yield_all_yield = db.Column(db.Float)
+    strategy_low_premium_all_yield = db.Column(db.Float)
+
 
 
 class TradeSummary(db.Model):
@@ -164,10 +175,14 @@ class BaseHoldBond(db.Model):
 
 class HoldBond(BaseHoldBond):
     modify_date = db.Column(db.String(20))
+    today_sum_buy = db.Column(db.Float, default=0.0)
+    today_sum_sell = db.Column(db.Float, default=0.0)
 
     def keys(self):
         my_keys = list(super().keys())
         my_keys.append('modify_date')
+        my_keys.append('today_sum_buy')
+        my_keys.append('today_sum_sell')
         return tuple(my_keys)
 
     def __getitem__(self, item):
@@ -239,7 +254,7 @@ class Task(db.Model):
     def __getitem__(self, item):
         return getattr(self, item)
 
-    def update(self, num):
+    def increment(self, num):
         self.current_num += num
         self.process = 0 if self.total_num == 0 else math.ceil(self.current_num/self.total_num*100)
         self.modify_date = datetime.now()

@@ -638,8 +638,8 @@ SELECT strategy_type as 策略,
     round(sum(h.sum_buy-h.sum_sell),2) as 投入金额, 
     round(sum(h.hold_amount * c.cb_price2_id),2) as 市值, 
     
-    round(sum(round((c.cb_price2_id/(1+c.cb_mov2_id) * c.cb_mov2_id)*h.hold_amount, 2)), 2) as '日收益', 
-    round((round(sum(c.cb_price2_id*h.hold_amount)/sum(c.cb_price2_id/(1+c.cb_mov2_id)*h.hold_amount),4)-1)*100,2) || '%' as '日收益率',
+    round(sum(c.cb_price2_id*hold_amount + today_sum_sell - today_sum_buy), 2) as '日收益', 
+    round(sum(c.cb_price2_id*hold_amount + today_sum_sell - today_sum_buy)/sum(c.cb_price2_id*hold_amount + today_sum_sell)*100,2) || '%' as '日收益率',
     
     round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)), 2) as '累积收益',   
     round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy-h.sum_sell) * 100, 2) || '%' as 累积收益率
@@ -671,7 +671,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
             total_profit += dict_row['累积收益']
             total_now_profit += dict_row['日收益']
             total_num += dict_row['个数']
-            total_amount += dict_row['个数'] * dict_row['数量']
+            total_amount += dict_row['数量']
 
         money_rows.reverse()
         new_rows = []
@@ -695,7 +695,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
                                                               head_column_link_maker=head_column_link_maker)
 
         # 用柱状图从大到小展示持有可转债涨跌幅情况
-        scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select)
+        scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select=select)
 
         html = """
             <br/>

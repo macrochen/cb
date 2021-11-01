@@ -104,14 +104,17 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
             <ul class="nav navbar-nav" data-in="fadeInDown" data-out="fadeOutUp">
                 <li><a href="/">Home</a></li>
                 <li><a href="/view_market.html">可转债策略</a></li>
-                <li><a href="/view_trend.html">可转债走势</a></li>
+                <li><a href="/view_strategy_group.html">可转债轮动</a></li>
+                <li><a href="/view_enforce_list.html">可转债强赎</a></li>
+                <li><a href="/view_trend.html">可转债估值</a></li>
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">可转债统计分析</a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">可转债分析</a>
                     <ul class="dropdown-menu">
                       <li><a href="/view_tree_map_industry.html">可转债涨跌行业分布</a></li>
                       <li><a href="/view_tree_map_price.html">可转债涨跌价格分布</a></li>
                       <li><a href="/view_tree_map_premium.html">可转债涨跌溢价率分布</a></li>
                       <li><a href="/view_up_down_range.html">可转债涨跌幅分布</a></li>
+                        <li><a href="/view_all_cb.html">可转债象限分布</a></li>
                       <li><a href="/view_up_down.html">可转债涨跌排行</a></li>
                         <li><a href="/view_discount.html">溢价率折价排行</a></li>
                         <li><a href="/view_stock.html">正股涨幅排行</a></li>
@@ -139,7 +142,8 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                         <li><a href="/view_my_price_list.html">可转债价格排行</a></li>
                         <li><a href="/view_my_yield.html">我的收益率</a></li>
                         <li><a href="/view_my_trade_history.html">我的成交记录</a></li>
-                        <li><a href="#" onclick="process_wrapper('/update_data_when_trade_is_end.html');return false">收盘后更新数据</a></li>
+                        <li><a href="#" onclick="process_wrapper('/update_data_after_trade_is_end.html');return false">收盘后更新数据</a></li>
+                        <li><a href="#" onclick="process_wrapper('/update_data_before_trade_is_start.html');return false">开盘前更新数据</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
@@ -410,7 +414,7 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                     }
                 },
                 error: function (data) {
-                    alert(data)
+                    alert("get_task_data occur error:" + data)
                 }
             })
         }, 3000)

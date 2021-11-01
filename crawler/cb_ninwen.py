@@ -1,6 +1,7 @@
 #抓取宁稳网的数据(每天中午, 下午收盘更新, 非实时, 但是最全)
 
 import datetime
+import re
 import sqlite3
 from itertools import product
 
@@ -10,6 +11,7 @@ from pypinyin import pinyin, Style
 
 from utils import db_utils
 from utils.db_utils import get_cursor
+from utils.trade_utils import get_trade_date
 
 header = {
     "Referer": "http://www.ninwin.cn/index.php?m=profile",
@@ -129,16 +131,8 @@ def build_row(row, td):
         text = text.replace('!', '')
         text = text.replace('*', '')
         row['cb_name_id'] = text
-        # 增加拼音首字母处理
-        o = pinyin(text, heteronym=True, style=Style.FIRST_LETTER)
-        ps = []
-        for i in product(*o):  # 用笛卡尔积解决多音字问题
-            if type(i) == tuple:
-                ps.append(''.join(list(i)))
-            else:
-                ps.append(''.join[i])
-
-        row['pinyin'] = ','.join(ps)
+        parse_enforce_data(row, td)
+        add_pinyin_field(row, text)
     # bond_date_id
     elif 'bond_date_id' in cls:
         # 今日上市需要转换成当前日期
@@ -286,6 +280,65 @@ def build_row(row, td):
     return row
 
 
+def parse_enforce_data(row, td):
+    children = list(td.children)
+    if len(children) > 1:
+        title = children[1].attrs['title']
+        if title is not None and title.strip(' ') != '':
+            # 公告不强赎
+            # 2021-08-23已满足强赎条件，且公司已经发出公告，2021-12-12前暂不行使强赎权利！
+            r = re.findall(r"([\d\-]+)已满足强赎条件，且公司已经发出公告，([\d\-]+)前暂不行使强赎权利！", title)
+            if len(r) == 1:
+                row["enforce_start_date"] = datetime.datetime.strptime(r[0][0], '%Y-%m-%d')
+                row["enforce_stop_date"] = datetime.datetime.strptime(r[0][1], '%Y-%m-%d')
+
+            # 满足强赎
+            # 最快2个交易日后可能满足强赎条件！
+            r = re.findall(r"最快(\d+)个交易日后可能满足强赎条件！", title)
+            if len(r) == 1:
+                row["enforce_start_date"] = get_trade_date(int(r[0]))
+            # 2021-08-24已满足强赎条件，且不强赎承诺截止日2021-08-23已过！
+            r = re.findall(r"([\d\-]+)已满足强赎条件，且不强赎承诺截止日([\d\-]+)已过！", title)
+            if len(r) == 1:
+                row["enforce_start_date"] = datetime.datetime.strptime(r[0][0], '%Y-%m-%d')
+                row["enforce_stop_date"] = datetime.datetime.strptime(r[0][1], '%Y-%m-%d')
+            # 2021-07-20已满足强赎条件，且距离不强赎承诺截止日2021-11-03仅剩3个交易日了！
+            r = re.findall(r"([\d\-]+)已满足强赎条件，且距离不强赎承诺截止日([\d\-]+)仅剩(\d+)个交易日了！", title)
+            if len(r) == 1:
+                row["enforce_start_date"] = datetime.datetime.strptime(r[0][0], '%Y-%m-%d')
+                row["enforce_stop_date"] = datetime.datetime.strptime(r[0][1], '%Y-%m-%d')
+            # 2021-09-16已满足强赎条件，且满足强赎条件后，超过一个月未公告是否行使强赎权利！
+            r = re.findall(r"([\d\-]+)已满足强赎条件，且满足强赎条件后，超过一个月未公告是否行使强赎权利！", title)
+            if len(r) == 1:
+                row["enforce_start_date"] = datetime.datetime.strptime(r[0], '%Y-%m-%d')
+
+            # 强赎中
+            # 2021-10-29已满足强赎条件，且公司已经发出公告，将行使强赎权利！
+            r = re.findall(r"([\d\-]+)已满足强赎条件，且公司已经发出公告，将行使强赎权利！", title)
+            if len(r) == 1:
+                row["enforce_start_date"] = datetime.datetime.strptime(r[0], '%Y-%m-%d')
+            # 2021-09-30已满足强赎条件，且最后交易日：2021-11-04，最后转股日：2021-11-04，赎回价格：101.307！
+            r = re.findall(r"([\d\-]+)已满足强赎条件，且最后交易日：([\d\-]+)，最后转股日：([\d\-]+)，赎回价格：([\d\\.]+)！", title)
+            if len(r) == 1:
+                row["enforce_start_date"] = datetime.datetime.strptime(r[0][0], '%Y-%m-%d')
+                row["enforce_last_date"] = datetime.datetime.strptime(r[0][1], '%Y-%m-%d')
+                row["enforce_price"] = float(r[0][3])
+
+            row['declare_desc'] = title.replace('\n', '')
+
+
+def add_pinyin_field(row, text):
+    # 增加拼音首字母处理
+    o = pinyin(text, heteronym=True, style=Style.FIRST_LETTER)
+    ps = []
+    for i in product(*o):  # 用笛卡尔积解决多音字问题
+        if type(i) == tuple:
+            ps.append(''.join(list(i)))
+        else:
+            ps.append(''.join[i])
+    row['pinyin'] = ','.join(ps)
+
+
 # 百分比转换成小数
 def percentage2float(bond_name, name, text):
     if text.endswith("%"):
@@ -356,7 +409,13 @@ def create_db():
                 buy_back int,
                 down_revise int,
                 data_id INTEGER,
-                pinyin text
+                pinyin text,
+                declare_desc text,
+                enforce_start_date date, -- 强赎起始日
+                enforce_stop_date date, -- 不强赎截止日
+                enforce_declare_date date, -- 强赎宣告日
+                enforce_last_date date, -- 强赎最后交易日
+                enforce_price real -- 强赎价格
                 )""")
 
 
@@ -368,8 +427,10 @@ def insert_db(rows):
             err_row = row
             # execute执行脚本 cb_num_id
             get_cursor("""insert into 
-            changed_bond( cb_num_id, bond_code, cb_name_id, bond_date_id, stock_code, stock_name, industry, sub_industry, cb_price2_id, cb_mov2_id, cb_mov3_id, stock_price_id, cb_mov_id, cb_price3_id, cb_strike_id, cb_premium_id, cb_value_id, cb_t_id, bond_t1, red_t, remain_amount, cb_trade_amount_id, cb_trade_amount2_id, cb_to_share, cb_to_share_shares, market_cap, stock_pb, BT_yield, AT_yield, BT_red, AT_red, npv_red, npv_value, rating, discount_rate, elasticity, cb_ol_value, cb_ol_rank, cb_nl_value, cb_nl_rank, cb_ma20_deviate, cb_hot, duration, enforce_get, buy_back, down_revise, data_id, pinyin)
-                  values(:cb_num_id,:bond_code,:cb_name_id,:bond_date_id,:stock_code,:stock_name,:industry,:sub_industry,:cb_price2_id,:cb_mov2_id,:cb_mov3_id,:stock_price_id,:cb_mov_id,:cb_price3_id,:cb_strike_id,:cb_premium_id,:cb_value_id,:cb_t_id,:bond_t1,:red_t,:remain_amount,:cb_trade_amount_id,:cb_trade_amount2_id,:cb_to_share,:cb_to_share_shares,:market_cap,:stock_pb,:BT_yield,:AT_yield,:BT_red,:AT_red,:npv_red,:npv_value,:rating,:discount_rate,:elasticity,:cb_ol_value,:cb_ol_rank,:cb_nl_value,:cb_nl_rank,:cb_ma20_deviate,:cb_hot,:duration,:enforce_get,:buy_back,:down_revise,:data_id, :pinyin)""",
+            changed_bond( cb_num_id, bond_code, cb_name_id, bond_date_id, stock_code, stock_name, industry, sub_industry, cb_price2_id, cb_mov2_id, cb_mov3_id, stock_price_id, cb_mov_id, cb_price3_id, cb_strike_id, cb_premium_id, cb_value_id, cb_t_id, bond_t1, red_t, remain_amount, cb_trade_amount_id, cb_trade_amount2_id, cb_to_share, cb_to_share_shares, market_cap, stock_pb, BT_yield, AT_yield, BT_red, AT_red, npv_red, npv_value, rating, discount_rate, elasticity, cb_ol_value, cb_ol_rank, cb_nl_value, cb_nl_rank, cb_ma20_deviate, cb_hot, duration, enforce_get, buy_back, down_revise, data_id, pinyin, 
+            declare_desc, enforce_start_date, enforce_stop_date, enforce_declare_date, enforce_last_date, enforce_price)
+            values(:cb_num_id,:bond_code,:cb_name_id,:bond_date_id,:stock_code,:stock_name,:industry,:sub_industry,:cb_price2_id,:cb_mov2_id,:cb_mov3_id,:stock_price_id,:cb_mov_id,:cb_price3_id,:cb_strike_id,:cb_premium_id,:cb_value_id,:cb_t_id,:bond_t1,:red_t,:remain_amount,:cb_trade_amount_id,:cb_trade_amount2_id,:cb_to_share,:cb_to_share_shares,:market_cap,:stock_pb,:BT_yield,:AT_yield,:BT_red,:AT_red,:npv_red,:npv_value,:rating,:discount_rate,:elasticity,:cb_ol_value,:cb_ol_rank,:cb_nl_value,:cb_nl_rank,:cb_ma20_deviate,:cb_hot,:duration,:enforce_get,:buy_back,:down_revise,:data_id, :pinyin, 
+            :declare_desc, :enforce_start_date, :enforce_stop_date, :enforce_declare_date, :enforce_last_date, :enforce_price)""",
                        {'cb_num_id' : row['cb_num_id'], 'bond_code' : row['bond_code'], 'cb_name_id' : row['cb_name_id'], 'bond_date_id' : row['bond_date_id'], 'stock_code' : row['stock_code'],
                           'stock_name' : row['stock_name'], 'industry' : row['industry'], 'sub_industry' : row['sub_industry'], 'cb_price2_id' : row['cb_price2_id'],
                           'cb_mov2_id' : row['cb_mov2_id'], 'cb_mov3_id' : row['cb_mov3_id'], 'stock_price_id' : row['stock_price_id'], 'cb_mov_id' : row['cb_mov_id'],
@@ -380,7 +441,10 @@ def insert_db(rows):
                           'npv_red' : row['npv_red'], 'npv_value' : row['npv_value'], 'rating' : row['rating'], 'discount_rate' : row['discount_rate'], 'elasticity' : row['elasticity'],
                           'cb_ol_value' : row['cb_ol_value'], 'cb_ol_rank' : row['cb_ol_rank'], 'cb_nl_value' : row['cb_nl_value'], 'cb_nl_rank' : row['cb_nl_rank'],
                           'cb_ma20_deviate' : row['cb_ma20_deviate'], 'cb_hot' : row['cb_hot'], 'duration' : row['duration'], 'enforce_get' : row.get('enforce_get'),
-                          'buy_back': row.get('buy_back'), 'down_revise' : row.get('down_revise'), 'data_id' : row['data_id'], 'pinyin': row['pinyin']
+                          'buy_back': row.get('buy_back'), 'down_revise' : row.get('down_revise'), 'data_id' : row['data_id'], 'pinyin': row['pinyin'],
+                          'declare_desc' : row.get('declare_desc'), 'enforce_start_date': row.get('enforce_start_date'),
+                          'enforce_stop_date' : row.get('enforce_stop_date'),'enforce_declare_date' : row.get('enforce_declare_date'),
+                          'enforce_last_date' : row.get('enforce_last_date'),'enforce_price' : row.get('enforce_price'),
                         }
             )
     except Exception as e:
@@ -395,6 +459,5 @@ def fetch_data():
     return 'OK'
 
 if __name__ == "__main__":
-    fetch_data()
-
+    # fetch_data()
     print("可转债数据抓取更新完成")

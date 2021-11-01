@@ -1,5 +1,5 @@
 import urllib.request as request
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # https://www.jisilu.cn/data/cbnew/cb_index/
 # 转股价格中位数
@@ -37,6 +37,26 @@ def is_trade_date():
         return True
     else:
         return False
+
+
+# fixme 不包括节假日的简单处理
+# 指定天数后的交易日(跳过周末)
+def get_trade_date(delta_day):
+    trade_date = get_non_weekday(datetime.now())
+
+    for i in range(delta_day):
+        # 把周末跳过去
+        trade_date = get_non_weekday(trade_date + timedelta(days=1))
+
+    return trade_date
+
+
+def get_non_weekday(_date):
+    weekday = _date.isoweekday()
+    while weekday > 5:  # 是周末
+        _date = _date + timedelta(days=1)
+        weekday = _date.isoweekday()
+    return _date
 
 
 def calc_trade_fee(account, is_sh_market, trade_num):
@@ -124,10 +144,12 @@ def calc_hold_price(hold_bond, direction, trade_amount, trade_price):
     if direction == 'buy':
         hold_bond.hold_amount += int(trade_amount)
         hold_bond.sum_buy += trade_num + fee
+        hold_bond.today_sum_buy += trade_num + fee
         cost_num += trade_num
     elif direction == 'sell':
         hold_bond.hold_amount -= int(trade_amount)
         hold_bond.sum_sell += trade_num - fee
+        hold_bond.today_sum_sell += trade_num - fee
         cost_num -= trade_num
     # 重新计算持有价格: 持仓成本/持仓数量
     if hold_bond.hold_amount == 0:
@@ -146,14 +168,17 @@ def re_calc_hold_price(hold_bond, trade_history):
     trade_num = round(float(trade_price) * int(trade_amount), 3)
     # 无论买卖, 费用都会加在持有成本上, 所以要减掉
     hold_bond.sum_buy -= trade_history.fee
+    hold_bond.today_sum_buy -= trade_history.fee
 
     # 如果原来是卖出, 交易金额会加在sum_sell上, 这里要减掉, 因为trade_amount是负数, 直接加上即可
     if trade_amount < 0:
         hold_bond.sum_sell += trade_num
+        hold_bond.today_sum_sell += trade_num
         hold_bond.hold_amount -= trade_amount  # 数量加回去
     else:
         # 如果是买入, 交易金额会加在sum_buy上, 这里要减掉
         hold_bond.sum_buy -= trade_num
+        hold_bond.today_sum_buy -= trade_num
         hold_bond.hold_amount -= trade_amount  # 数量减掉
 
     # 重新计算持仓成本
@@ -165,3 +190,6 @@ def re_calc_hold_price(hold_bond, trade_history):
         hold_bond.hold_price = 0
     else:
         hold_bond.hold_price = round(cost_num / hold_bond.hold_amount, 3)
+
+if __name__ == "__main__":
+    print(get_trade_date(3))

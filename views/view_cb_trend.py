@@ -42,7 +42,7 @@ order by date  desc   --limit 2
                 </center>
         """
 
-        return '我的可转债收益情况', '<li><a href="/">Home</a></li>', html
+        return '可转债整体估值', '<li><a href="/">Home</a></li>', html
 
     except Exception as e:
         print("processing is failure. ", e)

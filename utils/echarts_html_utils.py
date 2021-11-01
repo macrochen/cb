@@ -38,94 +38,7 @@ def generate_pie_html(dict_rows, key, value):
     return pie_html
 
 
-def generate_line_html(rows, select=None):
-    # 用散点图展示
-    line = Line(opts.InitOpts(height='700px', width='1424px', theme=ThemeType.LIGHT))
-
-    x = []
-    y1 = []
-    y2 = []
-    y3 = []
-
-    for row in rows:
-        x.append(row['时间'])
-        # y.append([row['累积收益率'], row['日收益率']])
-        y1.append(row['我的净值'])
-        y2.append(row['可转债指数净值'])
-        y3.append(row['沪深300净值'])
-
-    line.add_xaxis(x)
-
-    line.add_yaxis("我的涨跌", y1)
-    line.add_yaxis("可转债指数涨跌", y2)
-    line.add_yaxis("沪深300涨跌", y3)
-
-    line.set_global_opts(
-        title_opts=opts.TitleOpts(title="收益率曲线", pos_left='center', pos_top=-5),
-        tooltip_opts=opts.TooltipOpts(
-            trigger='axis',
-            formatter=JsCode(
-                "function (params) {"
-                "return '<table style=\"width:150px;\">'+"
-                "'<tr ><td style=\"height:20px;background-color:white;border:0px\" colspan=2>'+ params[0].data[0] +'</td></tr>' +"
-                "'<tr ><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[0].color+'\">我</td><td style=\"height:15px;background-color:white;border:0px\">' + params[0].value[1] + '%</td></tr>' +"
-                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[1].color+'\">可转债指数</td><td style=\"height:15px;background-color:white;border:0px\">' + params[1].value[1] + '%</td></tr>' +"
-                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[2].color+'\">沪深300</td><td style=\"height:15px;background-color:white;border:0px\">' + params[2].value[1] + '%</td></tr>' +"
-                "'</table>';}"
-            )
-        ),
-        legend_opts=opts.LegendOpts(
-            pos_top=20,
-            # selected_mode='single'
-        ),
-        datazoom_opts={'start': 0, 'end': 100},
-        toolbox_opts=opts.ToolboxOpts(feature={
-            'dataZoom': {},
-        }
-        ),
-        # visualmap_opts=opts.VisualMapOpts(
-        #     type_="color", max_=150, min_=20, dimension=1
-        # ),
-        xaxis_opts=opts.AxisOpts(
-            # data=None,
-            type_='time',
-            name='时间',
-            name_gap=30,
-            is_scale=True,
-            name_location='middle',
-            splitline_opts=opts.SplitLineOpts(is_show=False),
-            # axislabel_opts=opts.LabelOpts(formatter="{value}"), #echarts.format.formatTime('yy-MM-dd', value*1000)
-            axisline_opts=opts.AxisLineOpts(
-                is_on_zero=False,
-                symbol=['none', 'arrow']
-            )
-        ),
-        yaxis_opts=opts.AxisOpts(
-            type_='value',
-            name='收益率(%)',
-            name_rotate=90,
-            name_gap=55,
-            name_location='middle',
-            is_scale=True,
-            axislabel_opts=opts.LabelOpts(formatter='{value}%'),
-            splitline_opts=opts.SplitLineOpts(is_show=False),
-            axisline_opts=opts.AxisLineOpts(
-                is_on_zero=False,
-                symbol=['none', 'arrow']
-            )
-        )
-    )
-    line.set_series_opts(
-        symbol='none',
-        smooth=False,
-        label_opts=opts.LabelOpts(is_show=False),
-    )
-    line_html = line.render_embed('template.html', env)
-    return line_html
-
-
 def generate_line_html2(rows, select=None):
-    # 用散点图展示
     line = Line(opts.InitOpts(height='500px', width='1424px', theme=ThemeType.LIGHT))
 
     x = []
@@ -154,12 +67,14 @@ def generate_line_html2(rows, select=None):
     line.add_yaxis("价格中位数", y)
 
     line.set_global_opts(
-        title_opts=opts.TitleOpts(title="可转债价格中位数走势", pos_left='center', pos_top=-5),
+        title_opts=opts.TitleOpts(title="可转债整体估值情况", pos_left='center', pos_top=-5),
         tooltip_opts=opts.TooltipOpts(
             trigger='axis',
         ),
         legend_opts=opts.LegendOpts(
-            pos_top=20,
+            is_show=False
+            # pos_top=20,
+            # pos_bottom=-50,
             # selected_mode='single'
         ),
         datazoom_opts={'start': 0, 'end': 100},
@@ -322,11 +237,6 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y):
         color=choice(colors),
         label_opts=opts.LabelOpts(
             is_show=False,
-            position='bottom',
-            # distance=20,
-            formatter=JsCode(
-                "function(params){return params.value[2];}"
-            )
         ),
         markline_opts=opts.MarkLineOpts(
             linestyle_opts=opts.LineStyleOpts(type_='dashed'),
@@ -397,9 +307,21 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y):
     return "<br/>" + scatter_html
 
 
-def generate_scatter_html_with_multi_tables(tables, select=None):
-    # 用散点图展示
-    scatter = Scatter(opts.InitOpts(height='700px', width='1424px', theme=ThemeType.LIGHT))
+def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况", subtitle=None, select=None, use_personal_features=True):
+
+    chart_id = str(abs(hash(title)))
+    scatter = Scatter(opts.InitOpts(
+        height='700px',
+        width='1424px',
+        theme=ThemeType.LIGHT,
+        chart_id=chart_id)
+    )
+    scatter.add_js_funcs(
+        'chart_' + chart_id + """.on('click', function(params){
+            // alert(params)
+            popWin.showWin("1200","600", params['data']['value'][3]);
+        })
+    """)
 
     for label, table in tables.items():
         if select is not None and label not in select:
@@ -416,13 +338,42 @@ def generate_scatter_html_with_multi_tables(tables, select=None):
             x.append(x1)
             y1 = record['溢价率'].replace('%', '')*1
             amount = record.get("持有数量", 0)
-            y.append([y1, record['名称'].replace('转债', ''), amount])
-            point_items.append(opts.MarkPointItem(
-                coord=[x1, y1],
-                symbol_size=amount,
-                itemstyle_opts=opts.ItemStyleOpts(
-                    opacity=0.2)
-            ))
+            bond_name = record['名称'].replace('转债', '')
+            bond_code = record['bond_code']
+            bond_code = trade_utils.rebuild_bond_code(bond_code)
+            y.append([y1])
+            rotate = record.get("轮动", None)
+            color = None
+            if rotate is not None and rotate != '持有':
+                if rotate == '轮入':
+                    color = 'green'
+                else:
+                    color = 'red'
+
+            # todo symbol 轮出:triangle 轮入:diamond
+            if use_personal_features and record.get('hold_id') is not None and amount > 0:
+                point_items.append(opts.MarkPointItem(
+                    coord=[x1, y1],
+                    symbol_size=amount,
+                    itemstyle_opts=opts.ItemStyleOpts(
+                        opacity=0.5,
+                        border_color='#000',
+                        border_width=1,
+                        color=color
+                    ),
+                    value=[bond_name, x1, y1, bond_code, amount]
+                ))
+            else:
+                point_items.append(opts.MarkPointItem(
+                    coord=[x1, y1],
+                    # symbol_size=symbol_size,
+                    itemstyle_opts=opts.ItemStyleOpts(
+                        # color='#fff',
+                        # border_color='#000'
+                        color=color
+                    ),
+                    value=[bond_name, x1, y1, bond_code]
+                ))
 
         scatter.add_xaxis(x)
 
@@ -430,42 +381,16 @@ def generate_scatter_html_with_multi_tables(tables, select=None):
             label,
             y,
             label_opts=opts.LabelOpts(
-                position='bottom',
-                formatter=JsCode(  # 调用js代码设置方法提取参数第2个值和参数第3个值
-                    "function(params){return params.value[2];}"
-                )
+                is_show=False
             ),
-            # markarea_opts=opts.MarkAreaOpts(
-            #     is_silent=True,
-            #     itemstyle_opts=opts.ItemStyleOpts(
-            #         color='transparent',
-            #         border_type='dashed',
-            #         border_width=1,
-            #     ),
-            #     data=[
-            #         [
-            #             {
-            #                 'name': label,
-            #                 'xAxis': 'min',
-            #                 'yAxis': 'min',
-            #             },
-            #             {
-            #                 'xAxis': 'max',
-            #                 'yAxis': 'max'
-            #             }
-            #         ]
-            #
-            #     ]
-            # ),
-            # markpoint_opts=opts.MarkPointOpts(
-            #     data=[
-            #         {'type': 'max', 'name': 'Max'},
-            #         {'type': 'min', 'name': 'Min'}
-            #     ]
-            # ),
             markpoint_opts=opts.MarkPointOpts(
                 symbol='circle',
-                data=point_items
+                symbol_size=10,
+                data=point_items,
+                label_opts=opts.LabelOpts(
+                    position='bottom',
+                    formatter=JsCode('function(params){return params.value[0]}')
+                )
             ),
             markline_opts=opts.MarkLineOpts(
                 linestyle_opts=opts.LineStyleOpts(type_='dashed'),
@@ -486,7 +411,7 @@ def generate_scatter_html_with_multi_tables(tables, select=None):
     # scatter.add_xaxis(x)
 
     scatter.set_global_opts(
-        title_opts=opts.TitleOpts(title="可转债分布情况", pos_left='center'),
+        title_opts=opts.TitleOpts(title=title, subtitle=subtitle, pos_left='center'),
         tooltip_opts=opts.TooltipOpts(
             formatter=get_hover_js_code()
         ),
@@ -530,8 +455,5 @@ def generate_scatter_html_with_multi_tables(tables, select=None):
             )
         )
     )
-    # scatter.set_series_opts(emphasis={
-    #     'focus': 'series'
-    # })
     scatter_html = scatter.render_embed('template.html', env)
     return scatter_html

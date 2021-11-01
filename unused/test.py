@@ -344,7 +344,7 @@ from pyecharts.faker import Faker
 #
 # filename = 'file:///' + os.getcwd() + '/' + 'bar_reversal_axis.html'
 # webbrowser.open_new_tab(filename)
-# import re
+import re
 #
 # string = "当前指数：1622.084↓    -1.900    -0.120%    成交额 572.80亿元    " \
 #          "平均价格 127.859    转股溢价率 31.22%    到期收益率 -0.88%    中位数价格 111.110    换手率 9.84%"
@@ -352,6 +352,43 @@ from pyecharts.faker import Faker
 # print(re.findall(r"转股溢价率 (\d+\.?\d*)%", string))
 # # re.findall(r"中位数价格 \d+\.?\d*", string)
 # print(re.findall(r"到期收益率 (-?\d+\.?\d*)%", string))
+# 满足强赎
+title="最快2个交易日后可能满足强赎条件！\n"
+r = re.findall(r"最快(\d+)个交易日后可能满足强赎条件！\n", title)
+if len(r) == 1:
+    # row["enforce_start_date"] = get_trade_date(r[0][0])
+    print(r)
+title="2021-08-24已满足强赎条件，且不强赎承诺截止日2021-08-23已过！\n"
+r = re.findall(r"([\d\-]+)已满足强赎条件，且不强赎承诺截止日([\d\-]+)已过！\n", title)
+if len(r) == 1:
+    print(r)
+    # row["enforce_start_date"] = datetime.strptime(r[0][0], '%Y-%m-%d')
+    # row["enforce_stop_date"] = datetime.strptime(r[0][1], '%Y-%m-%d')
+title="2021-07-20已满足强赎条件，且距离不强赎承诺截止日2021-11-03仅剩3个交易日了！\n"
+r = re.findall(r"([\d\-]+)已满足强赎条件，且距离不强赎承诺截止日([\d\-]+)仅剩(\d+)个交易日了！\n", title)
+if len(r) == 1:
+    print(r)
+    # row["enforce_start_date"] = datetime.strptime(r[0][0], '%Y-%m-%d')
+    # row["enforce_stop_date"] = datetime.strptime(r[0][1], '%Y-%m-%d')
+title="2021-09-16已满足强赎条件，且满足强赎条件后，超过一个月未公告是否行使强赎权利！\n"
+r = re.findall(r"([\d\-]+)已满足强赎条件，且满足强赎条件后，超过一个月未公告是否行使强赎权利！\n", title)
+if len(r) == 1:
+    print(r)
+    # row["enforce_start_date"] = datetime.strptime(r[0][0], '%Y-%m-%d')
+
+# 强赎中
+title="2021-10-29已满足强赎条件，且公司已经发出公告，将行使强赎权利！\n"
+r = re.findall(r"([\d\-]+)已满足强赎条件，且公司已经发出公告，将行使强赎权利！\n", title)
+if len(r) == 1:
+    print(r)
+    # row["enforce_start_date"] = datetime.strptime(r[0][0], '%Y-%m-%d')
+title="2021-09-30已满足强赎条件，且最后交易日：2021-11-04，最后转股日：2021-11-04，赎回价格：101.307！\n"
+r = re.findall(r"([\d\-]+)已满足强赎条件，且最后交易日：([\d\-]+)，最后转股日：([\d\-]+)，赎回价格：([\d\\.]+)！\n", title)
+if len(r) == 1:
+    print(r)
+    # row["enforce_start_date"] = datetime.strptime(r[0][0], '%Y-%m-%d')
+    # row["enforce_last_date"] = datetime.strptime(r[0][1], '%Y-%m-%d')
+    # row["enforce_price"] = datetime.strptime(r[0][3], '%Y-%m-%d')
 
 # import pinyin
 # print(pinyin.get('建工转债'))
@@ -602,12 +639,12 @@ from pypinyin import pinyin, Style
 #     print(i)
 
 # o = pinyin('茄弹单20', heteronym=True, style=Style.FIRST_LETTER)
-o = pinyin('白电转债', heteronym=True, style=Style.FIRST_LETTER)
-ps = []
-for i in product(*o):
-    if type(i) == tuple:
-        ps.append(''.join(list(i)))
-    else:
-        ps.append(''.join[i])
-
-print(','.join(ps))
+# o = pinyin('白电转债', heteronym=True, style=Style.FIRST_LETTER)
+# ps = []
+# for i in product(*o):
+#     if type(i) == tuple:
+#         ps.append(''.join(list(i)))
+#     else:
+#         ps.append(''.join[i])
+#
+# print(','.join(ps))
