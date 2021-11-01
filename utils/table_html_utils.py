@@ -17,8 +17,11 @@ def generate_simple_table_html(cur, html, is_login_user=False):
     return html + build_table_html(table, is_login_user=is_login_user)
 
 
-def build_table_html(table, remark_fields=[], remark_strategy_1=lambda value: value.startswith('-'), remark_strategy_2=lambda value: True,
-                     ignore_fields=[], is_login_user=False,
+def build_table_html(table, remark_fields=[],
+                     remark_strategy_1=lambda name, value: value.startswith('-'),
+                     remark_strategy_2=lambda name, value: True,
+                     ignore_fields=[],
+                     is_login_user=False,
                      field_links={},
                      table_rows_size=10,
                      table_width=None,
@@ -51,12 +54,12 @@ def build_table_html(table, remark_fields=[], remark_strategy_1=lambda value: va
     lines.append("    <thead>")
     lines.append("        <tr>")
 
-    for field in table._field_names:
-        if ignore_fields.count(field) > 0:
+    for name in table._field_names:
+        if ignore_fields.count(name) > 0:
             continue
 
         lines.append(
-            "            <th>%s</th>" % field.replace("\n", linebreak)
+            "            <th>%s</th>" % name.replace("\n", linebreak)
         )
     if support_selected_operation is not None:
         lines.append("<th style='width:30px'><a href='#' onclick='delete_selected_bond();return false'>" + support_selected_operation['name'] + "</a></th>")
@@ -69,31 +72,31 @@ def build_table_html(table, remark_fields=[], remark_strategy_1=lambda value: va
     for row in rows:
         lines.append("        <tr>")
         record = get_record(table, row)
-        for field, datum in record.items():
-            if ignore_fields.count(field) > 0:
+        for name, value in record.items():
+            if ignore_fields.count(name) > 0:
                 continue
 
-            if datum is not None:
-                datum = str(datum)
+            if value is not None:
+                value = str(value)
             else:
-                datum = ''
+                value = ''
 
             remark_color = ''
-            if new_remark_fields.count(field) > 0:
-                if remark_strategy_1(datum):
+            if new_remark_fields.count(name) > 0:
+                if remark_strategy_1(name, value):
                     remark_color = 'class="remarked-down"'
-                elif remark_strategy_2(datum):
+                elif remark_strategy_2(name, value):
                     remark_color = 'class="remarked-up"'
 
             if len(field_links) > 0 and id is not None:
-                for key, value in field_links.items():
-                    if field == key:
-                        datum = value(datum, record)
+                for key, func in field_links.items():
+                    if name == key:
+                        value = func(value, record)
 
-            prefix, prefix_append, suffix = generate_head_column_html(field, is_login_user, record, head_column_link_maker)
+            prefix, prefix_append, suffix = generate_head_column_html(name, is_login_user, record, head_column_link_maker)
 
             lines.append(
-                ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % datum.replace("\n", linebreak)
+                ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % value.replace("\n", linebreak)
                 # fixme 重构成函数变量
                 .replace('转债标的 ', '')
                 .replace('标准普尔 ', '')

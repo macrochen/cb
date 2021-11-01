@@ -160,15 +160,14 @@ FROM (
                 c.bond_code,
                 c.stock_code,
                 c.cb_name_id                                                                  as 名称,
-                c.sort_num                                                                    as 前次排序,
-                c.当前排序,
+                c.sort_num,
+                c.cur_sort                                                                    as 排序,
                 c.rotate                                                                      as 轮动,
+                round(cb_mov2_id * 100, 2) || '%'                                             as 可转债涨跌,
                 cb_price2_id                                                                  as '转债价格',
                 round(cb_premium_id * 100, 2) || '%'                                          as 溢价率,
-                round(cb_trade_amount2_id * 100, 2) || '%'                                    as '换手率(%)',
-                round(cb_mov2_id * 100, 2) || '%'                                             as 可转债涨跌,
                 round(cb_mov_id * 100, 2) || '%'                                              as 正股涨跌,
-
+                round(cb_trade_amount2_id * 100, 2) || '%'                                    as '换手率(%)',
                 c.stock_name                                                                  as 正股名称,
                 c.industry                                                                    as '行业',
                 c.sub_industry                                                                as '子行业',
@@ -222,14 +221,14 @@ FROM (
                 case when e.enforce_get_term is not null then e.enforce_get_term else '无' END as 强赎条款
 
          from ((select *
-                from (select a.*, case when sort_num is NULL then '调入' else '持有' end as rotate
+                from (select a.*, case when sort_num is NULL then '轮入' else '持有' end as rotate
                       from (select a.*,
                                    (select count(*)
                                     from (select cb_premium_id as sort_value
                                           from changed_bond_view
                                           order by cb_premium_id
                                           limit 10) b
-                                    where a.sort_value >= b.sort_value) as '当前排序'
+                                    where a.sort_value >= b.sort_value) as cur_sort
                             from (select *
                                   from (select a.*,
                                                date()                       as create_date,
@@ -244,7 +243,7 @@ FROM (
                                                             and create_date_s = :create_date_s) b on a.id = b.id
                                        ) c) a) a
                       UNION
-                      select *, '' as '当前排序', '调出' as rotate
+                      select *, '' as '当前排序', '轮出' as rotate
                       from (select b.*, b.cb_premium_id as sort_value
                             from changed_bond_top_history b
                                      left join (select a.*
@@ -255,7 +254,7 @@ FROM (
                               and a.id is NULL
                               and create_date_s = :create_date_s))
                 order by cb_premium_id) c left join stock_report s on c.stock_code = s.stock_code)
-                  left join changed_bond_extend e on c.bond_code = e.bond_code) d
+                  left join changed_bond_extend e on c.bond_code = e.bond_code order by c.cur_sort, c.sort_num) d
          left join
      (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
       from hold_bond
@@ -274,15 +273,15 @@ FROM (
                 c.bond_code,
                 c.stock_code,
                 c.cb_name_id                                                                                    as 名称,
-                c.sort_num                                                                    as 前次排序,
-                c.当前排序,
-                c.rotate                                                                      as 轮动,
+                c.sort_num,
+                c.cur_sort as '排序',
+                c.rotate                                                                                        as 轮动,
+                round(cb_mov2_id * 100, 2) || '%'                                                               as 可转债涨跌,
                 cb_price2_id                                                                                    as '转债价格',
                 round(cb_premium_id * 100, 2) || '%'                                                            as 溢价率,
                 round(bt_yield * 100, 2) || '%'                                                                 as 到期收益率,
-                round(cb_trade_amount2_id * 100, 2) || '%'                                                      as '换手率(%)',
-                round(cb_mov2_id * 100, 2) || '%'                                                               as 可转债涨跌,
                 round(cb_mov_id * 100, 2) || '%'                                                                as 正股涨跌,
+                round(cb_trade_amount2_id * 100, 2) || '%'                                                      as '换手率(%)',                
                 c.stock_name                                                                                    as 正股名称,
                 c.industry                                                                                      as '行业',
                 c.sub_industry                                                                                  as '子行业',
@@ -332,14 +331,14 @@ FROM (
                 case when e.enforce_get_term is not null then e.enforce_get_term else '无' END                   as 强赎条款
 
          from ((select *
-                from (select a.*, case when sort_num is NULL then '调入' else '持有' end as rotate
+                from (select a.*, case when sort_num is NULL then '轮入' else '持有' end as rotate
                       from (select a.*,
 
                                    (select count(*)
                                     from (select bt_yield as sort_value
                                           from changed_bond_view
                                            order by bt_yield desc limit 10) b
-                                    where a.sort_value <= b.sort_value) as '当前排序'
+                                    where a.sort_value <= b.sort_value) as cur_sort
                             from (select *
                                   from (select a.*,
                                                date()                                 as create_date,
@@ -353,7 +352,7 @@ FROM (
                                                             where strategy_name = '高收益率策略'
                                                             and create_date_s = :create_date_s) b on a.id = b.id))a) a
                       UNION
-                      select *, '' as '当前排序', '调出' as rotate
+                      select *, '' as '当前排序', '轮出' as rotate
                       from (select b.*, b.bt_yield as sort_value
                             from changed_bond_top_history b
                                      left join (select a.*
@@ -364,7 +363,7 @@ FROM (
                               and a.id is NULL
                               and create_date_s = :create_date_s))
                 order by bt_yield desc) c left join stock_report s on c.stock_code = s.stock_code)
-                  left join changed_bond_extend e on c.bond_code = e.bond_code) d
+                  left join changed_bond_extend e on c.bond_code = e.bond_code order by c.cur_sort, c.sort_num) d
          left join
      (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
       from hold_bond
@@ -383,14 +382,14 @@ FROM (
                 c.bond_code,
                 c.stock_code,
                 c.cb_name_id                                                                  as 名称,
-                c.sort_num                                                                    as 前次排序,
-                c.当前排序,
+                c.sort_num,
+                c.cur_sort                                                                    as 排序,
                 c.rotate                                                                      as 轮动,
+                round(cb_mov2_id * 100, 2) || '%'                                             as 可转债涨跌,
                 cb_price2_id                                                                  as '转债价格',
                 round(cb_premium_id * 100, 2) || '%'                                          as 溢价率,
                 round(cb_price2_id + cb_premium_id * 100, 2)                                  as 双低值,
                 round(bt_yield * 100, 2) || '%'                                               as 到期收益率,
-                round(cb_mov2_id * 100, 2) || '%'                                             as 可转债涨跌,
                 round(cb_mov_id * 100, 2) || '%'                                              as 正股涨跌,
                 round(cb_trade_amount2_id * 100, 2) || '%'                                    as '换手率(%)',
                 c.stock_name                                                                  as 正股名称,
@@ -442,7 +441,7 @@ FROM (
                 case when e.enforce_get_term is not null then e.enforce_get_term else '无' END as 强赎条款
 
          from ((select *
-                from (select a.*, case when sort_num is NULL then '调入' else '持有' end as rotate
+                from (select a.*, case when sort_num is NULL then '轮入' else '持有' end as rotate
                       from (select a.*,
 
                                    (select count(*)
@@ -450,7 +449,7 @@ FROM (
                                           from changed_bond_view
                                           order by cb_price2_id + cb_premium_id * 100
                                           limit 10) b
-                                    where a.sort_value >= b.sort_value) as '当前排序'
+                                    where a.sort_value >= b.sort_value) as cur_sort
                             from (select *
                                   from (select a.*,
                                                date()                                 as create_date,
@@ -468,7 +467,7 @@ FROM (
                                                             and create_date_s = :create_date_s
                                                             ) b on a.id = b.id) c) a) a
                       UNION
-                      select *, '' as '当前排序', '调出' as rotate
+                      select *, '' as '当前排序', '轮出' as rotate
                       from (select b.*, b.cb_price2_id + b.cb_premium_id * 100 as sort_value
                             from changed_bond_top_history b
                                      left join (select a.*
@@ -479,7 +478,7 @@ FROM (
                               and a.id is NULL 
                               and create_date_s = :create_date_s))
                 order by cb_price2_id + cb_premium_id * 100) c left join stock_report s on c.stock_code = s.stock_code)
-                  left join changed_bond_extend e on c.bond_code = e.bond_code) d
+                  left join changed_bond_extend e on c.bond_code = e.bond_code order by c.cur_sort, c.sort_num) d
          left join
      (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
       from hold_bond
@@ -533,14 +532,32 @@ def generate_strategy_table_html(type, table, html, tables,
 
     html_utils.add_nav_html(nav_html_list, type)
 
+    # 把排序字段补齐
+    i = 1
+    for row in table._rows:
+        row[5] = i
+        m = row[4]
+        if m is None or m == '':
+            m = 11
+        delta = m - i
+        arrow = ' (⬇︎' + str(abs(delta)) + ')'
+        if delta > 0:
+            arrow = ' (⬆︎' + str(abs(delta)) + ')'
+        elif delta == 0:
+            arrow = ''
+        row[5] = str(i) + arrow
+
+        i += 1
+
     html += """
     <div id=\"""" + type + """\">
         """ + "</br></br><center>=========<font size=4><b>" + type + "</b></font>=========</center>"\
             + scatter_html \
             + utils.table_html_utils.build_table_html(table, remark_fields,
-                                                      remark_strategy_1=lambda value: value == '调入' or value.startswith('-'),
-                                                      remark_strategy_2=lambda value: value == '调出',
-                                                      ignore_fields=['持有数量'], is_login_user=use_personal_features,
+                                                      remark_strategy_1=lambda name, value: (name == '轮动' and value == '轮入') or value.startswith('-'),
+                                                      remark_strategy_2=lambda name, value: (name == '轮动' and value == '轮出') or (name != '轮动'),
+                                                      ignore_fields=['持有数量', 'sort_num'],
+                                                      is_login_user=use_personal_features,
                                                       table_rows_size=6) + """
     </div>
     """
@@ -563,8 +580,8 @@ def get_yield_rate_of_strategy(table):
         price = float(record.get('转债价格'))
         rate = float(record.get('可转债涨跌').replace('%', '')) / 100
         cost += price / (1 + rate)
-        # 当前被轮动调入的可转债不计算收益
-        if rotate != '调入':
+        # 当前被轮动轮入的可转债不计算收益
+        if rotate != '轮入':
             rate_value += price / (1 + rate) * rate
     yield_rate = round(rate_value / cost * 100, 2)
     return yield_rate

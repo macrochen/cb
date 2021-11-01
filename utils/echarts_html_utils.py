@@ -345,7 +345,7 @@ def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况
             rotate = record.get("轮动", None)
             color = None
             if rotate is not None and rotate != '持有':
-                if rotate == '调入':
+                if rotate == '轮入':
                     color = 'green'
                 else:
                     color = 'red'
@@ -358,7 +358,8 @@ def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况
                     itemstyle_opts=opts.ItemStyleOpts(
                         opacity=0.5,
                         border_color='#000',
-                        border_width=1
+                        border_width=1,
+                        color=color
                     ),
                     value=[bond_name, x1, y1, bond_code, amount]
                 ))
