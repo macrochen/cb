@@ -10,7 +10,6 @@ import views.nav_utils
 from models import db, Config
 from utils import db_utils
 from utils.db_utils import get_cursor
-from views import view_utils
 
 # import matplotlib.pyplot as plt
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']

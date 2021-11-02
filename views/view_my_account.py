@@ -12,7 +12,6 @@ import utils.table_html_utils
 import views.nav_utils
 from utils import db_utils
 from utils.db_utils import get_cursor
-from views import view_utils
 
 select = [
     "银河",

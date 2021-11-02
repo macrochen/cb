@@ -5,7 +5,7 @@ import time
 
 import requests
 
-from utils.db_utils import get_cursor, execute_sql_with_rowcount
+from utils.db_utils import execute_sql_with_rowcount
 
 userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36"
 header = {

@@ -1,18 +1,18 @@
 # import matplotlib.pyplot as plt
 #
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+from pyecharts import options as opts
+from pyecharts.charts import Line
+from pyecharts.commons.utils import JsCode
+from pyecharts.globals import ThemeType
+
 import utils.echarts_html_utils
 import utils.table_html_utils
 import views.nav_utils
 from utils import db_utils
 from utils.db_utils import get_cursor
 from utils.html_utils import env
-from views import view_utils
 
-from pyecharts import options as opts
-from pyecharts.charts import Line
-from pyecharts.commons.utils import JsCode
-from pyecharts.globals import ThemeType
 
 def draw_my_view():
     try:

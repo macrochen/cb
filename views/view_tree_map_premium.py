@@ -8,7 +8,6 @@ from utils.db_utils import get_cursor
 from utils.echarts_html_utils import generate_scatter_html_with_one_table
 from utils.table_html_utils import generate_table_html_with_data
 from utils.treemap_utils import generate_treemap_html
-from views import view_utils
 
 
 def draw_view(is_login_user, key, start, end, rise):

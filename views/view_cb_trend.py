@@ -3,10 +3,8 @@
 # plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 import utils.echarts_html_utils
 import utils.table_html_utils
-import views.nav_utils
 from utils import db_utils
 from utils.db_utils import get_cursor
-from views import view_utils
 
 
 def draw_view():

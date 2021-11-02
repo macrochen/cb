@@ -1,11 +1,9 @@
 # 从东方财富抓正股的相关数据
-from datetime import datetime
 import re
 import time
-
+from datetime import datetime
 
 from crawler import crawler_utils
-from models import db
 from utils import trade_utils
 from utils.db_utils import get_cursor, execute_sql_with_rowcount
 from utils.task_utils import new_or_update_task, process_task_when_finish, process_task_when_error, \

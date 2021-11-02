@@ -11,10 +11,6 @@
 # print(datetime.datetime.now().day)
 
 # 当前报告期
-import os
-import webbrowser
-
-from jinja2 import Environment, FileSystemLoader
 
 report_date = '2021-03-31'
 # 当前日月
@@ -42,7 +38,6 @@ find_date = ''
 #     break
 #
 # print(find_date)
-import time
 
 # y = datetime.datetime.now().year
 # m = datetime.datetime.now().month
@@ -99,11 +94,6 @@ import time
 # # 需要安装 snapshot-selenium 或者 snapshot-phantomjs
 # make_snapshot(driver, bar_chart().render(), "bar.png")
 
-from pyecharts.charts import Bar
-from pyecharts import options as opts
-
-from pyecharts.globals import CurrentConfig
-
 # # V1 版本开始支持链式调用
 # bar = (
 #     Bar()
@@ -140,7 +130,6 @@ from pyecharts.globals import CurrentConfig
 
 # from pyecharts import options as opts
 # from pyecharts.charts import Pie
-from pyecharts.faker import Faker
 #
 # list = [list(z) for z in zip(Faker.choose(), Faker.values())]
 #
@@ -156,9 +145,6 @@ from pyecharts.faker import Faker
 #
 # webbrowser.open_new_tab(filename)
 
-
-import pyecharts.options as opts
-from pyecharts.charts import Scatter
 
 # """
 # Gallery 使用 pyecharts 1.1.0
@@ -216,11 +202,6 @@ from pyecharts.charts import Scatter
 # filename = 'file:///' + os.getcwd() + '/' + 'basic_scatter_chart.html'
 #
 # webbrowser.open_new_tab(filename)
-
-from pyecharts import options as opts
-from pyecharts.charts import Scatter
-from pyecharts.commons.utils import JsCode
-from pyecharts.faker import Faker
 
 # choose = Faker.values()
 # c = (
@@ -482,7 +463,6 @@ if len(r) == 1:
 # 	str_input='世界欢迎你'
 # 	main(str_input)
 
-import re
 # s = """
 # 各期利息：0.4，0.6，1，1.5，1.8，2
 # 到期还本（不含息）：106 本息共113.3
@@ -629,8 +609,6 @@ import re
 # # print(datetime.now().strftime('%Y-%m-%d'))
 # print(is_trade_date())
 
-from itertools import  *
-from pypinyin import pinyin, Style
 # l1 = ['a']
 # l2 = ['b']
 # l3 = ['c','d']

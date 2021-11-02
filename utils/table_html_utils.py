@@ -1,20 +1,16 @@
-import threading
-
 from utils import db_utils
 from utils.db_utils import get_record, from_db
 from utils.html_utils import add_nav_html, default_edit_link_maker
 from utils.trade_utils import rebuild_bond_code
 
-operation_html_content = threading.local()
 
-
-def generate_simple_table_html(cur, html, is_login_user=False):
+def generate_simple_table_html(cur, html, is_login_user=False, edit_link_maker=None):
     table = db_utils.from_db(cur)
 
     if table.rowcount == 0:
         return html
 
-    return html + build_table_html(table, is_login_user=is_login_user)
+    return html + build_table_html(table, is_login_user=is_login_user, edit_link_maker=edit_link_maker)
 
 
 def build_table_html(table, remark_fields=[],
@@ -27,6 +23,7 @@ def build_table_html(table, remark_fields=[],
                      table_width=None,
                      support_selected_operation=None,  # 对应显示操作名称和后台的操作url. {'name':'删除', 'url', '/delete_selected_bond.html'}
                      head_column_link_maker=None,
+                     edit_link_maker=None,
                      ):
     new_remark_fields = ['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌']
     new_remark_fields.extend([] if remark_fields is None else remark_fields)
@@ -93,7 +90,9 @@ def build_table_html(table, remark_fields=[],
                     if name == key:
                         value = func(value, record)
 
-            prefix, prefix_append, suffix = generate_head_column_html(name, is_login_user, record, head_column_link_maker)
+            prefix, prefix_append, suffix = generate_head_column_html(name, is_login_user, record,
+                                                                      head_column_link_maker=head_column_link_maker,
+                                                                      edit_link_maker=edit_link_maker)
 
             lines.append(
                 ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % value.replace("\n", linebreak)
@@ -205,7 +204,8 @@ def generate_table_html_with_data(type, cur, html, need_title=True, ext_field_na
            title_suffix
 
 
-def generate_head_column_html(field, is_login_user, record, head_column_link_maker=None):
+def generate_head_column_html(field, is_login_user, record, head_column_link_maker=None,
+                              edit_link_maker=None):
     # 标题增加链接
     # 可转债: http://quote.eastmoney.com/bond/sz128051.html
     # 正股: http://quote.eastmoney.com/sz002741.html
@@ -241,10 +241,9 @@ def generate_head_column_html(field, is_login_user, record, head_column_link_mak
         if is_login_user:
             hold_id = record.get('hold_id', None)
             id = record.get('id', None)
-            if hasattr(operation_html_content, 'maker'):
-                suffix += operation_html_content.maker(id, hold_id, bond_code)
-            else:
-                suffix += "&nbsp;<a href='" + default_edit_link_maker(hold_id,
-                                                                      bond_code) + "'><img src='/static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
+            if edit_link_maker is None:
+                edit_link_maker = default_edit_link_maker
+
+            suffix += edit_link_maker(id, hold_id, bond_code)
             suffix += "&nbsp;<a href='/view_my_trade_history.html/"+bond_code+"/'><img src='/static/img/detail.png' alt='交易明细' title='交易明细' width='14' height='14' class='next-site-link'/></a>"
     return prefix, prefix_append, suffix

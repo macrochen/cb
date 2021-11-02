@@ -2,7 +2,6 @@
 
 import datetime
 import re
-import sqlite3
 from itertools import product
 
 import bs4
@@ -309,6 +308,10 @@ def parse_enforce_data(row, td):
                 row["enforce_stop_date"] = datetime.datetime.strptime(r[0][1], '%Y-%m-%d')
             # 2021-09-16已满足强赎条件，且满足强赎条件后，超过一个月未公告是否行使强赎权利！
             r = re.findall(r"([\d\-]+)已满足强赎条件，且满足强赎条件后，超过一个月未公告是否行使强赎权利！", title)
+            if len(r) == 1:
+                row["enforce_start_date"] = datetime.datetime.strptime(r[0], '%Y-%m-%d')
+            # 2021-11-02已满足强赎条件，且暂未公告是否行使强赎权利！
+            r = re.findall(r"([\d\-]+)已满足强赎条件，且暂未公告是否行使强赎权利！", title)
             if len(r) == 1:
                 row["enforce_start_date"] = datetime.datetime.strptime(r[0], '%Y-%m-%d')
 

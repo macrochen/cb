@@ -1,6 +1,5 @@
 import os
 import sqlite3
-import threading
 
 from prettytable import PrettyTable
 

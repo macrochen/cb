@@ -1,7 +1,6 @@
 # 从雪球抓正股的相关数据
 import datetime
 import json
-import sqlite3
 import time
 
 import requests
