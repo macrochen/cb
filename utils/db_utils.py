@@ -58,7 +58,7 @@ def execute_sql_with_rowcount(sql, params=None):
         result = db.session.execute(sql, params)
         db.session.commit()
     except Exception as e:
-        print('execute sql is failure. sql:' + sql + ', params:' + params, e)
+        print('execute sql is failure. sql:' + sql + ', params:' + str(params), e)
         db.session.rollback()
         raise e
     # finally:

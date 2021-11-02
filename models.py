@@ -160,7 +160,7 @@ class BaseHoldBond(db.Model):
     sum_buy = db.Column(db.Float, default=0.0)
     sum_sell = db.Column(db.Float, default=0.0)
     memo = db.Column(db.String(1024))
-    start_date = db.Column(db.String(20))
+    start_date = db.Column(db.DateTime)
 
     def __init__(self):
         self.sum_sell = 0.0
@@ -174,9 +174,15 @@ class BaseHoldBond(db.Model):
 
 
 class HoldBond(BaseHoldBond):
-    modify_date = db.Column(db.String(20))
+    modify_date = db.Column(db.DateTime)
+    # 针对当天有交易的可转债, 用于辅助计算日收益
     today_sum_buy = db.Column(db.Float, default=0.0)
     today_sum_sell = db.Column(db.Float, default=0.0)
+
+    def __init__(self):
+        super().__init__()
+        self.today_sum_buy = 0.0
+        self.today_sum_sell = 0.0
 
     def keys(self):
         my_keys = list(super().keys())

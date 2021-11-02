@@ -13,10 +13,10 @@ header = {
     "origin": "https://xueqiu.com",
     "Referer": "https://xueqiu.com",
     'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36",
-    'Cookie': "aliyungf_tc=AQAAAEiUhlwL1gcAfkp4KtSXEQtnlZoE; __utmc=1; s=df1gw1c0ee; bid=1ed9409e593e78e912960284cfcd25ac_kmpw61pm; snbim_minify=true; __utmz=1.1620726333.9.2.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); xq_is_login=1; device_id=c34b51214fd6837799a41c7d130ffa00; xq_a_token=98959876b8a7bc87c917e0469a57a17032fc212b; xqat=98959876b8a7bc87c917e0469a57a17032fc212b; xq_r_token=884a2266c0a0ce407a5509dd83822cb7059d9d2e; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjIzOTM1NDMwMjAsImlzcyI6InVjIiwiZXhwIjoxNjMzMDY3ODQzLCJjdG0iOjE2MzA0NzU4NDM0NjksImNpZCI6ImQ5ZDBuNEFadXAifQ.LuWVIU8vO2B9xXdls_-x-IR6Dp-Ke6BhRYDYhbRfLnRa9qxWRoscbxBpWG8fGe5Dd0_AaKik05raZTVwRBsBhPbzE6equQCMc7g7UoSXDHw3Vgd7eXH9HGAMHNQ7zegr2jeF7KZREsnu9Bgq--QEaAd6q06lsulCt5ptY3308-pYGm7mKfrshWUC9oA42Q3nVVtmQPG1QjJFjrLdYMNRpvjlltM0j9Ag-AxCbhc9TbUJBSd_6h8TVdQ6-rsH3OwwO978a3eCEtse6McN4P16l2ejk2XUe7BFICymS5d3ZmzOT4vUIMM8qIdhuCKLLNji5kb-lgLxnFDFXkVOdxBtqQ; u=781630475902961; __utma=1.479761015.1598963525.1630475903.1630636568.18; acw_tc=2760829a16309752947582096eba6d8cca1d8c7ce0a18aee9f0a743c249c88; is_overseas=0; Hm_lvt_1db88642e346389874251b5a1eded6e3=1630975388; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1630975388"
+    'Cookie': "aliyungf_tc=AQAAAEiUhlwL1gcAfkp4KtSXEQtnlZoE; __utmc=1; s=df1gw1c0ee; bid=1ed9409e593e78e912960284cfcd25ac_kmpw61pm; snbim_minify=true; xq_is_login=1; device_id=c34b51214fd6837799a41c7d130ffa00; u=2393543020; xq_a_token=bc1d0d5a798994377839ac6ef4482049da20635c; xqat=bc1d0d5a798994377839ac6ef4482049da20635c; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjIzOTM1NDMwMjAsImlzcyI6InVjIiwiZXhwIjoxNjM3MjAwNTQ4LCJjdG0iOjE2MzQ2MDg1NDg3NTUsImNpZCI6ImQ5ZDBuNEFadXAifQ.dfZA0AVFto0RrbkQIcbdjD-M2-FXzTyE1RkYzfAlmsVMFoG_YHwUolXE5z8Gq8rF2NeVz7DlupuDy-ozTeQ7EqS1qCFGv9VSWYD0IssFk4lvvYhjEs8QC3mjC_AxCtwR4KsUJP8GgvX45nt2c20kNaa_PJW_5Hwsa8qsqjjat2yq4wNy17PWqQnqZ-L24UkdjbzpOrr2BnkPJqTi_AKhNijrwT6UWqJ8_of0o7WejOLKClrM2cmyWtW8YYNZE7kaWwFx7bV7r3CAW9R8tgieOI_dhWcsZCc8tbbKhK4_Xx5mehxAqdIGa2rR_--sBKxprsd4P-zTJrjhmLxoAWpCaw; xq_r_token=2776fc5ffe147f1af61ffbe96202ae4fd6b51665; __utma=1.479761015.1598963525.1635569326.1635766060.48; __utmz=1.1635766060.48.19.utmcsr=localhost:8080|utmccn=(referral)|utmcmd=referral|utmcct=/; Hm_lvt_1db88642e346389874251b5a1eded6e3=1635231661,1635569325,1635766060,1635826354; acw_tc=3ccdc14516358412138375706e456b619e8340f8c18b5e6be56fb0fbf44111; is_overseas=0; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1635841221"
 }
 
-def createDb():
+def create_db():
 
     with db_utils.get_connect() as con:
         # 只执行一次
@@ -64,6 +64,7 @@ def fetch_data(task_name):
     # 遍历可转债列表
 
     stock_name = ''
+    stock_code = None
     earnings = None
 
     task = None
@@ -94,7 +95,7 @@ def fetch_data(task_name):
             stocks = list(stock_cursor)
             # 还没添加正股财务指标信息
             if len(stocks) == 0:
-                earnings = getEarnings(stock_code)
+                earnings = get_earnings(stock_code)
                 # 新增
 
                 rowcount = db_utils.execute_sql_with_rowcount("""insert into stock_report(stock_code,stock_name,
@@ -139,17 +140,14 @@ def fetch_data(task_name):
                     print("insert " + stock_name + " is failure. count:" + str(i+1))
                 else:
                     print("insert " + stock_name + " is successful. count:" + str(i+1))
-                # 暂停10s再执行， 避免被网站屏蔽掉
-                time.sleep(20)
-                i += 1
             else:
                 # todo 补充前面几年/季度的财务数据
                 # fixme 为了解决中途被中断， 继续执行时， 简化处理不更新
-                continue
+                # continue
                 last_date = stocks[0][0]
 
                 if last_date != report_date:
-                    earnings = getEarnings(stock_code)
+                    earnings = get_earnings(stock_code)
                     rowcount = db_utils.execute_sql_with_rowcount("""update stock_report
                                 set last_date = :last_date,
                                 revenue = :revenue,qoq_revenue_rate = :qoq_revenue_rate,yoy_revenue_rate = :yoy_revenue_rate,
@@ -158,7 +156,7 @@ def fetch_data(task_name):
                                 roe = :roe,qoq_roe_rate = :qoq_roe_rate,yoy_roe_rate = :yoy_roe_rate,
                                 al_ratio = :al_ratio,qoq_rl_ratio_rate = :qoq_rl_ratio_rate,yoy_al_ratio_rate = :yoy_al_ratio_rate
                              where stock_code = :stock_code""",
-                                                                  {'last_date':earnings.lastDate,
+                                    {'last_date':earnings.lastDate,
 
                                       'revenue':earnings.revenue,
                                       'qoq_revenue_rate':earnings.qoqRevenueRate,
@@ -187,9 +185,9 @@ def fetch_data(task_name):
                         print("update " + stock_name + " is failure. count:" + str(i+1))
                     else:
                         print("update " + stock_name + " is successful. count:" + str(i+1))
-                    # 暂停10s再执行， 避免被网站屏蔽掉
-                    time.sleep(20)
-                    i += 1
+            # 暂停3s再执行， 避免被网站屏蔽掉
+            time.sleep(3)
+            i += 1
 
         ok_desc = "共处理" + str(i) + "条记录"
         print(ok_desc)
@@ -205,9 +203,9 @@ def get_report_date():
     # 计算最近的报告期
     report_dates = {331: '03-31', 630: '06-30', 930: '09-30', 1231: '12-31'}
     # 当前日月
-    y = datetime.datetime.now().year
-    m = datetime.datetime.now().month
-    d = datetime.datetime.now().day
+    y = datetime.now().year
+    m = datetime.now().month
+    d = datetime.now().day
     current = m * 100 + d
     count = 0
     for key, value in report_dates.items():
@@ -220,7 +218,7 @@ def get_report_date():
     raise Exception('计算报告期错误')
 
 
-def getData(url):
+def get_data(url):
     i = 0
     while i < 3:
         try:
@@ -236,13 +234,14 @@ def getData(url):
 
     raise TimeoutError
 
-def getEarnings(stock_code):
+
+def get_earnings(stock_code):
     stock_code = trade_utils.rebuild_stock_code(stock_code)
 
     url = "https://stock.xueqiu.com/v5/stock/finance/cn/indicator.json?symbol=" + stock_code + "&type=all&is_detail=true&count=5&timestamp=" + str(int(round(time.time() * 1000)))
     # # response = requests.get(url=url)
 
-    data = getData(url)
+    data = get_data(url)
     row = data['data']['list'][0]
     # print(row)
     pre_row = data['data']['list'][4]

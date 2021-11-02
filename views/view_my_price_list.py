@@ -103,10 +103,10 @@ def generate_price_bar_html(rows, title):
         count += 1
         if count <= 20:
             xx1.append(row[1].replace('转债', ''))
-            yy1.append({'value': row[2], 'bond_code': bond_code})
+            yy1.append({'value': row[2], 'bond_code': bond_code, 'rise': row[3], 'premium': row[4]})
         else:
             xx2.insert(0, row[1].replace('转债', ''))
-            yy2.insert(0, {'value': round(-float(row[2])+0, 2), 'bond_code': bond_code})
+            yy2.insert(0, {'value': round(-float(row[2])+0, 2), 'bond_code': bond_code, 'rise': row[3], 'premium': row[4]})
 
     max_value = 0
     size = len(yy1)
@@ -198,7 +198,8 @@ def generate_price_bar_html(rows, title):
             pos_top='-1px',
         ),
         tooltip_opts=opts.TooltipOpts(
-            is_show=False
+            is_show=True,
+            formatter=JsCode("function (params){return '名&nbsp;&nbsp;&nbsp;称: ' + params.name + '<br/>' + '涨&nbsp;&nbsp;&nbsp;跌: ' + params.data['rise'] + '%<br/>' + '溢价率: ' + params.data['premium']}")
         ),
         legend_opts=opts.LegendOpts(is_show=False),
         xaxis_opts=opts.AxisOpts(

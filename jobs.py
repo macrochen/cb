@@ -16,7 +16,7 @@ from views.view_strategy_group import get_strategy_yield_rate
 def init_job(app):
     scheduler = BackgroundScheduler()
     # 每天上午交易开始前执行初始化
-    scheduler.add_job(update_data_job_before_trade_is_start, 'cron', hour='8', minute='30', args=[app])
+    scheduler.add_job(update_data_job_before_trade_is_start, 'cron', hour='8', minute='0', args=[app])
     # 每天上午交易结束之后执行可转债数据同步
     scheduler.add_job(sync_cb_data_job, 'cron', hour='11', minute='35', args=[app])
     # 每天下午交易结束之后执行可转债数据同步并更新收益率
@@ -65,8 +65,10 @@ def do_update_data_before_trade_is_start():
     # 初始化today_sum_buy
     # c.cb_price2_id = x * (1+mov)
     rowcount = db_utils.execute_sql_with_rowcount("""
-        update hold_bond set today_sum_buy = (select round(c.cb_price2_id/(1+c.cb_mov2_id)*hold_bond.hold_amount,2) from changed_bond c where c.bond_code = hold_bond.bond_code)
-    """)
+        update hold_bond set modify_date = :modify_date, today_sum_sell = 0,
+            today_sum_buy = (select round(c.cb_price2_id/(1+c.cb_mov2_id)*hold_bond.hold_amount,2) 
+                            from changed_bond c where c.bond_code = hold_bond.bond_code)
+    """, {"modify_date": datetime.now()})
     if rowcount > 0:
         print('init today_sum_buy is successful. count:' + str(rowcount))
 

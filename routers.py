@@ -122,17 +122,21 @@ def find_bond_by_code():
 @cb.route('/find_bond_by_name.html/<bond_name>/', methods=['GET'])
 @login_required
 def find_bond_by_name(bond_name):
-    bonds = []
+
     if bond_name != '':
-        bonds = db.session.query(HoldBond).filter(or_(HoldBond.cb_name_id.like('%' + bond_name + '%'), HoldBond.pinyin.like('%' + bond_name + '%'))).all()
+        bonds1 = db.session.query(HoldBond).filter(or_(HoldBond.cb_name_id.like('%' + bond_name + '%'), HoldBond.pinyin.like('%' + bond_name + '%'))).all()
 
-    if len(bonds) == 0:
-        bonds = ChangedBond.query.filter(or_(ChangedBond.cb_name_id.like('%' + bond_name + '%'), ChangedBond.pinyin.like('%' + bond_name + '%'))).all()
+        bonds2 = db.session.query(ChangedBond).filter(or_(ChangedBond.cb_name_id.like('%' + bond_name + '%'), ChangedBond.pinyin.like('%' + bond_name + '%'))).all()
 
-        if len(bonds) > 0:  # changedbond的id非holdbond的id, 故排除
-            return json.dumps(bonds, default=lambda o: o.to_dict('id'))
-    else:
-        return json.dumps(bonds, default=lambda o: o.to_dict())
+        bonds = []
+        bonds.extend(bonds1)
+        bonds.extend(bonds2)
+
+        # changedbond的id非holdbond的id, 故排除
+        return json.dumps(bonds, default=lambda o: o.to_dict('id') if type(o) == ChangedBond else (
+            o.to_dict() if type(o) != datetime else str(o)))
+
+    return "{}"
 
 
 @cb.route('/view_my_select.html')
@@ -213,9 +217,9 @@ def find_changed_bond_select_by_name(bond_name):
         if len(bonds) == 0:
             bonds = db.session.query(ChangedBond).filter(or_(ChangedBond.cb_name_id.like('%' + bond_name + '%'), ChangedBond.pinyin.like('%' + bond_name + '%'))).all()
             if len(bonds) > 0:  # changed bond的id非select的id, 故排除
-                return json.dumps(bonds, default=lambda o: o.to_dict('id'))
+                return json.dumps(bonds, default=lambda o: o.to_dict('id') if type(o) != datetime else str(o))
 
-    return json.dumps(bonds, default=lambda o: o.to_dict())
+    return json.dumps(bonds, default=lambda o: o.to_dict() if type(o) != datetime else str(o))
 
 @cb.route('/save_changed_bond_select.html', methods=['POST'])
 @login_required
@@ -331,10 +335,10 @@ def save_hold_bond():
     ymd = trade_utils.get_ymd()
     if is_new:
         # 增加开始时间
-        hold_bond.start_date = ymd
+        hold_bond.start_date = datetime.now()
         db.session.add(hold_bond)
     else:
-        hold_bond.modify_date = ymd
+        hold_bond.modify_date = datetime.now()
 
     db.session.commit()
 
@@ -411,12 +415,12 @@ def save_trade_data():
     ymd = trade_utils.get_ymd()
     if is_new:
         # 增加开始时间
-        hold_bond.start_date = ymd
+        hold_bond.start_date = datetime.now()
         db.session.add(hold_bond)
         # 获取id, 强刷
         db.session.flush()
     else:
-        hold_bond.modify_date = ymd
+        hold_bond.modify_date = datetime.now()
 
     # 保存成交记录
     trade_history = TradeHistory()
