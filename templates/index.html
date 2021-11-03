@@ -147,23 +147,13 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">系统管理</a>
                     <ul class="dropdown-menu">
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">数据更新&nbsp;&nbsp;▸</a>
-                            <ul class="dropdown-menu">
-                        <li><a href="#" onclick="process_wrapper('/update_data_after_trade_is_end.html');return false">收盘后更新数据</a></li>
                         <li><a href="#" onclick="process_wrapper('/update_data_before_trade_is_start.html');return false">开盘前更新数据</a></li>
-                            </ul>
-                        </li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">数据同步&nbsp;&nbsp;▸</a>
-                            <ul class="dropdown-menu">
-                              <li><a href="#" onclick="process_wrapper('/cb_ninwen.html');return false">更新所有可转债数据(非实时)</a></li>
-                              <li><a href="#" onclick="process_task('更新可转债条款明细', '/cb_ninwen_detail.html/update_terms/');return false">更新可转债条款明细</a></li>
-                              <li><a href="#" onclick="process_task('更新诊断信息', '/stock_10jqka.html/update_diagnostic/');return false">同步同花顺正股诊断数据</a></li>
-                              <li><a href="#" onclick="process_task('更新正股信息', '/stock_eastmoney.html/update_stock/');return false">同步东财正股关键指标</a></li>
-                              <li><a href="#" onclick="process_task('更新财报信息', '/stock_xueqiu.html/update_stock_report/');return false">同步雪球正股财报指标</a></li>
-                            </ul>
-                        </li>
+                        <li><a href="#" onclick="process_wrapper('/update_data_after_trade_is_end.html');return false">收盘后更新数据</a></li>
+                        <li><a href="#" onclick="process_wrapper('/cb_ninwen.html');return false">更新所有可转债数据</a></li>
+                        <li><a href="#" onclick="process_task('更新可转债条款明细', '/cb_ninwen_detail.html/update_terms/');return false">更新可转债条款明细</a></li>
+                        <li><a href="#" onclick="process_task('更新诊断信息', '/stock_10jqka.html/update_diagnostic/');return false">同步同花顺正股诊断数据</a></li>
+                        <li><a href="#" onclick="process_task('更新正股信息', '/stock_eastmoney.html/update_stock/');return false">同步东财正股关键指标</a></li>
+                        <li><a href="#" onclick="process_task('更新财报信息', '/stock_xueqiu.html/update_stock_report/');return false">同步雪球正股财报指标</a></li>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">导入导出&nbsp;&nbsp;▸</a>
                             <ul class="dropdown-menu">
@@ -343,7 +333,7 @@ nav.navbar.bootsnav li.dropdown ul.dropdown-menu{
             $('#dialog_body').text('操作成功!');
             // alert('body end')
         }else{
-            $('#dialog_body').html('<p style=\'color: red\'>后端异常, 操作失败, 请检查!</p>')
+            $('#dialog_body').html('<p style=\'color: red\'>后端异常, 操作失败, 请检查后台日志或稍后重试!</p>')
         }
         $('#myModal').modal('show');
         $('#btn_close').focus()

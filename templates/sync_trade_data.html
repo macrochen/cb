@@ -239,14 +239,10 @@
                     $("#bond_code").val(data['bond_code']);
                     $("#bond_name").val(data['cb_name_id']);
                     $("#pinyin").val(data['pinyin']);
-                    $("#trade_amount").attr('placeholder', data['hold_amount']);
-                    $("#trade_price").attr('placeholder', data['hold_price']);
-                    if (data['account'] != null) {
-                        $("#account").val(data['account']);
-                    }
-                    if (data['strategy_type'] != null) {
-                        $("#strategy_type").val(data['strategy_type']);
-                    }
+                    $("#trade_amount").attr('placeholder', data['hold_amount'] ? data['hold_amount'] : '');
+                    $("#trade_price").attr('placeholder', data['hold_price'] ? data['hold_price'] : '');
+                    $("#account").val(data['account'] ? data['account'] : '');
+                    $("#strategy_type").val(data['strategy_type'] ? data['strategy_type'] : '');
                     $("#memo").val(data['memo'])
                 },
                 //发送ajax
@@ -260,7 +256,7 @@
                             }
 
                             var list = result.map(function (item) {
-                                var data = {"name": item.cb_name_id + "(" + item.pinyin + ")[" + item.account + "]" ,
+                                var data = {"name": item.cb_name_id + "(" + item.pinyin + ")" + (item.account ? "[" + item.account + "]" : "") ,
                                     'id': item.id,
                                     "bond_code": item.bond_code ,
                                     "cb_name_id": item.cb_name_id ,

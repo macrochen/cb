@@ -108,10 +108,10 @@ def generate_rise_bar_html(rows, title):
         count += 1
         if count <= 20:
             xx1.append(row[1].replace('转债', ''))
-            yy1.append({'value': row[2], 'bond_code': bond_code})
+            yy1.append({'value': row[2], 'bond_code': bond_code, 'price': row[3], 'premium': row[4]})
         else:
             xx2.append(row[1].replace('转债', ''))
-            yy2.append({'value': row[2], 'bond_code': bond_code})
+            yy2.append({'value': row[2], 'bond_code': bond_code, 'price': row[3], 'premium': row[4]})
 
     max_value = 0
     size = len(yy1)
@@ -196,7 +196,8 @@ def generate_rise_bar_html(rows, title):
             pos_top='-1px',
         ),
         tooltip_opts=opts.TooltipOpts(
-            is_show=False
+            is_show=True,
+            formatter=JsCode("function (params){return '名&nbsp;&nbsp;&nbsp;称: ' + params.name + '<br/>' + '价&nbsp;&nbsp;&nbsp;格: ' + params.data['price'] + '元<br/>' + '溢价率: ' + params.data['premium']}")
         ),
         legend_opts=opts.LegendOpts(is_show=False),
         xaxis_opts=opts.AxisOpts(
