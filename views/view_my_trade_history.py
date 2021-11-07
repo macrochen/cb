@@ -13,7 +13,7 @@ from utils.db_utils import get_cursor
 # import matplotlib.pyplot as plt
 
 
-def draw_my_view(user_id, bond_code):
+def draw_my_view(user_id, bond_code, url):
     is_login_user = user_id is not None
     try:
 
@@ -27,8 +27,8 @@ def draw_my_view(user_id, bond_code):
                    hold_id,
                    h.bond_code,
                    h.cb_name_id  as 名称,
-                   price       as 成交价,
-                   amount      as 成交量,
+                   price|| (case when amount > 0 then  '(<font style=color:green>买入</font>)' else '(<font style=color:red>卖出</font>)' end)       as 成交价,
+                   abs(amount)       as 成交量,
                    fee         as 费用,
                    create_date as 成交时间,
                    account     as 交易账号,
@@ -47,8 +47,8 @@ def draw_my_view(user_id, bond_code):
                    hold_id,
                    h.bond_code,
                    h.cb_name_id  as 名称,
-                   price       as 成交价,
-                   amount      as 成交量,
+                   price|| (case when amount > 0 then  '(<font style=color:green>买入</font>)' else '(<font style=color:red>卖出</font>)' end)       as 成交价,
+                   abs(amount)       as 成交量,
                    fee         as 费用,
                    create_date as 成交时间,
                    account     as 交易账号,
@@ -85,7 +85,7 @@ def draw_my_view(user_id, bond_code):
         </script>
         """
 
-        return '我的可转债交易记录', ''.join(views.nav_utils.build_personal_nav_html_list('/view_my_trade_history.html')), html
+        return '我的可转债交易记录', views.nav_utils.build_personal_nav_html(url), html
 
     except Exception as e:
         print("processing is failure. ", e)

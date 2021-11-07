@@ -10,7 +10,7 @@ from utils.table_html_utils import generate_table_html_with_data
 from utils.treemap_utils import generate_treemap_html
 
 
-def draw_view(is_login_user, key, rise):
+def draw_view(is_login_user, key, rise, url):
     try:
 
         html = ''
@@ -143,7 +143,7 @@ order by _sign desc, abs(cb_mov2_id) DESC
             html += '</div>'
 
         return '可转债涨跌分布', \
-               views.nav_utils.build_analysis_nav_html('/view_tree_map_industry.html'), \
+               views.nav_utils.build_analysis_nav_html(url), \
                html
 
     except Exception as e:

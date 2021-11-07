@@ -12,7 +12,7 @@ from views.view_market import generate_strategy_html
 
 
 
-def draw_view(is_login_user):
+def draw_view(is_login_user, url):
     try:
 
         html = ''
@@ -76,7 +76,7 @@ def draw_view(is_login_user):
                                                                             '换手率(%)'],
                                                        use_personal_features=is_login_user)
 
-        return '换手率排行', views.nav_utils.build_analysis_nav_html('/view_turnover.html'), html
+        return '换手率排行', views.nav_utils.build_analysis_nav_html(url), html
 
     except Exception as e:
         print("processing is failure. ", e)

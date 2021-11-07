@@ -33,12 +33,12 @@ select = [
 tables = {}
 
 
-def draw_my_view(is_login_user):
+def draw_my_view(is_login_user, url):
     # 打开文件数据库
     try:
 
         html = ''
-        nav_html_list = views.nav_utils.build_personal_nav_html_list('/view_my_strategy.html')
+        nav_html_list = views.nav_utils.build_personal_nav_html_list()
 
         # =========我的强赎=========
         cur = get_cursor("""
@@ -709,7 +709,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order
             </center>
         """ + html
 
-        return '我的策略', ''.join(nav_html_list), html
+        return '我的策略', views.nav_utils.build_personal_nav_html(url, nav_html_list), html
 
     except Exception as e:
         print("processing is failure. ", e)

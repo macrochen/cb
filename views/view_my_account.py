@@ -23,13 +23,13 @@ select = [
 
 
 
-def draw_my_view(is_login_user):
+def draw_my_view(is_login_user, url):
     # 打开文件数据库
     try:
 
         html = ''
         tables = {}
-        nav_html_list = views.nav_utils.build_personal_nav_html_list('/view_my_account.html')
+        nav_html_list = views.nav_utils.build_personal_nav_html_list()
 
         # =========银河=========
         account = '银河'
@@ -122,7 +122,7 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by �
             </center>
         """ + html
 
-        return '我的账户', ''.join(nav_html_list), html
+        return '我的账户', views.nav_utils.build_personal_nav_html(url, nav_html_list), html
 
     except Exception as e:
         print("processing is failure. ", e)

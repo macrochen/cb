@@ -221,6 +221,14 @@
                     $("body , html").animate({scrollTop:0},300);   //300是所用时间
                 });
 
+                $(".navbar-nav li").click(function() {
+                    // alert("ddd");
+                    $(this).siblings('li').removeClass('active');
+
+                    $(this).addClass('active');
+
+                });
+
             });
         </script>
     </head>

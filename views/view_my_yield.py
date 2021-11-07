@@ -14,7 +14,7 @@ from utils.db_utils import get_cursor
 from utils.html_utils import env
 
 
-def draw_my_view():
+def draw_my_view(url):
     try:
 
         html = ''
@@ -61,7 +61,7 @@ def draw_my_view():
                 </center>
         """
 
-        return '我的可转债收益情况', ''.join(views.nav_utils.build_personal_nav_html_list('/view_my_yield.html')), html
+        return '我的可转债收益情况', views.nav_utils.build_personal_nav_html(url), html
 
     except Exception as e:
         print("processing is failure. ", e)

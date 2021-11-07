@@ -21,9 +21,11 @@ from utils import trade_utils
 from utils.db_utils import get_connect, get_cursor
 from utils.html_utils import get_strategy_options_html
 from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
-    view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_tree_map_price, \
+    view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_industry_premium, \
+    view_tree_map_price, \
     view_tree_map_premium, view_my_price_list, view_my_trade_history, view_cb_trend, view_up_down_range, view_all_cb, \
-    view_enforce_list, view_strategy_group
+    view_enforce_list, view_strategy_group, view_tree_map_remain, view_price_range, \
+    view_industry_double_low
 from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html
 
 cb = Blueprint('cb', __name__)
@@ -124,13 +126,13 @@ def find_bond_by_code():
 def find_bond_by_name(bond_name):
 
     if bond_name != '':
-        bonds1 = db.session.query(HoldBond).filter(or_(HoldBond.cb_name_id.like('%' + bond_name + '%'), HoldBond.pinyin.like('%' + bond_name + '%'))).all()
+        bond1s = db.session.query(HoldBond).filter(or_(HoldBond.cb_name_id.like('%' + bond_name + '%'), HoldBond.pinyin.like('%' + bond_name + '%'))).all()
 
-        bonds2 = db.session.query(ChangedBond).filter(or_(ChangedBond.cb_name_id.like('%' + bond_name + '%'), ChangedBond.pinyin.like('%' + bond_name + '%'))).all()
+        bond2s = db.session.query(ChangedBond).filter(or_(ChangedBond.cb_name_id.like('%' + bond_name + '%'), ChangedBond.pinyin.like('%' + bond_name + '%'))).all()
 
         bonds = []
-        bonds.extend(bonds1)
-        bonds.extend(bonds2)
+        bonds.extend(bond1s)
+        bonds.extend(bond2s)
 
         # changedbond的id非holdbond的id, 故排除
         return json.dumps(bonds, default=lambda o: o.to_dict('id') if type(o) == ChangedBond else (
@@ -213,13 +215,17 @@ def find_changed_bond_select_by_code():
 def find_changed_bond_select_by_name(bond_name):
     bonds = None
     if bond_name != '':
-        bonds = db.session.query(ChangedBondSelect).filter(or_(ChangedBondSelect.cb_name_id.like('%' + bond_name + '%'), ChangedBondSelect.pinyin.like('%' + bond_name + '%')), ChangedBondSelect.is_deleted != 1).all()
-        if len(bonds) == 0:
-            bonds = db.session.query(ChangedBond).filter(or_(ChangedBond.cb_name_id.like('%' + bond_name + '%'), ChangedBond.pinyin.like('%' + bond_name + '%'))).all()
-            if len(bonds) > 0:  # changed bond的id非select的id, 故排除
-                return json.dumps(bonds, default=lambda o: o.to_dict('id') if type(o) != datetime else str(o))
+        bond1s = db.session.query(ChangedBondSelect).filter(or_(ChangedBondSelect.cb_name_id.like('%' + bond_name + '%'), ChangedBondSelect.pinyin.like('%' + bond_name + '%')), ChangedBondSelect.is_deleted != 1).all()
+        bond2s = db.session.query(ChangedBond).filter(or_(ChangedBond.cb_name_id.like('%' + bond_name + '%'), ChangedBond.pinyin.like('%' + bond_name + '%'))).all()
+        bonds = []
+        bonds.extend(bond1s)
+        bonds.extend(bond2s)
 
-    return json.dumps(bonds, default=lambda o: o.to_dict() if type(o) != datetime else str(o))
+        # changedbond的id非select的id, 故排除
+        return json.dumps(bonds, default=lambda o: o.to_dict('id') if type(o) == ChangedBond else (
+            o.to_dict() if type(o) != datetime else str(o)))
+
+    return "{}"
 
 @cb.route('/save_changed_bond_select.html', methods=['POST'])
 @login_required
@@ -441,7 +447,7 @@ def save_trade_data():
     options = get_strategy_options_html(None)
 
 
-    return render_template("sync_trade_data.html", bond=None, navbar=build_personal_nav_html(), result='operation is successful', strategy_options=options)
+    return render_template("sync_trade_data.html", bond=None, navbar=build_personal_nav_html(request.url_rule), result='operation is successful', strategy_options=options)
 
 
 @cb.route('/un_save_trade_data.html/<id>', methods=['GET'])
@@ -504,20 +510,25 @@ def sync_trade_data(id='', bond_code=''):
                                         if bond is None
                                         else (bond.strategy_type if hasattr(bond, 'strategy_type') else None))
 
-    return render_template("sync_trade_data.html", bond=bond, navbar=build_personal_nav_html(), strategy_options=options)
+    return render_template("sync_trade_data.html", bond=bond, navbar=build_personal_nav_html(request.url_rule), strategy_options=options)
 
 
 @cb.route('/view_up_down.html')
 def up_down_view():
     user_id = session.get('_user_id')
-    title, navbar, content = view_up_down.draw_view(user_id is not None)
+    title, navbar, content = view_up_down.draw_view(user_id is not None, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
 @cb.route('/view_up_down_range.html')
 def up_down_range_view():
-    user_id = session.get('_user_id')
-    title, navbar, content = view_up_down_range.draw_view(user_id is not None)
+    title, navbar, content = view_up_down_range.draw_view(request.url_rule)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_price_range.html')
+def price_range_view():
+    title, navbar, content = view_price_range.draw_view(request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -526,8 +537,34 @@ def industry_tree_map_view():
     key = request.args.get("key")
     rise = request.args.get("rise")
     user_id = session.get('_user_id')
-    title, navbar, content = view_tree_map_industry.draw_view(user_id is not None, key, rise)
+    title, navbar, content = view_tree_map_industry.draw_view(user_id is not None, key, rise, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_industry_premium.html')
+def industry_premium_view():
+    title, navbar, content = view_industry_premium.draw_view(request.url_rule)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_industry_premium_detail.html')
+def industry_premium_detail_view():
+    key = request.args.get("key")
+    user_id = session.get('_user_id')
+    return view_industry_premium.generate_detail(key, user_id is not None)
+
+
+@cb.route('/view_industry_double_low.html')
+def industry_double_low_view():
+    title, navbar, content = view_industry_double_low.draw_view(request.url_rule)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_industry_double_low_detail.html')
+def industry_double_low_detail_view():
+    key = request.args.get("key")
+    user_id = session.get('_user_id')
+    return view_industry_double_low.generate_detail(key, user_id is not None)
 
 
 @cb.route('/view_tree_map_price.html')
@@ -537,7 +574,18 @@ def price_tree_map_view():
 
     rise = request.args.get("rise")
     user_id = session.get('_user_id')
-    title, navbar, content = view_tree_map_price.draw_view(user_id is not None, key, start, end, rise)
+    title, navbar, content = view_tree_map_price.draw_view(user_id is not None, key, start, end, rise, request.url_rule)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_tree_map_remain.html')
+def remain_tree_map_view():
+    key = request.args.get("key")
+    end, start = parse_range_value(key, '亿')
+
+    rise = request.args.get("rise")
+    user_id = session.get('_user_id')
+    title, navbar, content = view_tree_map_remain.draw_view(user_id is not None, key, start, end, rise, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -547,7 +595,7 @@ def premium_tree_map_view():
     end, start = parse_range_value(key, '%')
     rise = request.args.get("rise")
     user_id = session.get('_user_id')
-    title, navbar, content = view_tree_map_premium.draw_view(user_id is not None, key, start, end, rise)
+    title, navbar, content = view_tree_map_premium.draw_view(user_id is not None, key, start, end, rise, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -573,7 +621,7 @@ def parse_range_value(key, suffix):
 def discount_view():
     user_id = session.get('_user_id')
     utils.trade_utils.calc_mid_data()
-    title, navbar, content = view_discount.draw_view(user_id is not None)
+    title, navbar, content = view_discount.draw_view(user_id is not None, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -581,7 +629,7 @@ def discount_view():
 def all_cb_view():
     user_id = session.get('_user_id')
     utils.trade_utils.calc_mid_data()
-    title, navbar, content = view_all_cb.draw_view(user_id is not None)
+    title, navbar, content = view_all_cb.draw_view(request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -589,7 +637,7 @@ def all_cb_view():
 def stock_view():
     user_id = session.get('_user_id')
     utils.trade_utils.calc_mid_data()
-    title, navbar, content = view_stock.draw_view(user_id is not None)
+    title, navbar, content = view_stock.draw_view(user_id is not None, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -597,7 +645,7 @@ def stock_view():
 def turnover_view():
     user_id = session.get('_user_id')
     utils.trade_utils.calc_mid_data()
-    title, navbar, content = view_turnover.draw_view(user_id is not None)
+    title, navbar, content = view_turnover.draw_view(user_id is not None, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -606,7 +654,7 @@ def turnover_view():
 def my_up_down_view():
     user_id = session.get('_user_id')
     utils.trade_utils.calc_mid_data()
-    title, navbar, content = view_my_up_down.draw_view(user_id is not None)
+    title, navbar, content = view_my_up_down.draw_view(user_id is not None, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -615,7 +663,7 @@ def my_up_down_view():
 def my_price_list_view():
     user_id = session.get('_user_id')
     utils.trade_utils.calc_mid_data()
-    title, navbar, content = view_my_price_list.draw_view(user_id is not None)
+    title, navbar, content = view_my_price_list.draw_view(user_id is not None, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @cb.route('/view_my_strategy.html')
@@ -623,14 +671,14 @@ def my_price_list_view():
 def my_strategy_view():
     user_id = session.get('_user_id')
     utils.trade_utils.calc_mid_data()
-    title, navbar, content = view_my_strategy.draw_my_view(user_id is not None)
+    title, navbar, content = view_my_strategy.draw_my_view(user_id is not None, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
 @cb.route('/view_my_yield.html')
 @login_required
 def my_yield_view():
-    title, navbar, content = view_my_yield.draw_my_view()
+    title, navbar, content = view_my_yield.draw_my_view(request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -639,7 +687,7 @@ def my_yield_view():
 @login_required
 def my_trade_history_view(bond_code=''):
     user_id = session.get('_user_id')
-    title, navbar, content = view_my_trade_history.draw_my_view(user_id, bond_code)
+    title, navbar, content = view_my_trade_history.draw_my_view(user_id, bond_code, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
@@ -648,7 +696,7 @@ def my_trade_history_view(bond_code=''):
 def my_account_view():
     user_id = session.get('_user_id')
     utils.trade_utils.calc_mid_data()
-    title, navbar, content = view_my_account.draw_my_view(user_id is not None)
+    title, navbar, content = view_my_account.draw_my_view(user_id is not None, request.url_rule)
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 @cb.route('/view_market.html')
@@ -788,7 +836,7 @@ def query_database_view():
         if table.rowcount > 10:
             table_height_style = """style="height:500px" """
 
-        table_html = utils.table_html_utils.build_table_html()
+        table_html = utils.table_html_utils.build_table_html(table)
 
     return render_template("query_database.html", table_html=table_html, sql_code=sql_code, table_height_style=table_height_style)
 

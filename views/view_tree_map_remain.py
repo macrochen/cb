@@ -16,31 +16,35 @@ def draw_view(is_login_user, key, start, end, rise, url):
         html = ''
 
         cur = get_cursor("""
-        select i as 价格区间, round(s_m / c_i*100, 2) as 涨跌,  c_i as 数量
+        select i as 余额区间, round(s_m / c_i*100, 2) as 涨跌,  c_i as 数量
 from (select DISTINCT(_interval) as i, count(_interval) as c_i, sum(cb_mov2_id) as s_m
-      from (SELECT cb_price2_id,
+      from (SELECT remain_amount,
                    cb_mov2_id,
                    case
-                       when cb_price2_id <= 80 then '<=80元'
-                       when cb_price2_id > 80 and cb_price2_id <= 90 then '80~90元'
-                       when cb_price2_id > 90 and cb_price2_id <= 100 then '90~100元'
-                       when cb_price2_id > 100 and cb_price2_id <= 110 then '100~110元'
-                       when cb_price2_id > 110 and cb_price2_id <= 120 then '110~120元'
-                       when cb_price2_id > 120 and cb_price2_id <= 130 then '120~130元'
-                       when cb_price2_id > 130 and cb_price2_id <= 150 then '130~150元'
-                       when cb_price2_id > 150 and cb_price2_id <= 200 then '150~200元'
-                       when cb_price2_id > 200 then '>200元' end
+                       when remain_amount <= 1 then '<=1亿'
+                       when remain_amount > 1 and remain_amount <= 2 then '1~2亿'
+                       when remain_amount > 2 and remain_amount <= 3 then '2~3亿'
+                       when remain_amount > 3 and remain_amount <= 4 then '3~4亿'
+                       when remain_amount > 4 and remain_amount <= 5 then '4~5亿'
+                       when remain_amount > 5 and remain_amount <= 6 then '5~6亿'
+                       when remain_amount > 6 and remain_amount <= 10 then '6~10亿'
+                       when remain_amount > 10 and remain_amount <= 20 then '10~20亿'
+                       when remain_amount > 20 and remain_amount <= 50 then '20~50亿'
+                       when remain_amount > 50 and remain_amount <= 100 then '50~100亿'
+                       when remain_amount > 100 then '>100亿' end
                        as _interval,
                    case
-                       when cb_price2_id <= 80 then 1
-                       when cb_price2_id > 80 and cb_price2_id <= 90 then 2
-                       when cb_price2_id > 90 and cb_price2_id <= 100 then 3
-                       when cb_price2_id > 100 and cb_price2_id <= 110 then 4
-                       when cb_price2_id > 110 and cb_price2_id <= 120 then 5
-                       when cb_price2_id > 120 and cb_price2_id <= 130 then 6
-                       when cb_price2_id > 130 and cb_price2_id <= 150 then 7
-                       when cb_price2_id > 150 and cb_price2_id <= 200 then 8
-                       when cb_price2_id > 200 then 9 end
+                       when remain_amount <= 1 then 1
+                       when remain_amount > 1 and remain_amount <= 2 then 2
+                       when remain_amount > 2 and remain_amount <= 3 then 3
+                       when remain_amount > 3 and remain_amount <= 4 then 4
+                       when remain_amount > 4 and remain_amount <= 5 then 5
+                       when remain_amount > 5 and remain_amount <= 6 then 6
+                       when remain_amount > 6 and remain_amount <= 10 then 7
+                       when remain_amount > 10 and remain_amount <= 20 then 8
+                       when remain_amount > 20 and remain_amount <= 50 then 9
+                       when remain_amount > 50 and remain_amount <= 100 then 10
+                       when remain_amount > 100 then 11 end
                        as _interval_idx
             from changed_bond)
       GROUP by _interval
@@ -49,10 +53,10 @@ from (select DISTINCT(_interval) as i, count(_interval) as c_i, sum(cb_mov2_id) 
 
         html += '<br/><br/><br/>' + \
                 generate_treemap_html(cur,
-                                      '=========可转债涨跌价格分布=========',
-                                      '价格区间',
+                                      '=========可转债涨跌余额分布=========',
+                                      '余额区间',
                                       '数量',
-                                      '/view_tree_map_price.html')
+                                      '/view_tree_map_remain.html')
 
         if start is not None or end is not None and rise is not None:
             rise = float(rise)
@@ -77,10 +81,10 @@ FROM (
                 c.cb_name_id                                                                                    as 名称,
                 cb_mov2_id,
                 round(cb_mov2_id * 100, 2) || '%'                                                               as 可转债涨跌,
+                remain_amount                                                                                   as '余额(亿元)',
                 cb_price2_id                                                                                    as '转债价格',
                 round(cb_premium_id * 100, 2) || '%'                                                            as 溢价率,
                 round(cb_mov_id * 100, 2) || '%'                                                                as 正股涨跌,
-                remain_amount                                                                                   as '余额(亿元)',
                 round(cb_trade_amount2_id * 100, 2) || '%'                                                      as '换手率(%)',
                 cb_trade_amount_id                                                                              as '成交额(百万)',
                 round(cb_price2_id + cb_premium_id * 100, 2)                                                    as 双低值,
@@ -126,13 +130,13 @@ FROM (
 
          from (select *
                from (SELECT DISTINCT c.*
-                     from changed_bond c WHERE cb_price2_id > :start and cb_price2_id <= :end
+                     from changed_bond c WHERE remain_amount > :start and remain_amount <= :end
                      order by cb_mov2_id DESC
                      limit :up_size) 
                UNION
                select *
                from (SELECT DISTINCT c.*
-                     from changed_bond_view c WHERE cb_price2_id > :start and cb_price2_id <= :end
+                     from changed_bond_view c WHERE remain_amount > :start and remain_amount <= :end
                      order by cb_mov2_id ASC
                      limit :down_size)) c
                   LEFT join stock_report s on c.stock_code = s.stock_code) d
@@ -156,13 +160,13 @@ order by _sign desc, abs(cb_mov2_id) DESC
                                        is_login_user=is_login_user)
             html += "<div id='cb_detail_list'>"
             html += generate_scatter_html_with_one_table(table,
-                                                         title='价格' + key + '的可转债涨跌分布',
+                                                         title='余额' + key + '的可转债涨跌分布',
                                                          sub_title='仅展示涨/跌幅top10的可转债',
                                                          use_personal_features=is_login_user)
             html += table_html
             html += '</div>'
 
-        return '可转债涨跌分布', \
+        return '可转债余额分布', \
                views.nav_utils.build_analysis_nav_html(url), \
                html
 

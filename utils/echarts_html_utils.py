@@ -11,16 +11,16 @@ from utils.db_utils import get_record
 from utils.html_utils import env, default_get_label
 
 colors = [
-        "#c23531",
-        "#61a0a8",
-        "#ca8622",
-        "#ef5b9c",
-        "#f47920",
-        "#2a5caa",
-        "#b2d235",
-        "#1d953f",
-        "#6950a1",
-    ]
+    "#c23531",
+    "#61a0a8",
+    "#ca8622",
+    "#ef5b9c",
+    "#f47920",
+    "#2a5caa",
+    "#b2d235",
+    "#1d953f",
+    "#6950a1",
+]
 
 
 def generate_pie_html(dict_rows, key, value):
@@ -41,29 +41,46 @@ def generate_line_html2(rows, select=None):
     line = Line(opts.InitOpts(height='500px', width='1424px', theme=ThemeType.LIGHT))
 
     x = []
-    y = []
+    y1 = []
+    y2 = []
 
     min_y = 10000
     max_y = 0
     for row in rows:
         x.append(row['date'])
         mid_price = row['mid_price']
+        avg_premium = row['avg_premium']
         if mid_price > max_y:
             max_y = mid_price
         elif mid_price < min_y:
             min_y = mid_price
 
-        y.append(mid_price)
+        y1.append(mid_price)
+        y2.append(avg_premium)
     delta = max_y - min_y
-    interval = round(delta/5, 2)
-    star_up1 = round(min_y + interval*1, 2)
-    star_up2 = round(min_y + interval*2, 2)
-    star_up3 = round(min_y + interval*3, 2)
-    star_up4 = round(min_y + interval*4, 2)
+    interval = round(delta / 5, 2)
+    star_up1 = round(min_y + interval * 1, 2)
+    star_up2 = round(min_y + interval * 2, 2)
+    star_up3 = round(min_y + interval * 3, 2)
+    star_up4 = round(min_y + interval * 4, 2)
 
     line.add_xaxis(x)
+    line.extend_axis(yaxis=opts.AxisOpts(
+        type_='value',
+        name='溢价率平均值(%)',
+        name_rotate=90,
+        name_gap=55,
+        name_location='middle',
+        is_scale=True,
+        axislabel_opts=opts.LabelOpts(formatter='{value}%'),
+        splitline_opts=opts.SplitLineOpts(is_show=False),
+        axisline_opts=opts.AxisLineOpts(
+            is_on_zero=False,
+            symbol=['none', 'arrow']
+        )))
 
-    line.add_yaxis("价格中位数", y)
+    line.add_yaxis("价格中位数", y1, yaxis_index=0)
+    line.add_yaxis("溢价率平均值", y2, yaxis_index=1)
 
     line.set_global_opts(
         title_opts=opts.TitleOpts(title="可转债整体估值情况", pos_left='center', pos_top=-5),
@@ -71,10 +88,10 @@ def generate_line_html2(rows, select=None):
             trigger='axis',
         ),
         legend_opts=opts.LegendOpts(
-            is_show=False
-            # pos_top=20,
+            is_show=True,
+            pos_top=20,
             # pos_bottom=-50,
-            # selected_mode='single'
+            selected_mode='multiple'
         ),
         datazoom_opts={'start': 0, 'end': 100},
         toolbox_opts=opts.ToolboxOpts(feature={
@@ -117,6 +134,7 @@ def generate_line_html2(rows, select=None):
                                           max_=max_y,
                                           is_piecewise=True,
                                           split_number=5,
+                                          series_index=0,
                                           pieces=[
                                               {'min': min_y, 'max': star_up1, 'color': '#93CE07', 'label': '★★★★★'},
                                               {'min': star_up1, 'max': star_up2, 'color': '#FBDB0F', 'label': '★★★★'},
@@ -126,11 +144,12 @@ def generate_line_html2(rows, select=None):
                                           ]
                                           ),
     )
+    line.set_colors(['lightcoral', 'lightskyblue'])
     line.set_series_opts(
         symbol='none',
         smooth=False,
         linestyle_opts=opts.LineStyleOpts(
-            width=2
+            width=2,
         ),
         label_opts=opts.LabelOpts(is_show=False),
         markline_opts=opts.MarkLineOpts(
@@ -138,7 +157,7 @@ def generate_line_html2(rows, select=None):
             symbol='none',
             label_opts=opts.LabelOpts(
                 position='end',
-                is_show=True,
+                is_show=False,
                 formatter=JsCode("function (params){return params.name}")
             ),
 
@@ -194,9 +213,9 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
                 coord=[x1, y1],
                 symbol_size=amount,
                 itemstyle_opts=opts.ItemStyleOpts(
-                        opacity=0.5,
-                        border_color='#000',
-                        border_width=1,
+                    opacity=0.5,
+                    border_color='#000',
+                    border_width=1,
                 ),
                 value=[get_label(record), x1, y1, bond_code, amount, hover_content]
             ))
@@ -215,13 +234,13 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
 
 def get_hover_js_code(field_name='溢价率'):
     hover_text = "function (params) {" \
-                    "return " \
+                 "return " \
                  "'名称:' + params.data.value[0]+ '<br/>' + " \
                  "'价格:' + params.data.value[1] + '元<br/> " + \
                  field_name + ":' + params.value[2] + '%<br/>'+ " \
-                        "( params.data.value[4] == null ? '' : " \
-                                     "('头寸:' + params.data.value[4] + '张'));" \
-                 "}"
+                              "( params.data.value[4] == null ? '' : " \
+                              "('头寸:' + params.data.value[4] + '张'));" \
+                              "}"
     return JsCode(hover_text)
 
 
@@ -239,6 +258,10 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y, hov
         })
     """)
     scatter.add_xaxis(xaxis_data=x)
+    show_label = True
+    if len(point_items) > 100:
+        show_label = False
+
     scatter.add_yaxis(
         series_name="",
         y_axis=y,
@@ -256,8 +279,8 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y, hov
                 )
             ),
             data=[
-                opts.MarkLineItem(x=utils.trade_utils.MID_X, name='中位数('+str(utils.trade_utils.MID_X)+'元)'),
-                opts.MarkLineItem(y=utils.trade_utils.MID_Y, name='中位数('+str(utils.trade_utils.MID_Y)+'%)'),
+                opts.MarkLineItem(x=utils.trade_utils.MID_X, name='中位数(' + str(utils.trade_utils.MID_X) + '元)'),
+                opts.MarkLineItem(y=utils.trade_utils.MID_Y, name='中位数(' + str(utils.trade_utils.MID_Y) + '%)'),
             ]
         ),
         markpoint_opts=opts.MarkPointOpts(
@@ -265,6 +288,7 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y, hov
             symbol_size=12,
             data=point_items,
             label_opts=opts.LabelOpts(
+                is_show=show_label,
                 position='bottom',
                 formatter=JsCode('function(params){return params.value[0]}')
             )
@@ -317,8 +341,8 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y, hov
     return "<br/>" + scatter_html
 
 
-def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况", subtitle=None, select=None, use_personal_features=True):
-
+def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况", subtitle=None, select=None,
+                                            use_personal_features=True):
     chart_id = str(abs(hash(title)))
     scatter = Scatter(opts.InitOpts(
         height='700px',
@@ -346,7 +370,7 @@ def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况
             record = get_record(table, row)
             x1 = record['转债价格']
             x.append(x1)
-            y1 = record['溢价率'].replace('%', '')*1
+            y1 = record['溢价率'].replace('%', '') * 1
             amount = record.get("持有数量", 0)
             bond_name = record['名称'].replace('转债', '')
             bond_code = record['bond_code']
@@ -412,8 +436,8 @@ def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况
                     )
                 ),
                 data=[
-                    opts.MarkLineItem(x=utils.trade_utils.MID_X, name='中位数('+str(utils.trade_utils.MID_X)+'元)'),
-                    opts.MarkLineItem(y=utils.trade_utils.MID_Y, name='中位数('+str(utils.trade_utils.MID_Y)+'%)'),
+                    opts.MarkLineItem(x=utils.trade_utils.MID_X, name='中位数(' + str(utils.trade_utils.MID_X) + '元)'),
+                    opts.MarkLineItem(y=utils.trade_utils.MID_Y, name='中位数(' + str(utils.trade_utils.MID_Y) + '%)'),
                 ]
             )
         )

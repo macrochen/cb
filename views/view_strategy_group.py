@@ -11,6 +11,7 @@ import utils.trade_utils
 from models import db, Config
 from utils import html_utils
 from utils.db_utils import get_record, get_cursor
+
 from utils.echarts_html_utils import generate_scatter_html_with_multi_tables
 from views import view_strategy_group_yield
 
@@ -23,16 +24,16 @@ strategy_list = ['双低策略',
 
 def get_strategy_yield_rate():
     dates = get_dates(strategy_list)
-    create_date_s = dates['双低策略']
-    table = get_double_low_strategy_table(create_date_s)
+    create_date = dates['双低策略']
+    table = get_double_low_strategy_table(create_date)
     double_low_strategy_rate = get_yield_rate_of_strategy(table)
 
-    create_date_s = dates['高收益率策略']
-    table = get_high_yield_strategy_table(create_date_s)
+    create_date = dates['高收益率策略']
+    table = get_high_yield_strategy_table(create_date)
     high_yield_strategy_rate = get_yield_rate_of_strategy(table)
 
-    create_date_s = dates['低溢价率策略']
-    table = get_low_premium_strategy_table(create_date_s)
+    create_date = dates['低溢价率策略']
+    table = get_low_premium_strategy_table(create_date)
     low_premium_strategy_rate = get_yield_rate_of_strategy(table)
 
     return double_low_strategy_rate, high_yield_strategy_rate, low_premium_strategy_rate
@@ -51,23 +52,23 @@ def draw_view(user_id):
         # =========双低债=========
         strategy_name = '双低策略'
         if strategy_name in strategy_list:
-            create_date_s = dates[strategy_name]
-            table = get_double_low_strategy_table(create_date_s)
+            create_date = dates[strategy_name]
+            table = get_double_low_strategy_table(create_date)
             html = generate_strategy_table_html("双低策略", table, html, tables, nav_html_list,
                                                 use_personal_features=use_personal_features)
         # =========高收益策略=========
         strategy_name = '高收益率策略'
         if strategy_name in strategy_list:
-            create_date_s = dates[strategy_name]
-            table = get_high_yield_strategy_table(create_date_s)
+            create_date = dates[strategy_name]
+            table = get_high_yield_strategy_table(create_date)
             html = generate_strategy_table_html("高收益率策略", table, html, tables, nav_html_list,
                                                 use_personal_features=use_personal_features)
 
         # =========低溢价率策略=========
         strategy_name = '低溢价率策略'
         if strategy_name in strategy_list:
-            create_date_s = dates[strategy_name]
-            table = get_low_premium_strategy_table(create_date_s)
+            create_date = dates[strategy_name]
+            table = get_low_premium_strategy_table(create_date)
             html = generate_strategy_table_html("低溢价率策略", table, html, tables, nav_html_list,
                                                 use_personal_features=use_personal_features)
 
@@ -151,234 +152,225 @@ def draw_view(user_id):
         raise e
 
 
-def get_low_premium_strategy_table(create_date_s):
+def get_low_premium_strategy_table(create_date):
     sql = """
-        SELECT DISTINCT d.*, e.hold_id, e.hold_amount as 持有数量
-        FROM (
-                 SELECT data_id                              as nid,
-                        bond_code,
-                        stock_code,
-                        cb_name_id                           as 名称,
-                        sort_num,
-                        cur_sort                             as 排序,
-                        rotate                               as 轮动,
-                        round(cb_premium_id * 100, 2) || '%' as 溢价率,
-                        round(cb_mov2_id * 100, 2) || '%'    as 可转债涨跌,
-                        cb_price2_id                         as '转债价格',
-                        round(cb_mov_id * 100, 2) || '%'     as 正股涨跌,
-                        round(bt_yield * 100, 2) || '%'      as 到期收益率,
-                        stock_name                           as 正股名称,
-                        industry                             as '行业',
-                        sub_industry                         as '子行业'
-                 from (select *
-                       from (select f.*, case when sort_num is NULL then '轮入' else '持有' end as rotate
-                             from (select d.*,
-                                          (select count(*)
-                                           from (select cb_premium_id as sort_value
-                                                 from changed_bond_view
-                                                 order by cb_premium_id
-                                                 limit 10) e
-                                           where d.sort_value >= e.sort_value) as cur_sort
-                                   from (select c.*
-                                         from (select a.*,
-                                                      date()                 as create_date,
-                                                      strftime('%s', date()) as create_date_s,
-                                                      ''                     as strategy_name,
-                                                      b.sort_num,
-                                                      a.cb_premium_id        as sort_value
-                                               from (select * from changed_bond_view order by cb_premium_id limit 10) a
-                                                        left join (select *
-                                                                   from changed_bond_top_history
-                                                                   where strategy_name = '低溢价率策略'
-                                                                     and create_date_s = :create_date_s) b on a.id = b.id
-                                              ) c) d) f
-                             UNION
-                             select d.*,
-                                    ''              as create_date,
-                                    ''              as create_date_s,
-                                    ''              as strategy_name,
-                                    c.sort_num,
-                                    d.cb_premium_id as sort_value,
-                                    ''              as cur_sort,
-                                    '轮出'            as rotate
-                             from changed_bond_view d
-                                      inner join (select b.*
-                                                  from changed_bond_top_history b
-                                                           left join (select *
-                                                                      from changed_bond_view
-                                                                      order by cb_premium_id
-                                                                      limit 10) a on b.id = a.id
-                                                  where b.strategy_name = '低溢价率策略'
-                                                    and a.id is NULL
-                                                    and create_date_s = :create_date_s) c
-                                                 on d.id = c.id)
-                       order by sort_value)
-             ) d
-                 left join
-             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
-              from hold_bond
-                 --where strategy_type = '低溢价率策略轮动'
-             ) e
-             on d.bond_code = e.bond_code
+SELECT DISTINCT g.*, e.hold_id, e.hold_amount as 持有数量
+FROM (SELECT data_id                                                                         as nid,
+             bond_code,
+             stock_code,
+             cb_name_id                                                                      as 名称,
+             old_sort,
+             cur_sort                                                                        as 排序,
+             (case when old_sort is NULL then 36 else old_sort end) - cur_sort as up_value,
+             case
+                 when old_sort is NULL or
+                      (old_sort > 10 and ((case when old_sort is NULL then 36 else old_sort end) - cur_sort) >= 5)
+                     then '轮入'
+                 when cur_sort > 10 and ((case when old_sort is NULL then 36 else old_sort end) - cur_sort) <= -5 then '轮出'
+                 else '持有' end                                                 as 轮动,
+             round(cb_premium_id * 100, 2) || '%'                                            as 溢价率,
+             round(cb_mov2_id * 100, 2) || '%'                                               as 可转债涨跌,
+             cb_price2_id                                                                    as '转债价格',
+             round(bt_yield * 100, 2) || '%'                                                 as 到期收益率,
+             round(cb_mov_id * 100, 2) || '%'                                                as 正股涨跌,
+             remain_amount                                                                   as '余额(亿元)',
+             round(cb_ma20_deviate*100, 2) || '%'                                            as ma20乖离率,
+             stock_name                                                                      as 正股名称,
+             industry                                                                        as '行业',
+             sub_industry                                                                    as '子行业'
+      from (select c.*,
+                   (select count(*)
+                    from (select cb_premium_id as sort_value,cb_price2_id,remain_amount
+                          from changed_bond_view
+                          order by cb_premium_id,cb_price2_id,remain_amount) d
+                    where case
+                        when c.cb_premium_id > d.sort_value then true
+                        when c.cb_premium_id = d.sort_value then c.cb_price2_id > d.cb_price2_id
+                        else (case
+                                  when c.cb_price2_id = d.cb_price2_id then c.remain_amount > d.remain_amount
+                                  else false end)
+                        end) + 1 as cur_sort
+            from (select a.*,
+                         b.create_date,
+                         b.strategy_name,
+                         b.sort_num      as old_sort,
+                         a.cb_premium_id as sort_value
+                  from (select *
+                        from changed_bond_view,
+                             (select max(e.cb_premium_id) as last_value
+                              from changed_bond_top_history d
+                                       left join changed_bond_view e on d.bond_code = e.bond_code
+                              where d.strategy_name = '低溢价率策略'
+                                and d.create_date = :create_date) f
+                        where cb_premium_id <= f.last_value
+                        order by cb_premium_id,cb_price2_id,remain_amount) a
+                           left join (select *
+                                      from changed_bond_top_history
+                                      where strategy_name = '低溢价率策略'
+                                        and create_date = :create_date) b
+                                     on a.bond_code = b.bond_code
+                 ) c
+            where cur_sort <= 10
+               or (cur_sort > 10 and old_sort is not NULL))) g
+         left join
+     (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
+      from hold_bond
+         --where strategy_type = '低溢价率策略轮动'
+     ) e
+     on g.bond_code = e.bond_code            
+where g.排序 <= 10
+   or (g.排序 > 10 and g.old_sort <= 10 and g.up_value < 0)            
                   """
-    return get_table(sql, {'create_date_s': create_date_s})
+    return get_table(sql, {'create_date': create_date})
 
 
-def get_high_yield_strategy_table(create_date_s):
+def get_high_yield_strategy_table(create_date):
     sql = """
-        SELECT DISTINCT d.*, e.hold_id, e.hold_amount as 持有数量
-        FROM (
-                 SELECT data_id                              as nid,
-                        bond_code,
-                        stock_code,
-                        cb_name_id                           as 名称,
-                        sort_num,
-                        cur_sort                             as 排序,
-                        rotate                               as 轮动,
-                        round(bt_yield * 100, 2) || '%'      as 到期收益率,
-                        round(cb_mov2_id * 100, 2) || '%'    as 可转债涨跌,
-                        cb_price2_id                         as '转债价格',
-                        round(cb_premium_id * 100, 2) || '%' as 溢价率,
-                        round(cb_mov_id * 100, 2) || '%'     as 正股涨跌,
-                        stock_name                           as 正股名称,
-                        industry                             as '行业',
-                        sub_industry                         as '子行业'
-                 from (select *
-                       from (select f.*, case when sort_num is NULL then '轮入' else '持有' end as rotate
-                             from (select d.*,
-                                          (select count(*)
-                                           from (select bt_yield as sort_value
-                                                 from changed_bond_view
-                                                 order by bt_yield desc
-                                                 limit 10) e
-                                           where d.sort_value <= e.sort_value) as cur_sort
-                                   from (select c.*
-                                         from (select a.*,
-                                                      date()                 as create_date,
-                                                      strftime('%s', date()) as create_date_s,
-                                                      ''                     as strategy_name,
-                                                      b.sort_num,
-                                                      a.bt_yield             as sort_value
-                                               from (select * from changed_bond_view order by bt_yield desc limit 10) a
-                                                        left join (select *
-                                                                   from changed_bond_top_history
-                                                                   where strategy_name = '高收益率策略'
-                                                                     and create_date_s = :create_date_s) b on a.id = b.id
-                                              ) c) d) f
-                             UNION
-                             select d.*,
-                                    ''         as create_date,
-                                    ''         as create_date_s,
-                                    ''         as strategy_name,
-                                    c.sort_num,
-                                    d.bt_yield as sort_value,
-                                    ''         as cur_sort,
-                                    '轮出'       as rotate
-                             from changed_bond_view d
-                                      inner join (select b.*
-                                                  from changed_bond_top_history b
-                                                           left join (select *
-                                                                      from changed_bond_view
-                                                                      order by bt_yield desc
-                                                                      limit 10) a on b.id = a.id
-                                                  where b.strategy_name = '高收益率策略'
-                                                    and a.id is NULL
-                                                    and create_date_s = :create_date_s) c
-                                                 on d.id = c.id)
-                       order by sort_value desc)
-             ) d
-                 left join
-             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
-              from hold_bond
-                 --where strategy_type = '高收益率策略轮动'
-             ) e
-             on d.bond_code = e.bond_code
-            """
-    return get_table(sql, {'create_date_s': create_date_s})
+SELECT DISTINCT g.*, e.hold_id, e.hold_amount as 持有数量
+FROM (SELECT data_id                                                                         as nid,
+             bond_code,
+             stock_code,
+             cb_name_id                                                                      as 名称,
+             old_sort,
+             cur_sort                                                                        as 排序,
+             (case when old_sort is NULL then 16 else old_sort end) - cur_sort               as up_value,
+             case
+                 when old_sort is NULL or
+                      (old_sort > 10 and ((case when old_sort is NULL then 16 else old_sort end) - cur_sort) > 5)
+                     then '轮入'
+                 when cur_sort > 10 then '轮出'
+                 else '持有' end                                                              as 轮动,
+             round(bt_yield * 100, 2) || '%'                                                 as 到期收益率,
+             round(cb_mov2_id * 100, 2) || '%'                                               as 可转债涨跌,
+             cb_price2_id                                                                    as '转债价格',
+             round(cb_premium_id * 100, 2) || '%'                                            as 溢价率,
+             round(cb_mov_id * 100, 2) || '%'                                                as 正股涨跌,
+             remain_amount                                                                   as '余额(亿元)',
+             round(cb_ma20_deviate*100, 2) || '%'                                            as ma20乖离率,
+             stock_name                                                                      as 正股名称,
+             industry                                                                        as '行业',
+             sub_industry                                                                    as '子行业'
+      from (select c.*,
+                   (select count(*)
+                    from (select bt_yield as sort_value, cb_price2_id
+                          from changed_bond_view
+                          order by bt_yield desc, cb_price2_id) d
+                    where case
+                        when c.BT_yield < d.sort_value then true
+                        when c.BT_yield = d.sort_value then c.cb_price2_id > d.cb_price2_id
+                        else false end)+1 as cur_sort
+            from (select a.*,
+                         b.create_date,
+                         b.create_date,
+                         b.strategy_name,
+                         b.sort_num as old_sort,
+                         a.bt_yield as sort_value
+                  from (select *
+                        from changed_bond_view,
+                             (select min(e.bt_yield) as last_value
+                              from changed_bond_top_history d
+                                       left join changed_bond_view e on d.bond_code = e.bond_code
+                              where d.strategy_name = '高收益率策略'
+                                and d.create_date = :create_date) f
+                        where bt_yield >= f.last_value
+                        order by bt_yield desc, cb_price2_id) a
+                           left join (select *
+                                      from changed_bond_top_history
+                                      where strategy_name = '高收益率策略'
+                                        and create_date = :create_date) b
+                                     on a.bond_code = b.bond_code
+                 ) c
+            where cur_sort <= 10
+               or (cur_sort > 10 and old_sort is not NULL))) g
+         left join
+     (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
+      from hold_bond
+         --where strategy_type = '高收益率策略轮动'
+     ) e
+     on g.bond_code = e.bond_code
+where g.排序 <= 10
+   or (g.排序 > 10 and g.old_sort <= 10 and g.up_value < 0)
+                        """
+    return get_table(sql, {'create_date': create_date})
 
 
-def get_double_low_strategy_table(create_date_s):
+def get_double_low_strategy_table(create_date):
     sql = """
-        SELECT DISTINCT d.*, e.hold_id, e.hold_amount as 持有数量
-        FROM (
-                 SELECT data_id                                      as nid,
-                        bond_code,
-                        stock_code,
-                        cb_name_id                                   as 名称,
-                        sort_num,
-                        cur_sort                                     as 排序,
-                        rotate                                       as 轮动,
-                        round(cb_price2_id + cb_premium_id * 100, 2) as 双低值,
-                        round(cb_mov2_id * 100, 2) || '%'            as 可转债涨跌,
-                        cb_price2_id                                 as '转债价格',
-                        round(cb_premium_id * 100, 2) || '%'         as 溢价率,
-                        round(bt_yield * 100, 2) || '%'              as 到期收益率,
-                        round(cb_mov_id * 100, 2) || '%'             as 正股涨跌,
-                        stock_name                                   as 正股名称,
-                        industry                                     as '行业',
-                        sub_industry                                 as '子行业'
-                 from (select *
-                       from (select f.*, case when sort_num is NULL then '轮入' else '持有' end as rotate
-                             from (select d.*,
-                                          (select count(*)
-                                           from (select cb_price2_id + cb_premium_id * 100 as sort_value
-                                                 from changed_bond_view
-                                                 order by cb_price2_id + cb_premium_id * 100
-                                                 limit 10) e
-                                           where d.sort_value >= e.sort_value) as cur_sort
-                                   from (select a.*,
-                                                date()                                 as create_date,
-                                                strftime('%s', date())                 as create_date_s,
-                                                ''                                     as strategy_name,
-                                                b.sort_num,
-                                                a.cb_price2_id + a.cb_premium_id * 100 as sort_value
-                                         from (select *
-                                               from changed_bond_view
-                                               order by cb_price2_id + cb_premium_id * 100
-                                               limit 10) a
-                                                  left join (select *
-                                                             from changed_bond_top_history
-                                                             where strategy_name = '双低策略'
-                                                               and create_date_s = :create_date_s) b on a.id = b.id
-                                        ) d) f
-                             UNION
-                             select d.*,
-                                    ''                                     as create_date,
-                                    ''                                     as create_date_s,
-                                    ''                                     as strategy_name,
-                                    c.sort_num,
-                                    d.cb_price2_id + d.cb_premium_id * 100 as sort_value,
-                                    ''                                     as cur_sort,
-                                    '轮出'                                   as rotate
-                             from changed_bond_view d
-                                      inner join (select b.*
-                                                  from changed_bond_top_history b
-                                                           left join (select *
-                                                                      from changed_bond_view
-                                                                      order by cb_price2_id + cb_premium_id * 100
-                                                                      limit 10) a on b.id = a.id
-                                                  where b.strategy_name = '双低策略'
-                                                    and a.id is NULL
-                                                    and create_date_s = :create_date_s) c
-                                                 on d.id = c.id)
-                       order by sort_value)
-             ) d
-                 left join
-             (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
-              from hold_bond
-                 --where strategy_type = '双低策略轮动'
-             ) e
-             on d.bond_code = e.bond_code
+SELECT DISTINCT g.*, e.hold_id, e.hold_amount as 持有数量
+FROM (SELECT data_id                                                                         as nid,
+             bond_code,
+             stock_code,
+             cb_name_id                                                                      as 名称,
+             old_sort,
+             cur_sort                                                                        as 排序,
+             (case when old_sort is NULL then 21 else old_sort end) - cur_sort               as up_value,
+             case
+                 when old_sort is NULL or
+                      (old_sort > 10 and ((case when old_sort is NULL then 21 else old_sort end) - cur_sort) > 5)
+                     then '轮入'
+                 when cur_sort > 10 then '轮出'
+                 else '持有' end                                                              as 轮动,
+             round(cb_price2_id + cb_premium_id * 100, 2)                                    as 双低值,
+             round(cb_mov2_id * 100, 2) || '%'                                               as 可转债涨跌,
+             cb_price2_id                                                                    as '转债价格',
+             round(cb_premium_id * 100, 2) || '%'                                            as 溢价率,
+             round(bt_yield * 100, 2) || '%'                                                 as 到期收益率,
+             round(cb_mov_id * 100, 2) || '%'                                                as 正股涨跌,
+             remain_amount                                                                   as '余额(亿元)', 
+             round(cb_ma20_deviate*100, 2) || '%'                                            as ma20乖离率,
+             stock_name                                                                      as 正股名称,
+             industry                                                                        as '行业',
+             sub_industry                                                                    as '子行业'
+      from (select c.*,
+                   (select count(*)
+                    from (select cb_price2_id + cb_premium_id * 100 as sort_value,BT_yield
+                          from changed_bond_view
+                          order by cb_price2_id + cb_premium_id * 100, BT_yield desc) d
+                    where case
+                        when c.sort_value > d.sort_value then true
+                        when c.sort_value = d.sort_value then c.BT_yield < d.BT_yield
+                        else false end)+1 as cur_sort
+            from (select a.*,
+                         b.create_date,
+                         b.create_date,
+                         b.strategy_name,
+                         b.sort_num                             as old_sort,
+                         a.cb_price2_id + a.cb_premium_id * 100 as sort_value
+                  from (select *
+                        from changed_bond_view,
+                             (select max(e.cb_price2_id + e.cb_premium_id * 100) as last_value
+                              from changed_bond_top_history d
+                                       left join changed_bond_view e on d.bond_code = e.bond_code
+                              where d.strategy_name = '双低策略'
+                                and d.create_date = :create_date) f
+                        where (cb_price2_id + cb_premium_id * 100) <= f.last_value
+                        order by cb_price2_id + cb_premium_id * 100, BT_yield desc) a
+                           left join (select *
+                                      from changed_bond_top_history
+                                      where strategy_name = '双低策略'
+                                        and create_date = :create_date) b
+                                     on a.bond_code = b.bond_code
+                 ) c
+            where cur_sort <= 10
+               or (cur_sort > 10 and old_sort is not NULL))) g
+         left join
+     (select id as hold_id, bond_code, cb_name_id, hold_price, hold_amount
+      from hold_bond
+         --where strategy_type = '双低策略轮动'
+     ) e
+     on g.bond_code = e.bond_code
+where g.排序 <= 10
+   or (g.排序 > 10 and g.old_sort <= 10 and g.up_value < 0)
             """
-    return get_table(sql, {'create_date_s': create_date_s})
+    return get_table(sql, {'create_date': create_date})
 
 
 def get_dates(strategy_list):
     cursor = get_cursor("""
-        select strategy_name, max(create_date_s) 
-        from changed_bond_top_history 
-        where create_date_s < strftime('%s', date()) 
-        group by strategy_name
+        select strategy_name, max(create_date)
+        from changed_bond_top_history
+        where create_date < date()
+        group by strategy_name        
         """)
     rows = cursor.fetchall()
     dates = {}
@@ -398,7 +390,7 @@ def get_strategy_list():
 
 
 def generate_strategy_table_html(type, table, html, tables,
-                                 nav_html_list=None, remark_fields=['轮动'],
+                                 nav_html_list=None, remark_fields=['轮动', 'ma20乖离率'],
                                  use_personal_features=False):
 
     if len(table._rows) == 0:
@@ -413,22 +405,18 @@ def generate_strategy_table_html(type, table, html, tables,
 
     html_utils.add_nav_html(nav_html_list, type)
 
-    # 把排序字段补齐
-    i = 1
+    # 增加轮动涨跌信息
     for row in table._rows:
-        row[5] = i
-        m = row[4]
-        if m is None or m == '':
-            m = 11
-        delta = m - i
-        arrow = " (<font style='color: green; '>⬇</font>︎" + str(abs(delta)) + ")"
-        if delta > 0:
-            arrow = " (<font style='color: red; '>⬆︎</font>︎" + str(abs(delta)) + ')'
-        elif delta == 0:
+        cur_sort = row[5]
+        up_value = row[6]
+        arrow = " (<font style='color: green; '>⬇</font>︎" + str(abs(up_value)) + ")"
+        if up_value > 0:
+            arrow = " (<font style='color: red; '>⬆︎</font>︎" + str(abs(up_value)) + ')'
+        elif up_value == 0:
             arrow = ''
-        row[5] = str(i) + arrow
+        row[5] = str(cur_sort) + arrow
 
-        i += 1
+        # cur_sort += 1
 
     html += """
     <div id=\"""" + type + """\">
@@ -437,7 +425,7 @@ def generate_strategy_table_html(type, table, html, tables,
             + utils.table_html_utils.build_table_html(table, remark_fields,
                                                       remark_strategy_1=lambda name, value: (name == '轮动' and value == '轮入') or value.startswith('-'),
                                                       remark_strategy_2=lambda name, value: (name == '轮动' and value == '轮出') or (name != '轮动'),
-                                                      ignore_fields=['持有数量', 'sort_num'],
+                                                      ignore_fields=['持有数量', 'old_sort', 'up_value'],
                                                       is_login_user=use_personal_features,
                                                       table_rows_size=6) + """
     </div>
