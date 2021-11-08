@@ -25,7 +25,7 @@ from views import view_market, view_my_account, view_my_select, view_my_strategy
     view_tree_map_price, \
     view_tree_map_premium, view_my_price_list, view_my_trade_history, view_cb_trend, view_up_down_range, view_all_cb, \
     view_enforce_list, view_strategy_group, view_tree_map_remain, view_price_range, \
-    view_industry_double_low
+    view_industry_double_low, view_cb_wordcloud
 from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html
 
 cb = Blueprint('cb', __name__)
@@ -633,6 +633,20 @@ def all_cb_view():
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
+@cb.route('/view_cb_wordcloud.html')
+def cb_wordcloud_view():
+    utils.trade_utils.calc_mid_data()
+    title, navbar, content = view_cb_wordcloud.draw_view(request.url_rule)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
+@cb.route('/view_cb_wordcloud_detail.html')
+def cb_wordcloud_detail_view():
+    key = request.args.get("key")
+    user_id = session.get('_user_id')
+    return view_cb_wordcloud.generate_detail(key, user_id is not None)
+
+
 @cb.route('/view_stock.html')
 def stock_view():
     user_id = session.get('_user_id')
@@ -760,10 +774,18 @@ def stock_10jqka_update_data(task_name):
     stock_10jqka.fetch_data(task_name)
     return 'OK'
 
-@cb.route('/stock_eastmoney.html/<task_name>/', methods=['GET'])
+
+@cb.route('/update_stock_key_info_from_eastmoney.html', methods=['GET'])
 @login_required
-def stock_eastmoney_update_data(task_name):
-    stock_eastmoney.fetch_data(task_name)
+def update_stock_key_info_from_eastmoney():
+    stock_eastmoney.update_stock_sum()
+    return 'OK'
+
+
+@cb.route('/update_stock_theme_from_eastmoney.html', methods=['GET'])
+@login_required
+def update_stock_theme_from_eastmoney():
+    stock_eastmoney.update_stock_theme()
     return 'OK'
 
 @cb.route('/stock_xueqiu.html/<task_name>/', methods=['GET'])
