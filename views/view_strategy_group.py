@@ -163,10 +163,8 @@ FROM (SELECT data_id                                                            
              cur_sort                                                                        as 排序,
              (case when old_sort is NULL then 36 else old_sort end) - cur_sort as up_value,
              case
-                 when old_sort is NULL or
-                      (old_sort > 10 and ((case when old_sort is NULL then 36 else old_sort end) - cur_sort) >= 5)
-                     then '轮入'
-                 when cur_sort > 10 and ((case when old_sort is NULL then 36 else old_sort end) - cur_sort) <= -5 then '轮出'
+                 when old_sort is NULL or old_sort > 10 then '轮入'
+                 when cur_sort > 10 then '轮出'
                  else '持有' end                                                 as 轮动,
              round(cb_premium_id * 100, 2) || '%'                                            as 溢价率,
              round(cb_mov2_id * 100, 2) || '%'                                               as 可转债涨跌,
@@ -235,9 +233,7 @@ FROM (SELECT data_id                                                            
              cur_sort                                                                        as 排序,
              (case when old_sort is NULL then 16 else old_sort end) - cur_sort               as up_value,
              case
-                 when old_sort is NULL or
-                      (old_sort > 10 and ((case when old_sort is NULL then 16 else old_sort end) - cur_sort) > 5)
-                     then '轮入'
+                 when old_sort is NULL or old_sort > 10 then '轮入'
                  when cur_sort > 10 then '轮出'
                  else '持有' end                                                              as 轮动,
              round(bt_yield * 100, 2) || '%'                                                 as 到期收益率,
@@ -305,9 +301,7 @@ FROM (SELECT data_id                                                            
              cur_sort                                                                        as 排序,
              (case when old_sort is NULL then 21 else old_sort end) - cur_sort               as up_value,
              case
-                 when old_sort is NULL or
-                      (old_sort > 10 and ((case when old_sort is NULL then 21 else old_sort end) - cur_sort) > 5)
-                     then '轮入'
+                 when old_sort is NULL or old_sort > 10 then '轮入'
                  when cur_sort > 10 then '轮出'
                  else '持有' end                                                              as 轮动,
              round(cb_price2_id + cb_premium_id * 100, 2)                                    as 双低值,
