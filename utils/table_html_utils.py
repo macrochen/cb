@@ -93,6 +93,10 @@ def build_table_html(table, remark_fields=[],
             prefix, prefix_append, suffix = generate_head_column_html(name, is_login_user, record,
                                                                       head_column_link_maker=head_column_link_maker,
                                                                       edit_link_maker=edit_link_maker)
+            if name == '名称':
+                bond_code = record.get('bond_code')
+                if bond_code.startswith('123'):
+                    value = '<font color=red>*</font>' + value
 
             lines.append(
                 ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % value.replace("\n", linebreak)

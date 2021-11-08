@@ -9,7 +9,7 @@ from crawler import cb_ninwen, crawler_utils
 from models import InvestYield, db, HoldBond, HoldBondHistory
 from utils import trade_utils, db_utils
 from utils.db_utils import get_cursor, execute_sql_with_rowcount
-from utils.trade_utils import get_ymd, calc_mid_data
+from utils.trade_utils import get_ymd, calc_mid_data, calc_mid_data_with_avg_premium
 from views.view_strategy_group import get_strategy_yield_rate
 
 
@@ -62,11 +62,10 @@ def do_update_data_before_trade_is_start():
     if trade_utils.is_trade_date() is False:
         return 'OK'
 
-    # 初始化today_sum_buy
-    # c.cb_price2_id = x * (1+mov)
+    # 初始化today_sum_buy, 将昨天收盘市值作为今天的开盘市值
     rowcount = db_utils.execute_sql_with_rowcount("""
         update hold_bond set modify_date = :modify_date, today_sum_sell = 0,
-            today_sum_buy = (select round(c.cb_price2_id/(1+c.cb_mov2_id)*hold_bond.hold_amount,2) 
+            today_sum_buy = (select round(c.cb_price2_id*hold_bond.hold_amount,2) 
                             from changed_bond c where c.bond_code = hold_bond.bond_code)
     """, {"modify_date": datetime.now()})
     if rowcount > 0:
@@ -76,23 +75,23 @@ def do_update_data_before_trade_is_start():
 
 
 def do_update_data_after_trade_is_end():
-    # 检查是否交易日
-    if trade_utils.is_trade_date() is False:
-        return 'OK'
-
-    # 更新当天的可转债数据
-    cb_ninwen.fetch_data()
-
-    ymd = get_ymd()
-
-    # 将已全部卖掉(持有数量为0)的可转债归档
-    archive_bond(ymd)
-
-    # 更新当天的收益
-    update_yield(ymd)
-
-    # 更新可转债价格中位数
-    update_cb_index()
+    # # 检查是否交易日
+    # if trade_utils.is_trade_date() is False:
+    #     return 'OK'
+    #
+    # # 更新当天的可转债数据
+    # cb_ninwen.fetch_data()
+    #
+    # ymd = get_ymd()
+    #
+    # # 将已全部卖掉(持有数量为0)的可转债归档
+    # archive_bond(ymd)
+    #
+    # # 更新当天的收益
+    # update_yield(ymd)
+    #
+    # # 更新可转债价格中位数
+    # update_cb_index()
 
     # 归档当前的组合策略数据
     archive_top_bond()
@@ -110,99 +109,106 @@ def archive_top_bond():
     # 获取数据并插入
     # 双低
     rowcount = execute_sql_with_rowcount("""
-    insert into changed_bond_top_history
-    select c.*,
-           date() as create_date,
-           strftime('%s', date()) as create_date_s,
-           '双低策略' as strategy_name,
-           d.sort_num
-    from changed_bond c,
-         (select id,
-                 (select count(*)
-                  from (select cb_price2_id + cb_premium_id * 100 as sort_value
-                        from changed_bond_view
-                        order by cb_price2_id + cb_premium_id * 100
-                        limit 10) b
-                  where a.sort_value >= b.sort_value) as sort_num
-          from (select id, cb_price2_id, cb_premium_id, cb_price2_id + cb_premium_id * 100 as sort_value
-                from changed_bond_view
-                order by cb_price2_id + cb_premium_id * 100
-                limit 10) a
-          order by cb_price2_id + cb_premium_id * 100
-          limit 10) d
-    where c.id = d.id
-    order by cb_price2_id + cb_premium_id * 100
-    limit 10
+insert into changed_bond_top_history
+select c.*,
+       date() as create_date,
+       '双低策略' as strategy_name,
+       d.sort_num+1 as sort_num
+from changed_bond c,
+     (select id,
+             (select count(*)
+              from (select cb_premium_id * 100 + cb_price2_id as sort_value, BT_yield
+                    from changed_bond_view
+                    order by cb_premium_id * 100 + cb_price2_id, BT_yield desc
+                    limit 20) b
+              where case
+                        when a.sort_value > b.sort_value then true
+                        when a.sort_value = b.sort_value then a.BT_yield < b.BT_yield
+                        else false end) as sort_num
+      from (select id, cb_premium_id * 100 + cb_price2_id as sort_value, BT_yield
+            from changed_bond_view
+            order by cb_premium_id * 100 + cb_price2_id, BT_yield desc
+            limit 20) a) d
+where c.id = d.id
+order by d.sort_num
+limit 20
     """)
-    if rowcount == 10:
+    if rowcount == 20:
         print('insert double low strategy data is successful')
     # 低溢价
     rowcount = execute_sql_with_rowcount("""
-        insert into changed_bond_top_history
-        select c.*,
-               date()  as create_date,
-               strftime('%s', date()) as create_date_s,
-               '低溢价率策略' as strategy_name,
-               d.sort_num
-        from changed_bond c,
-             (select id,
-                     (select count(*)
-                      from (select cb_premium_id
-                            from changed_bond_view
-                            order by cb_premium_id
-                            limit 10) b
-                      where a.cb_premium_id >= b.cb_premium_id) as sort_num
-              from (select id, cb_premium_id
+insert into changed_bond_top_history
+select c.*,
+       date()         as create_date,
+       '低溢价率策略'       as strategy_name,
+       d.sort_num + 1 as sort_num
+from changed_bond c,
+     (select id,
+             (select count(*)
+              from (select cb_premium_id, cb_price2_id, remain_amount
                     from changed_bond_view
-                    order by cb_premium_id
-                    limit 10) a) d
-        where c.id = d.id
-        order by cb_premium_id
-        limit 10
+                    order by cb_premium_id, cb_price2_id, remain_amount
+                    limit 35) b
+              where case
+                        when a.cb_premium_id > b.cb_premium_id then true
+                        when a.cb_premium_id = b.cb_premium_id then a.cb_price2_id > b.cb_price2_id
+                        else (case
+                                  when a.cb_price2_id = b.cb_price2_id then a.remain_amount > b.remain_amount
+                                  else false end)
+                        end) as sort_num
+      from (select id, cb_premium_id, cb_price2_id, remain_amount
+            from changed_bond_view
+            order by cb_premium_id, cb_price2_id, remain_amount
+            limit 35) a) d
+where c.id = d.id
+order by d.sort_num
+limit 35
         """)
-    if rowcount == 10:
+    if rowcount == 35:
         print('insert low premium strategy data is successful')
     # 高收益率
     rowcount = execute_sql_with_rowcount("""
-    insert into changed_bond_top_history
-    select c.*,
-           date()   as create_date,
-           strftime('%s', date()) as create_date_s,
-           '高收益率策略' as strategy_name,
-           d.sort_num
-    from changed_bond c,
-         (select id,
-                 (select count(*)
-                  from (select bt_yield
-                        from changed_bond_view
-                        order by bt_yield desc
-                        limit 10) b
-                  where a.bt_yield <= b.bt_yield) as sort_num
-          from (select id, bt_yield
-                from changed_bond_view
-                order by bt_yield desc
-                limit 10) a) d
-    where c.id = d.id
-    order by bt_yield desc
-    limit 10
+insert into changed_bond_top_history
+select c.*,
+       date()   as create_date,
+       '高收益率策略' as strategy_name,
+       d.sort_num+1 as sort_num
+from changed_bond c,
+     (select id,
+             (select count(*)
+              from (select BT_yield, cb_price2_id
+                    from changed_bond_view
+                    order by BT_yield desc, cb_price2_id
+                    limit 15) b
+              where case
+                        when a.BT_yield < b.BT_yield then true
+                        when a.BT_yield = b.BT_yield then a.cb_price2_id > b.cb_price2_id
+                        else false end) as sort_num
+      from (select id, BT_yield, cb_price2_id
+            from changed_bond_view
+            order by BT_yield desc, cb_price2_id
+            limit 15) a) d
+where c.id = d.id
+order by d.sort_num
+limit 15
         """)
-    if rowcount == 10:
+    if rowcount == 15:
         print('insert hight yield strategy data is successful')
 
 
 def update_cb_index():
-    mid_price, temp = calc_mid_data()
+    mid_price, temp, avg_premium = calc_mid_data_with_avg_premium()
     # 检查当天记录已经存在, 存在则更新
     cur = get_cursor("select count(*) from cb_index_history where strftime('%Y-%m-%d', date) = strftime('%Y-%m-%d', date())")
     one = cur.fetchone()
     if one[0] == 0:
-        count = execute_sql_with_rowcount("""insert into cb_index_history(mid_price) values(:mid_price)""",
-                   {'mid_price': mid_price})
+        count = execute_sql_with_rowcount("""insert into cb_index_history(mid_price, avg_premium) values(:mid_price, :avg_premium)""",
+                   {'mid_price': mid_price, 'avg_premium': avg_premium})
         if count == 1:
             print('insert today\'s mid_price is successful.')
     else:
-        count = execute_sql_with_rowcount("""update cb_index_history set mid_price=:mid_price where strftime('%Y-%m-%d', date) = strftime('%Y-%m-%d', date())""",
-                                          {'mid_price': mid_price})
+        count = execute_sql_with_rowcount("""update cb_index_history set mid_price=:mid_price, avg_premium=:avg_premium where strftime('%Y-%m-%d', date) = strftime('%Y-%m-%d', date())""",
+                                          {'mid_price': mid_price, 'avg_premium': avg_premium})
         if count == 1:
             print('update today\'s mid_price is successful.')
 
@@ -327,4 +333,6 @@ where h.bond_code = c.bond_code and hold_owner='me'
 
 
 if __name__ == "__main__":
-    sync_cb_data_job()
+    # sync_cb_data_job()
+    # archive_top_bond()
+    pass

@@ -12,7 +12,7 @@ from views.view_market import generate_strategy_html
 # import matplotlib.pyplot as plt
 
 
-def draw_view(is_login_user):
+def draw_view(url):
     try:
 
         html = ''
@@ -75,9 +75,9 @@ def draw_view(is_login_user):
                   """
         html = '<br><br><br>' + generate_strategy_html(sql, "可转债象限分布", "所有可转债", html,
                                                        remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
-                                                       use_personal_features=is_login_user)
+                                                       use_personal_features=False)
 
-        return '溢价率折价排行', views.nav_utils.build_analysis_nav_html('/view_all_cb.html'), html
+        return '溢价率折价排行', views.nav_utils.build_analysis_nav_html(url), html
 
     except Exception as e:
         print("processing is failure. ", e)

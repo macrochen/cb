@@ -98,36 +98,49 @@ def rebuild_bond_code(bond_code):
         market = 'sh'
     return market + bond_code
 
+def calc_mid_data_with_avg_premium():
+    row = _get_mid_data()
+
+    return row[0], row[1], row[2]
+
 
 def calc_mid_data():
-    # 打开文件数据库
+    row = _get_mid_data()
+    return row[0], row[1]
+
+
+def _get_mid_data():
     cur = get_cursor("""
-SELECT mid_price, mid_premium from (
-    SELECT  round(AVG(cb_price2_id), 2)  as mid_price, row_number() OVER () as rn
-    FROM (SELECT cb_price2_id
-          FROM changed_bond
-          ORDER BY cb_price2_id
-          LIMIT 2 - (SELECT COUNT(*) FROM changed_bond) % 2    -- odd 1, even 2
-          OFFSET (SELECT (COUNT(*) - 1) / 2
-                  FROM changed_bond))) a
-left join(
-    SELECT round(AVG(cb_premium_id)*100, 2) as mid_premium, row_number() OVER () as rn
+SELECT mid_price, mid_premium, avg_premium
+from (
+         SELECT round(AVG(cb_price2_id), 2) as mid_price, row_number() OVER () as rn
+         FROM (SELECT cb_price2_id
+               FROM changed_bond
+               ORDER BY cb_price2_id
+               LIMIT 2 - (SELECT COUNT(*) FROM changed_bond) % 2 -- odd 1, even 2
+                   OFFSET (SELECT (COUNT(*) - 1) / 2
+                           FROM changed_bond))) a
+         left join(
+    SELECT round(AVG(cb_premium_id) * 100, 2) as mid_premium, row_number() OVER () as rn
     FROM (SELECT cb_premium_id
           FROM changed_bond
           ORDER BY cb_premium_id
-          LIMIT 2 - (SELECT COUNT(*) FROM changed_bond) % 2    -- odd 1, even 2
-          OFFSET (SELECT (COUNT(*) - 1) / 2
-                  FROM changed_bond)) ) b			 
-on a.rn = b.rn
+          LIMIT 2 - (SELECT COUNT(*) FROM changed_bond) % 2 -- odd 1, even 2
+              OFFSET (SELECT (COUNT(*) - 1) / 2
+                      FROM changed_bond))) b
+                  on a.rn = b.rn,
+     (select 1 as rn, round(avg(cb_premium_id)*100,2) as avg_premium from changed_bond) c
+where a.rn = c.rn
     
     """)
     global MID_X, MID_Y
     row = cur.fetchone()
     MID_X = row[0]
     MID_Y = row[1]
+    avg_premium = row[2]
     print('init mid data is successful.MID_X:' + str(MID_X) + ', MID_Y:' + str(MID_Y))
+    return row
 
-    return row[0], row[1]
 
 def get_ymd():
     today = datetime.now()

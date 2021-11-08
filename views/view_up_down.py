@@ -18,7 +18,7 @@ from utils.db_utils import get_cursor
 from views import view_utils
 
 
-def draw_view(is_login_user):
+def draw_view(is_login_user, url):
     try:
 
         html = ''
@@ -88,7 +88,7 @@ SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null
                                                           remark_fields=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                                           is_login_user=is_login_user)
 
-        return '可转债涨跌排行', views.nav_utils.build_analysis_nav_html('/view_up_down.html'), html
+        return '可转债涨跌排行', views.nav_utils.build_analysis_nav_html(url), html
 
     except Exception as e:
         print("processing is failure. ", e)
@@ -108,10 +108,10 @@ def generate_bar_html(rows, title):
         bond_code = trade_utils.rebuild_bond_code(bond_code)
         if count <= 20:
             xx1.append(row[1].replace('转债', ''))
-            yy1.append({'value': row[2], 'bond_code': bond_code, 'price': row[3], 'premium': row[4]})
+            yy1.append({'value': row[2], 'bond_code': bond_code, 'price': row[3], 'premium': row[4], 'name': row[1]})
         else:
             xx2.append(row[1].replace('转债', ''))
-            yy2.append({'value': row[2], 'bond_code': bond_code, 'price': row[3], 'premium': row[4]})
+            yy2.append({'value': row[2], 'bond_code': bond_code, 'price': row[3], 'premium': row[4], 'name': row[1]})
     max_value = 0
     size = len(yy1)
 
@@ -195,7 +195,7 @@ def generate_bar_html(rows, title):
         ),
         tooltip_opts=opts.TooltipOpts(
             is_show=True,
-            formatter=JsCode("function (params){return '名&nbsp;&nbsp;&nbsp;称: ' + params.name + '<br/>' + '价&nbsp;&nbsp;&nbsp;格: ' + params.data['price'] + '元<br/>' + '溢价率: ' + params.data['premium']}")
+            formatter=JsCode("function (params){return '名&nbsp;&nbsp;&nbsp;称: ' + params.data['name'] + '<br/>' + '价&nbsp;&nbsp;&nbsp;格: ' + params.data['price'] + '元<br/>' + '溢价率: ' + params.data['premium']}")
         ),
         legend_opts=opts.LegendOpts(is_show=False),
         xaxis_opts=opts.AxisOpts(

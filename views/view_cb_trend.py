@@ -17,7 +17,7 @@ def draw_view():
 
         cur = get_cursor("""
 SELECT
-date, mid_price
+date, mid_price, avg_premium
 from cb_index_history 
 order by date  desc   --limit 2   
         """)

@@ -17,7 +17,7 @@ from utils.db_utils import get_cursor
 from views.view_utils import add_popwin_js_code
 
 
-def draw_view(is_login_user):
+def draw_view(is_login_user, url):
     try:
 
         html = '<br/><br/><br/><br/><br/>'
@@ -82,7 +82,7 @@ select * from (SELECT DISTINCT h. * from changed_bond c, hold_bond h
 
         html = table_html_utils.generate_simple_table_html(cur, html, is_login_user=is_login_user)
 
-        return '我的可转债价格top列表', ''.join(views.nav_utils.build_personal_nav_html_list('/view_my_price_list.html')), html
+        return '我的可转债价格top列表', views.nav_utils.build_personal_nav_html(url), html
 
     except Exception as e:
         print("processing is failure. ", e)

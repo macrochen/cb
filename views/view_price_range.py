@@ -16,6 +16,7 @@ from utils.db_utils import get_cursor
 
 
 # import matplotlib.pyplot as plt
+from utils.trade_utils import calc_mid_data
 
 
 def draw_view(url):
@@ -25,39 +26,37 @@ def draw_view(url):
 
         # =========全网可转债涨跌幅柱状图=========
         cur = get_cursor("""select case
-           when cb_mov2_id < -20 then '低于-20%'
-           when cb_mov2_id > -20 and cb_mov2_id <= -10 then '[-20%~-10%]'
-           when cb_mov2_id > -10 and cb_mov2_id <= -5 then '[-10%~-5%]'
-           when cb_mov2_id > -5 and cb_mov2_id <= -1 then '[-5%~-1%]'
-           when cb_mov2_id > -1 and cb_mov2_id < 0 then '[-1%~0]'
-           when cb_mov2_id = 0 then '[0]'
-           when cb_mov2_id > 0 and cb_mov2_id <= 1 then '[0~1%]'
-           when cb_mov2_id > 1 and cb_mov2_id <= 5 then '[1%,5%]'
-           when cb_mov2_id > 5 and cb_mov2_id <= 10 then '[5%,10%]'
-           when cb_mov2_id > 10 and cb_mov2_id <= 20 then '[10~20%]'
-           when cb_mov2_id > 20 then '超过20%'
+           when cb_price2_id < 90 then '低于90元'
+           when cb_price2_id > 90 and cb_price2_id <= 100 then '[90元~100元]'
+           when cb_price2_id > 100 and cb_price2_id <= 110 then '[100元~110元]'
+           when cb_price2_id > 110 and cb_price2_id <= 120 then '[110元~120元]'
+           when cb_price2_id > 120 and cb_price2_id < 130 then '[120元~130元]'
+           when cb_price2_id > 130 and cb_price2_id <= 150 then '[130~150元]'
+           when cb_price2_id > 150 and cb_price2_id <= 180 then '[150元~180元]'
+           when cb_price2_id > 180 and cb_price2_id <= 200 then '[180元~200元]'
+           when cb_price2_id > 200 and cb_price2_id <= 300 then '[200元~300元]'
+           when cb_price2_id > 300 then '超过300元'
     end as 范围
-     , count(id) as 个数, round(min(cb_mov2_id), 2) as min_value, round(max(cb_mov2_id), 2) as max_value
-from (SELECT id, cb_mov2_id * 100 as cb_mov2_id, cb_name_id from changed_bond) c
+     , count(id) as 个数, round(min(cb_price2_id), 2) as min_value, round(max(cb_price2_id), 2) as max_value
+from (SELECT id, cb_price2_id, cb_name_id from changed_bond) c
 
 group by case
-             when cb_mov2_id < -20 then '低于-20%'
-             when cb_mov2_id > -20 and cb_mov2_id <= -10 then '[-20%~-10%]'
-             when cb_mov2_id > -10 and cb_mov2_id <= -5 then '[-10%~-5%]'
-             when cb_mov2_id > -5 and cb_mov2_id <= -1 then '[-5%~-1%]'
-             when cb_mov2_id > -1 and cb_mov2_id < 0 then '[-1%~0]'
-             when cb_mov2_id = 0 then '[0]'
-             when cb_mov2_id > 0 and cb_mov2_id <= 1 then '[0~1%]'
-             when cb_mov2_id > 1 and cb_mov2_id <= 5 then '[1%,5%]'
-             when cb_mov2_id > 5 and cb_mov2_id <= 10 then '[5%~10%]'
-             when cb_mov2_id > 10 and cb_mov2_id <= 20 then '[10~20%]'
-             when cb_mov2_id > 20 then '超过20%'
+           when cb_price2_id < 90 then '低于90元'
+           when cb_price2_id > 90 and cb_price2_id <= 100 then '[90元~100元]'
+           when cb_price2_id > 100 and cb_price2_id <= 110 then '[100元~110元]'
+           when cb_price2_id > 110 and cb_price2_id <= 120 then '[110元~120元]'
+           when cb_price2_id > 120 and cb_price2_id < 130 then '[120元~130元]'
+           when cb_price2_id > 130 and cb_price2_id <= 150 then '[130~150元]'
+           when cb_price2_id > 150 and cb_price2_id <= 180 then '[150元~180元]'
+           when cb_price2_id > 180 and cb_price2_id <= 200 then '[180元~200元]'
+           when cb_price2_id > 200 and cb_price2_id <= 300 then '[200元~300元]'
+           when cb_price2_id > 300 then '超过300元'
              end
-order by cb_mov2_id""")
+order by cb_price2_id""")
         rows = cur.fetchall()
-        html += '<br/><br/><br/><br/>' + generate_bar_html(rows, '全网可转债涨跌幅情况')
+        html += '<br/><br/><br/><br/><br/><br/>' + generate_bar_html(rows, '全网可转债价格范围分布情况')
 
-        return '可转债涨跌幅分布', \
+        return '可转债价格范围分布', \
                views.nav_utils.build_analysis_nav_html(url), \
                html
 
@@ -69,16 +68,10 @@ order by cb_mov2_id""")
 def generate_bar_html(rows, title):
     x = []
     y = []
-    up_count = 0
-    down_count = 0
     for row in rows:
         x.append(row[0])
         y.append({'value': row[1], 'range': [row[2], row[3]]})
 
-        if row[3] < 0:
-            down_count += row[1]
-        elif row[2] > 0:
-            up_count += row[1]
 
     bar = Bar(init_opts=opts.InitOpts(height='700px', width='1424px', theme=ThemeType.SHINE, chart_id="cb_tree_map"))
     bar.add_xaxis(x)
@@ -104,7 +97,6 @@ def generate_bar_html(rows, title):
     bar.set_global_opts(
         title_opts=opts.TitleOpts(
             title="=========" + title + "=========",
-            subtitle="(跌:" + str(down_count) + " 涨:" + str(up_count) + ")",
             subtitle_textstyle_opts=opts.TextStyleOpts(font_weight='bold', font_size='15px'),
             pos_left='center',
             pos_top='-1px',

@@ -19,7 +19,7 @@ from views import view_utils
 # import matplotlib.pyplot as plt
 
 
-def draw_view(is_login_user):
+def draw_view(is_login_user, url):
     try:
 
         html = ''
@@ -88,7 +88,7 @@ stock_report s on c.stock_code = s.stock_code , (select *
 
         html = table_html_utils.generate_simple_table_html(cur, html, is_login_user=is_login_user)
 
-        return '我的可转债涨跌', ''.join(views.nav_utils.build_personal_nav_html_list('/view_my_up_down.html')), html
+        return '我的可转债涨跌', views.nav_utils.build_personal_nav_html(url), html
 
     except Exception as e:
         print("processing is failure. ", e)
@@ -108,10 +108,10 @@ def generate_rise_bar_html(rows, title):
         count += 1
         if count <= 20:
             xx1.append(row[1].replace('转债', ''))
-            yy1.append({'value': row[2], 'bond_code': bond_code, 'price': row[3], 'premium': row[4]})
+            yy1.append({'value': row[2], 'bond_code': bond_code, 'price': row[3], 'premium': row[4], 'name': row[1]})
         else:
             xx2.append(row[1].replace('转债', ''))
-            yy2.append({'value': row[2], 'bond_code': bond_code, 'price': row[3], 'premium': row[4]})
+            yy2.append({'value': row[2], 'bond_code': bond_code, 'price': row[3], 'premium': row[4], 'name': row[1]})
 
     max_value = 0
     size = len(yy1)
@@ -197,7 +197,7 @@ def generate_rise_bar_html(rows, title):
         ),
         tooltip_opts=opts.TooltipOpts(
             is_show=True,
-            formatter=JsCode("function (params){return '名&nbsp;&nbsp;&nbsp;称: ' + params.name + '<br/>' + '价&nbsp;&nbsp;&nbsp;格: ' + params.data['price'] + '元<br/>' + '溢价率: ' + params.data['premium']}")
+            formatter=JsCode("function (params){return '名&nbsp;&nbsp;&nbsp;称: ' + params.data['name'] + '<br/>' + '价&nbsp;&nbsp;&nbsp;格: ' + params.data['price'] + '元<br/>' + '溢价率: ' + params.data['premium']}")
         ),
         legend_opts=opts.LegendOpts(is_show=False),
         xaxis_opts=opts.AxisOpts(
