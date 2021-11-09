@@ -209,18 +209,25 @@ def update_theme_config(driver):
     except TimeoutError as e:
         print("网络超时, 请手工重试")
 
-def update_stock_theme(driver):
-    # 遍历可转债列表
 
+def do_update_stock_theme(driver, task_name):
+    # 遍历可转债列表
+    task = None
     try:
         # 查询可转债
         bond_cursor = get_cursor("""SELECT bond_code, cb_name_id, stock_code, stock_name from changed_bond""")
+        rows = bond_cursor.fetchall()
+        task, status = new_or_update_task(len(rows), task_name)
+        if status == -1:  # 有任务在执行
+            return
 
         i = 0
-        for bond_row in bond_cursor:
+        for bond_row in rows:
             bond_code = bond_row[0]
             stock_code = bond_row[2]
             stock_name = bond_row[3]
+
+            process_task_when_normal(task)
 
             theme = fetch_stock_theme(driver, stock_code)
 
@@ -236,12 +243,16 @@ def update_stock_theme(driver):
             time.sleep(5)
             i += 1
 
-        print("共处理" + str(i) + "条记录")
+        ok_desc = "共处理" + str(i) + "条记录"
+        print(ok_desc)
+        process_task_when_finish(task, ok_desc)
 
     except Exception as e:
         print("db操作出现异常" + str(e), e)
+        process_task_when_error(task, "db操作出现异常")
     except TimeoutError as e:
         print("网络超时, 请手工重试")
+        process_task_when_error(task, "网络超时")
 
 
 def modify_data_unit_error():
@@ -331,6 +342,7 @@ def fetch_theme_data(driver, count, days):
 
 
     return rows
+
 
 # 抓取题材信息
 # http://f10.eastmoney.com/f10_v2/CoreConception.aspx?code=sz002472
@@ -531,14 +543,25 @@ def get_stock_sum(driver, stock_code):
     return get_sum_data(driver)
 
 
-def fetch_data(task_name):
+def update_stock_theme():
+    driver = crawler_utils.get_chrome_driver(None)
+
+    print('更新概念题材信息')
+    do_update_stock_theme(driver, "update_theme")
+
+    # print('更新题材概念配置信息')
+    # update_theme_config()
+
+    driver.close()
+    # modify_data_unit_error()
+    return 'OK'
+
+
+def update_stock_sum():
     driver = crawler_utils.get_chrome_driver(None)
 
     print('更新股票的关键指标信息')
-    do_update_stock_sum(driver, task_name)
-
-    # print('更新概念题材信息')
-    # update_stock_theme()
+    do_update_stock_sum(driver, "update_stock")
 
     # print('更新题材概念配置信息')
     # update_theme_config()
@@ -548,4 +571,5 @@ def fetch_data(task_name):
     return 'OK'
 
 if __name__ == "__main__":
-    fetch_data()
+    # fetch_data()
+    pass

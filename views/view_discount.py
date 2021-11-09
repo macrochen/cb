@@ -72,7 +72,7 @@ def draw_view(is_login_user, url):
                 ) e 
               on d.bond_code = e.bond_code
                   """
-        html = '<br><br><br>' + generate_strategy_html(sql, "溢价率折价排行", "低溢价率top5", html,
+        html = '<br><br/><br/><br><br>' + generate_strategy_html(sql, "溢价率折价排行", "低溢价率top5", html,
                                                        remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                                        use_personal_features=is_login_user)
 

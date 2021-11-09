@@ -39,7 +39,8 @@ def new_or_update_task(total_num, task_name):
     db.session.commit()  # 为了后面能看到任务数据
     return task, 1
 
-def process_task_when_normal(task, num):
+
+def process_task_when_normal(task, num=1):
     if task not in db.session:
         db.session.merge(task)
 

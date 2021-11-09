@@ -75,23 +75,23 @@ def do_update_data_before_trade_is_start():
 
 
 def do_update_data_after_trade_is_end():
-    # # 检查是否交易日
-    # if trade_utils.is_trade_date() is False:
-    #     return 'OK'
-    #
-    # # 更新当天的可转债数据
-    # cb_ninwen.fetch_data()
-    #
-    # ymd = get_ymd()
-    #
-    # # 将已全部卖掉(持有数量为0)的可转债归档
-    # archive_bond(ymd)
-    #
-    # # 更新当天的收益
-    # update_yield(ymd)
-    #
-    # # 更新可转债价格中位数
-    # update_cb_index()
+    # 检查是否交易日
+    if trade_utils.is_trade_date() is False:
+        return 'OK'
+
+    # 更新当天的可转债数据
+    cb_ninwen.fetch_data()
+
+    ymd = get_ymd()
+
+    # 将已全部卖掉(持有数量为0)的可转债归档
+    archive_bond(ymd)
+
+    # 更新当天的收益
+    update_yield(ymd)
+
+    # 更新可转债价格中位数
+    update_cb_index()
 
     # 归档当前的组合策略数据
     archive_top_bond()
@@ -199,16 +199,19 @@ limit 15
 def update_cb_index():
     mid_price, temp, avg_premium = calc_mid_data_with_avg_premium()
     # 检查当天记录已经存在, 存在则更新
-    cur = get_cursor("select count(*) from cb_index_history where strftime('%Y-%m-%d', date) = strftime('%Y-%m-%d', date())")
+    cur = get_cursor(
+        "select count(*) from cb_index_history where strftime('%Y-%m-%d', date) = strftime('%Y-%m-%d', date())")
     one = cur.fetchone()
     if one[0] == 0:
-        count = execute_sql_with_rowcount("""insert into cb_index_history(mid_price, avg_premium) values(:mid_price, :avg_premium)""",
-                   {'mid_price': mid_price, 'avg_premium': avg_premium})
+        count = execute_sql_with_rowcount(
+            """insert into cb_index_history(mid_price, avg_premium) values(:mid_price, :avg_premium)""",
+            {'mid_price': mid_price, 'avg_premium': avg_premium})
         if count == 1:
             print('insert today\'s mid_price is successful.')
     else:
-        count = execute_sql_with_rowcount("""update cb_index_history set mid_price=:mid_price, avg_premium=:avg_premium where strftime('%Y-%m-%d', date) = strftime('%Y-%m-%d', date())""",
-                                          {'mid_price': mid_price, 'avg_premium': avg_premium})
+        count = execute_sql_with_rowcount(
+            """update cb_index_history set mid_price=:mid_price, avg_premium=:avg_premium where strftime('%Y-%m-%d', date) = strftime('%Y-%m-%d', date())""",
+            {'mid_price': mid_price, 'avg_premium': avg_premium})
         if count == 1:
             print('update today\'s mid_price is successful.')
 
@@ -225,7 +228,6 @@ def update_yield(ymd):
         raise Exception('没找到前一个交易日的记录')
 
     # 计算组合中各个策略日收益率
-
 
     invest_yield = db.session.query(InvestYield).filter(InvestYield.date == s).first()
     if invest_yield is None:
@@ -264,7 +266,7 @@ def build_invest_yield(invest_yield, previous):
     invest_yield.strategy_double_low_day_yield = double_low
     invest_yield.strategy_high_yield_day_yield = high_yield
     invest_yield.strategy_low_premium_day_yield = low_premium
-    #累积收益率
+    # 累积收益率
     invest_yield.strategy_double_low_all_yield = round(previous.strategy_double_low_all_yield + double_low, 2)
     invest_yield.strategy_high_yield_all_yield = round(previous.strategy_high_yield_all_yield + high_yield, 2)
     invest_yield.strategy_low_premium_all_yield = round(previous.strategy_low_premium_all_yield + low_premium, 2)

@@ -9,6 +9,7 @@ analysis_nav_html_list = [
     '<li class=\'$active\'><a href="/view_up_down_range.html">涨跌幅分布</a></li>',
     '<li class=\'$active\'><a href="/view_price_range.html">价格范围分布</a></li>',
     '<li class=\'$active\'><a href="/view_all_cb.html">全市场可转债分布</a></li>',
+    '<li class=\'$active\'><a href="/view_cb_wordcloud.html">可转债概念分析</a></li>',
     '<li class=\'$active\'><a href="/view_up_down.html">涨跌排行</a></li>',
     '<li class=\'$active\'><a href="/view_discount.html">溢价率折价排行</a></li>',
     '<li class=\'$active\'><a href="/view_stock.html">正股涨幅排行</a></li>',
