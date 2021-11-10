@@ -17,11 +17,11 @@ def new_or_update_task(total_num, task_name):
         task.create_date = today
         db.session.add(task)
     else:
-        if task.status == 1:
+        if task.status == 1 and task.modify_date.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
             print("today's task is finish")
             return -1  # 任务处理完成, 直接退出
         elif task.modify_date.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):  # 今天的任务
-            # 最后的更新时间与当前时间相差较大(3分钟), 说明任务已经被中断, 重启一下
+            # 最后的更新时间与当前时间相差较大(3分钟), 说明任务已经被中断, 重启一下任务
             if (datetime.now() - task.modify_date).total_seconds() > 60*3:
                 print("today's task is restart")
                 task.modify_date = today

@@ -93,4 +93,11 @@ def draw_my_view(user_id, bond_code, url):
 
 
 def operation_html_content_maker(id, hold_id, bond_code):
-    return "&nbsp;<a href='javascript:void(0)' onclick='undo_trade(this, " + str(id) + ")'><img src='/static/img/undo.png' alt='撤销' title='撤销' width='14' height='14' class='next-site-link'/></a>"
+    return "&nbsp;<a href='javascript:void(0)' onclick='undo_trade(this, " + str(id) + ")'><img src='/static/img/undo.png' alt='撤销' title='撤销' width='14' height='14' class='next-site-link'/></a>" + get_trade_link(id)
+
+
+def get_trade_link(id):
+    s = "&nbsp;<a href='"
+    s += '/new_grid_trade_data.html/' + str(id) + '/'
+    s += "'><img src='/static/img/trade.png' alt='交易' title='交易' width='14' height='14' class='next-site-link'/></a>"
+    return s
