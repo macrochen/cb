@@ -40,6 +40,7 @@ def load_user(user_id):  # 创建用户加载回调函数，接受用户 ID 作�
 
 
 @cb.route('/')
+@cb.route('/index.html')
 def index():
     return render_template("index.html")
 
