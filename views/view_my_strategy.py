@@ -638,10 +638,10 @@ SELECT strategy_type as 策略,
     round(sum(h.hold_amount * c.cb_price2_id),2) as 市值, 
     
     round(sum(c.cb_price2_id*hold_amount + today_sum_sell - today_sum_buy), 2) as '日收益', 
-    round(sum(c.cb_price2_id*hold_amount + today_sum_sell - today_sum_buy)/sum(c.cb_price2_id*hold_amount + today_sum_sell)*100,2) || '%' as '日收益率',
+    round(sum(c.cb_price2_id*hold_amount + today_sum_sell - today_sum_buy)/sum(today_sum_buy)*100,2) || '%' as '日收益率',
     
     round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)), 2) as '累积收益',   
-    round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy-h.sum_sell) * 100, 2) || '%' as 累积收益率
+    round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy) * 100, 2) || '%' as 累积收益率
 from hold_bond h , changed_bond c 
 where h.bond_code = c.bond_code and hold_owner='me' GROUP by strategy_type order by 投入金额 DESC        
         """)

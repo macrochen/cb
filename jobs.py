@@ -16,7 +16,7 @@ from views.view_strategy_group import get_strategy_yield_rate
 def init_job(app):
     scheduler = BackgroundScheduler()
     # 每天上午交易开始前执行初始化
-    scheduler.add_job(update_data_job_before_trade_is_start, 'cron', hour='8', minute='0', args=[app])
+    scheduler.add_job(update_data_job_before_trade_is_start, 'cron', hour='5', minute='0', args=[app])
     # 每天上午交易结束之后执行可转债数据同步
     scheduler.add_job(sync_cb_data_job, 'cron', hour='11', minute='35', args=[app])
     # 每天下午交易结束之后执行可转债数据同步并更新收益率
