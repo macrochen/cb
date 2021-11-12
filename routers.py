@@ -9,7 +9,7 @@ from flask import render_template, request, url_for, redirect, flash, send_from_
 from flask_login import LoginManager
 from flask_login import login_user, login_required, logout_user
 from prettytable import from_db_cursor
-from sqlalchemy import or_
+from sqlalchemy import or_, and_, func
 
 import utils.table_html_utils
 import utils.trade_utils
@@ -25,7 +25,7 @@ from views import view_market, view_my_account, view_my_select, view_my_strategy
     view_tree_map_price, \
     view_tree_map_premium, view_my_price_list, view_my_trade_history, view_cb_trend, view_up_down_range, view_all_cb, \
     view_enforce_list, view_strategy_group, view_tree_map_remain, view_price_range, \
-    view_industry_double_low, view_cb_wordcloud
+    view_industry_double_low, view_cb_wordcloud, view_hot_wordcloud
 from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html
 
 cb = Blueprint('cb', __name__)
@@ -496,11 +496,18 @@ def sync_jsl_bond_data():
 @cb.route('/sync_trade_data.html/<id>/')
 @cb.route('/new_sync_trade_data.html/<bond_code>/')
 @cb.route('/new_sync_trade_data.html')
+@cb.route('/new_grid_trade_data.html/<id>/')
 @login_required
 def sync_trade_data(id='', bond_code=''):
     bond = None
     if id != '':
-        bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
+        if 'new_grid_trade_data.html' in str(request.url_rule):
+            bond = db.session.query(TradeHistory).filter(TradeHistory.id == id).first()
+            # 先关闭session, 在修改model, 否则会触发update
+            db.session.close()
+            bond.id = ''
+        else:
+            bond = db.session.query(HoldBond).filter(HoldBond.id == id).first()
     elif bond_code != '':
         bond = db.session.query(ChangedBond).filter(ChangedBond.bond_code == bond_code).first()
         # 先关闭session, 在修改model, 否则会触发update
@@ -641,6 +648,13 @@ def cb_wordcloud_view():
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
+@cb.route('/view_hot_wordcloud.html')
+def hot_wordcloud_view():
+    utils.trade_utils.calc_mid_data()
+    title, navbar, content = view_hot_wordcloud.draw_view(request.url_rule)
+    return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
+
+
 @cb.route('/view_cb_wordcloud_detail.html')
 def cb_wordcloud_detail_view():
     key = request.args.get("key")
@@ -776,16 +790,16 @@ def stock_10jqka_update_data(task_name):
     return 'OK'
 
 
-@cb.route('/update_stock_key_info_from_eastmoney.html', methods=['GET'])
+@cb.route('/update_stock_key_info_from_eastmoney.html/<task_name>/', methods=['GET'])
 @login_required
-def update_stock_key_info_from_eastmoney():
+def update_stock_key_info_from_eastmoney(task_name):
     stock_eastmoney.update_stock_sum()
     return 'OK'
 
 
-@cb.route('/update_stock_theme_from_eastmoney.html', methods=['GET'])
+@cb.route('/update_stock_theme_from_eastmoney.html/<task_name>/', methods=['GET'])
 @login_required
-def update_stock_theme_from_eastmoney():
+def update_stock_theme_from_eastmoney(task_name):
     stock_eastmoney.update_stock_theme()
     return 'OK'
 
@@ -798,7 +812,12 @@ def stock_xueqiu_update_data(task_name):
 @cb.route('/get_task_data.html/<task_name>/', methods=['GET'])
 @login_required
 def get_task_data(task_name):
-    task = db.session.query(Task).filter(Task.name == task_name).first()
+    today = datetime.now()
+    task = db.session.query(Task).filter(
+        and_(
+            Task.name == task_name,
+            func.strftime("%Y-%m-%d", Task.modify_date) == today.strftime("%Y-%m-%d"),
+        )).first()
     if task is None:
         task = Task()
     return dict(task)
