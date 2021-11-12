@@ -321,8 +321,7 @@ def get_up_down_data():
 def calc_yield():
     cur = get_cursor("""
 SELECT    
-	--round(sum(c.cb_price2_id*hold_amount + today_sum_sell - today_sum_buy)/sum(c.cb_price2_id*hold_amount + today_sum_sell)*100,2) || '%' as '日收益率',
-	round(sum(round(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy, 3)) /sum(h.sum_buy - h.sum_sell) * 100, 2)  as 累积收益率
+	round(sum(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy)/sum(h.sum_buy) * 100, 2)  as 累积收益率
 from (select hold_amount, sum_buy, hold_owner, bond_code, sum_sell, today_sum_sell, today_sum_buy from hold_bond union select hold_amount, sum_buy, hold_owner, bond_code, sum_sell, 0 as today_sum_sell, 0 as today_sum_buy from hold_bond_history) h , changed_bond c 
 where h.bond_code = c.bond_code and hold_owner='me'
         """)
