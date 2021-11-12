@@ -106,11 +106,11 @@ def generate_line_html(rows, select=None):
                 "function (params) {"
                 "return '<table style=\"width:150px;\">'+"
                 "'<tr ><td style=\"height:20px;background-color:white;border:0px\" colspan=2>'+ params[0].data[0] +'</td></tr>' +"
-                "'<tr ><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[0].color+'\">双低策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[0].value[1] + '%</td></tr>' +"
-                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[1].color+'\">高收益率策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[1].value[1] + '%</td></tr>' +"
-                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[2].color+'\">低溢价率策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[2].value[1] + '%</td></tr>' +"
-                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[3].color+'\">可转债指数</td><td style=\"height:15px;background-color:white;border:0px\">' + params[3].value[1] + '%</td></tr>' +"
-                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: right;color:'+params[4].color+'\">沪深300</td><td style=\"height:15px;background-color:white;border:0px\">' + params[4].value[1] + '%</td></tr>' +"
+                "'<tr ><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[0].color+'\">双低策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[0].value[1] + '%</td></tr>' +"
+                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[1].color+'\">高收益率策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[1].value[1] + '%</td></tr>' +"
+                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[2].color+'\">低溢价率策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[2].value[1] + '%</td></tr>' +"
+                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[3].color+'\">可转债指数</td><td style=\"height:15px;background-color:white;border:0px\">' + params[3].value[1] + '%</td></tr>' +"
+                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[4].color+'\">沪深300</td><td style=\"height:15px;background-color:white;border:0px\">' + params[4].value[1] + '%</td></tr>' +"
                 "'</table>';}"
             )
         ),
