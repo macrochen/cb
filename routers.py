@@ -418,6 +418,7 @@ def save_trade_data():
         raise Exception('必须指定策略类型')
 
     hold_bond.strategy_type = strategy_type
+    hold_bond.pinyin = request.form['pinyin']
 
     ymd = trade_utils.get_ymd()
     if is_new:
