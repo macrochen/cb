@@ -339,13 +339,11 @@ def save_hold_bond():
     if memo is not None and memo.strip(' ') != '':
         hold_bond.memo = memo
 
-    ymd = trade_utils.get_ymd()
+    hold_bond.modify_date = datetime.now()
     if is_new:
         # 增加开始时间
         hold_bond.start_date = datetime.now()
         db.session.add(hold_bond)
-    else:
-        hold_bond.modify_date = datetime.now()
 
     db.session.commit()
 
@@ -420,15 +418,13 @@ def save_trade_data():
     hold_bond.strategy_type = strategy_type
     hold_bond.pinyin = request.form['pinyin']
 
-    ymd = trade_utils.get_ymd()
+    hold_bond.modify_date = datetime.now()
     if is_new:
         # 增加开始时间
         hold_bond.start_date = datetime.now()
         db.session.add(hold_bond)
         # 获取id, 强刷
         db.session.flush()
-    else:
-        hold_bond.modify_date = datetime.now()
 
     # 保存成交记录
     trade_history = TradeHistory()

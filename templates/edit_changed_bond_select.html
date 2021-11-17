@@ -119,15 +119,16 @@
             <input type="hidden" name="id" id="id" value="{{ bond and bond['id'] or ''}}">
             <input type="hidden" name="pinyin" id="pinyin" value="{{ bond and bond['pinyin'] or ''}}">
             <input type="hidden" name="back_url" value="{{ request.referrer}}">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="bond_code" style="display: block">转债代码</label>
-                    <input type="text" class="form-control" id="bond_code" name="bond_code" placeholder="" value="{{ bond and bond['bond_code'] or '' }}">&nbsp;&nbsp;&nbsp;
-                    <div class="invalid-feedback">
-                        必须指定转债代码
-                    </div>
-                </div>
-            </div>
+            <input type="hidden" name="bond_code" id="bond_code" value="{{ bond and bond['bond_code'] or '' }}">
+<!--            <div class="row">-->
+<!--                <div class="col-md-6 mb-3">-->
+<!--                    <label for="bond_code" style="display: block">转债代码</label>-->
+<!--                    <input type="text" class="form-control" id="bond_code" name="bond_code" placeholder="" value="{{ bond and bond['bond_code'] or '' }}">&nbsp;&nbsp;&nbsp;-->
+<!--                    <div class="invalid-feedback">-->
+<!--                        必须指定转债代码-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="bond_name">转债名称</label>
@@ -230,10 +231,10 @@
                 }, false);
               });
 
-                $("#bond_code").bind("input propertychange",function (event) {
-                    $("#bond_name").val('')
-                    doChange(event)
-                });
+                // $("#bond_code").bind("input propertychange",function (event) {
+                //     $("#bond_name").val('')
+                //     doChange(event)
+                // });
 
                 function doChange(event){
               $.get("/find_changed_bond_select_by_code.html?bond_code=" + $("#bond_code").val() + "&bond_name=" + $("#bond_name").val(), function (data, status) {
