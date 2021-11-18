@@ -25,6 +25,8 @@ def draw_my_view(url):
         cur = get_cursor("""
             SELECT
             date_string as 时间, 
+            my_today_profit  as 我的实盘日收益,
+            my_real_profit  as 我的实盘累积收益,
             my_real_yield || '%' as 我的实盘收益率,
             my_day_yield || '%' as 我的日收益率,
             cb_day_yield || '%' as 可转债指数日收益率,

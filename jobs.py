@@ -244,13 +244,15 @@ def update_yield(ymd):
 
 
 def build_invest_yield(invest_yield, previous):
-    my_real_yield = calc_yield()
+    my_real_profit, my_real_yield = calc_yield()
     # 获取可转债等权, 沪深300涨跌幅信息 from: https://www.ninwin.cn/index.php?m=cb&c=idx
     cb_day_yield, hs_day_yield = get_up_down_data()
 
     my_day_yield = round(my_real_yield - previous.my_real_yield, 2)
 
     invest_yield.my_real_yield = my_real_yield
+    invest_yield.my_real_profit = my_real_profit
+    invest_yield.my_today_profit = round(my_real_profit - (0 if previous.my_real_profit is None else previous.my_real_profit), 2)
 
     # 日收益率
     invest_yield.my_day_yield = my_day_yield
@@ -320,17 +322,14 @@ def get_up_down_data():
 
 def calc_yield():
     cur = get_cursor("""
-SELECT    
+SELECT round(sum(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy), 2) as 累积收益,   
 	round(sum(c.cb_price2_id*h.hold_amount+h.sum_sell -h.sum_buy)/sum(h.sum_buy) * 100, 2)  as 累积收益率
-from (select hold_amount, sum_buy, hold_owner, bond_code, sum_sell, today_sum_sell, today_sum_buy from hold_bond union select hold_amount, sum_buy, hold_owner, bond_code, sum_sell, 0 as today_sum_sell, 0 as today_sum_buy from hold_bond_history) h , changed_bond c 
+from (select hold_amount, sum_buy, hold_owner, bond_code, sum_sell from hold_bond union select hold_amount, sum_buy, hold_owner, bond_code, sum_sell from hold_bond_history) h , changed_bond c 
 where h.bond_code = c.bond_code and hold_owner='me'
         """)
 
     row = cur.fetchone()
-    # day_yield = row[0]
-    # all_yield = row[1]
-    all_yield = row[0]
-    return all_yield
+    return row[0], row[1]
 
 
 if __name__ == "__main__":

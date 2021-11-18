@@ -77,6 +77,8 @@ class InvestYield(db.Model):
     date = db.Column(db.Integer)
     date_string = db.Column(db.String(20))
     my_real_yield = db.Column(db.Float)
+    my_real_profit = db.Column(db.Float)
+    my_today_profit = db.Column(db.Float)
 
     my_day_yield = db.Column(db.Float)
     cb_day_yield = db.Column(db.Float)

@@ -222,7 +222,7 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
         else:
             point_items.append(opts.MarkPointItem(
                 coord=[x1, y1],
-                itemstyle_opts=opts.ItemStyleOpts(color='#fff', border_color='#000'),
+                itemstyle_opts=opts.ItemStyleOpts(border_color='#000'),
                 value=[get_label(record), x1, y1, bond_code, None, hover_content]
             ))
 
