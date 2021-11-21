@@ -7,7 +7,7 @@ from utils.db_utils import get_record
 from utils.html_utils import env
 
 
-def generate_chart_html(cur, title, click_link):
+def generate_chart_html(table, title, click_link):
     chart = Tree(init_opts=opts.InitOpts(theme='white',
                                       width='1024px',
                                       height='1000px',
@@ -25,7 +25,8 @@ def generate_chart_html(cur, title, click_link):
             })
         })
     """)
-    data = get_data(cur)
+
+    data = get_data(table)
     chart.add(
         series_name='',
         data=data,
@@ -53,8 +54,7 @@ def generate_chart_html(cur, title, click_link):
     return chart.render_embed('template.html', env)
 
 
-def get_data(cur):
-    table = from_db_cursor(cur)
+def get_data(table):
     options = table._get_options({})
     rows = table._get_rows(options)
     # 构造父子关系图
@@ -72,7 +72,7 @@ def get_data(cur):
             i += 1
             record = get_record(table, row)
             sub_industry = record['sub_industry']
-            value = record['value']
+            value = record['avg_premium']
             sum += record['sum']
             count += record['count']
             children.append({'name': sub_industry, 'value': value, 'count': record['count'], 'is_child': True, 'suffix': '只可转债'})

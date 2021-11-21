@@ -1,7 +1,7 @@
 analysis_nav_html_list = [
     '<li><a href="/">Home</a></li>',
     '<li class=\'$active\'><a href="/view_tree_map_industry.html">行业涨跌分布</a></li>',
-    '<li class=\'$active\'><a href="/view_industry_premium.html">行业溢价率分布</a></li>',
+    '<li class=\'$active\'><a href="/view_industry_premium.html">行业价格&溢价率分布</a></li>',
     '<li class=\'$active\'><a href="/view_industry_double_low.html">行业双低值分布</a></li>',
     '<li class=\'$active\'><a href="/view_tree_map_price.html">价格涨跌分布</a></li>',
     '<li class=\'$active\'><a href="/view_tree_map_remain.html">余额分布</a></li>',

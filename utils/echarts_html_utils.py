@@ -187,6 +187,7 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
                                          label_y='转股溢价率(%)',
                                          use_personal_features=False,
                                          hover_maker=None,
+                                         click_maker=None,
                                          hover_content_field=None,
                                          ):
     x = []
@@ -229,7 +230,8 @@ def generate_scatter_html_with_one_table(table, title=None, sub_title='',
     if draw_figure is False:
         return ''
 
-    return create_scatter(title, sub_title, field_name, label_y, point_items, x, y, hover_maker=hover_maker)
+    return create_scatter(title, sub_title, field_name, label_y, point_items, x, y,
+                          hover_maker=hover_maker, click_maker=click_maker)
 
 
 def get_hover_js_code(field_name='溢价率'):
@@ -244,19 +246,17 @@ def get_hover_js_code(field_name='溢价率'):
     return JsCode(hover_text)
 
 
-def create_scatter(title, sub_title, field_name, label_y, point_items, x, y, hover_maker=None):
+def create_scatter(title, sub_title, field_name, label_y, point_items, x, y, hover_maker=None, click_maker=None):
     chart_id = str(abs(hash(title)))
     scatter = Scatter(opts.InitOpts(
         height='700px',
         width='1424px',
         chart_id=chart_id
     ))
-    scatter.add_js_funcs(
-        'chart_' + chart_id + """.on('click', function(params){
-            // alert(params)
-            popWin.showWin("1200","600", params['data']['value'][3]);
-        })
-    """)
+    if click_maker is None:
+        click_maker = get_click_js_code
+
+    scatter.add_js_funcs(click_maker(chart_id))
     scatter.add_xaxis(xaxis_data=x)
     show_label = True
     if len(point_items) > 100:
@@ -339,6 +339,14 @@ def create_scatter(title, sub_title, field_name, label_y, point_items, x, y, hov
     )
     scatter_html = scatter.render_embed('template.html', env)
     return "<br/>" + scatter_html
+
+
+def get_click_js_code(chart_id):
+    return 'chart_' + chart_id + """.on('click', function(params){
+            // alert(params)
+            popWin.showWin("1200","600", params['data']['value'][3]);
+        })
+    """
 
 
 def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况", subtitle=None, select=None,
