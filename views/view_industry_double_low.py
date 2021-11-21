@@ -31,7 +31,8 @@ from changed_bond group by sub_industry
 order by industry, value,sub_industry
         """)
 
-        html += generate_chart_html(cur, '可转债行业双低值分布', '/view_industry_double_low_detail.html')
+        table = from_db_cursor(cur)
+        html += generate_chart_html(table, '可转债行业双低值分布', '/view_industry_double_low_detail.html')
 
         return '可转债行业双低值分布', \
                views.nav_utils.build_analysis_nav_html(url), \

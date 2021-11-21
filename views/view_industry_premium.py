@@ -3,9 +3,10 @@
 # https://gallery.pyecharts.org/#/README
 
 # https://blog.csdn.net/idomyway/article/details/82390040
+from prettytable import from_db_cursor
 
 import views.nav_utils
-from utils.db_utils import get_cursor
+from utils.db_utils import get_cursor, from_db
 from utils.echarts_html_utils import generate_scatter_html_with_one_table
 from utils.table_html_utils import generate_table_html_with_data
 
@@ -19,18 +20,22 @@ def draw_view(url):
 
         cur = get_cursor("""
 SELECT industry, sub_industry
-,round(sum(cb_premium_id)/count(sub_industry)*100,2) as value
+--, industry|| '[' || sub_industry || ']' as 名称
+, sub_industry as 名称
+,round(sum(cb_premium_id)/count(sub_industry)*100,2) as avg_premium
+,round(sum(cb_premium_id)/count(sub_industry)*100,2) || '%' as 溢价率
+,round(sum(cb_price2_id)/count(sub_industry),2) as 转债价格
+,'0' as bond_code
 , sum(cb_premium_id*100) as sum
 , count(*) as count
 from changed_bond group by sub_industry 
-order by industry, value,sub_industry
+order by industry, avg_premium,sub_industry
         """)
 
-        html += generate_chart_html(cur,
-                                       '可转债行业溢价率分布',
-                                       '/view_industry_premium_detail.html')
+        table = from_db_cursor(cur)
+        html += '<br/><br/>' + generate_scatter_html_with_one_table(table, title='可转债行业分布', click_maker=click_maker)
 
-        return '可转债行业溢价率分布', \
+        return '可转债行业价格&溢价率分布', \
                views.nav_utils.build_analysis_nav_html(url), \
                html
 
@@ -38,6 +43,17 @@ order by industry, value,sub_industry
         print("processing is failure. ", e)
         raise e
 
+def click_maker(chart_id):
+    return 'chart_' + chart_id + """.on('click', function(x){
+                if ($('#cb_detail_list').length==0){
+                    $(document.body).append('<div id=\\'cb_detail_list\\'></div>')
+                }
+                $.get('/view_industry_premium_detail.html?key=' + encodeURIComponent(x['data']['value'][0]), function(result){
+                    $('#cb_detail_list').html(result)
+                    $('body,html').animate({scrollTop: $('#cb_detail_list').offset().top}, 500);
+                })
+            })
+        """
 
 def generate_detail(key, is_login_user):
     cur = get_cursor("""
@@ -124,10 +140,10 @@ def generate_detail(key, is_login_user):
                                                       remark_fields=['盈亏', '到期收益率', '溢价率', '可转债涨跌', '正股涨跌'],
                                                       ignore_fields=['持有数量'],
                                                       is_login_user=is_login_user)
-    html = generate_scatter_html_with_one_table(table,
-                                                 title=key + '行业可转债',
-                                                 use_personal_features=is_login_user)
-    html += table_html
-    return html
+    # html = generate_scatter_html_with_one_table(table,
+    #                                              title=key + '行业可转债',
+    #                                              use_personal_features=is_login_user)
+    # html = table_html
+    return table_html
 
 
