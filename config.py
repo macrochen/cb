@@ -13,7 +13,7 @@ class Config:
     SESSION_TYPE = 'filesystem'
     SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, db_file_path)
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-
+    MAX_CONTENT_LENGTH = 500 * 1024 * 1024
     @staticmethod
     def init_app(app):
         pass

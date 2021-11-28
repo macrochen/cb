@@ -1068,7 +1068,9 @@ def save_db_data():
 @login_required
 def save_cb_daily_data():
     # 删除整个db
-    os.unlink(db_daily_file_path)
+    if os.path.exists(db_daily_file_path):
+        os.unlink(db_daily_file_path)
+
     # 获取文件(字符串?)
     file = request.files['file']
     s = file.read().decode('utf-8')
