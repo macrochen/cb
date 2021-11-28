@@ -36,7 +36,7 @@ select bond_code, cb_name_id as 名称, round(cb_mov2_id * 100, 2) as 涨跌, cb
 order by 涨跌 desc
                     """)
         rows = cur.fetchall()
-        html += '<br/><br/><br/><br/><br/>' + generate_rise_bar_html(rows, '我持有的可转债涨跌TOP20')
+        html += generate_rise_bar_html(rows, '我持有的可转债涨跌TOP20')
 
         # =========我的转债涨跌TOP20表格=========
 

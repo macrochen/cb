@@ -28,15 +28,11 @@ order by date  desc   --limit 2
             dict_row = db_utils.get_dict_row(cur, row)
             dict_rows.append(dict_row)
 
-        line_html = utils.echarts_html_utils.generate_line_html2(dict_rows)
 
         html = """
-            <br/>
-            <br/>
-            <br/>
-            <br/>
                 <center>
-                    """ + line_html + """
+                    """ + utils.echarts_html_utils.generate_line_html2(dict_rows) + """<br/>
+                    """ + utils.echarts_html_utils.generate_line_html3(dict_rows) + """
                 </center>
         """
 

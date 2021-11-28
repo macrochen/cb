@@ -1,16 +1,27 @@
-select *
-from (select *
-      from (SELECT cb_name_id,
-                   cb_price2_id                               as 价格,
-                   cb_price2_id + cb_premium_id * 100 * 1.6   as 双低值,
-                   (cb_premium_id * 100) || '%'               as 溢价率,
-                   remain_amount                              as 余额,
-                   round(cb_trade_amount2_id * 100, 2) || '%' as '换手率(%)'
-            from changed_bond
-            where cb_price2_id >= 110
-              and cb_price2_id <= 130
-            order by cb_trade_amount2_id desc
-            limit 100)
-      order by 双低值
-      limit 50)
-order by 余额
+select a.bond_id,
+       a.last_chg_dt,
+       a.price,
+       a.premium_rt,
+       a.is_enforce,
+       b.price                                       as pre_7_price,
+       round((a.price - b.price) / b.price * 100, 0) as rise_rate
+from cb_history a
+         left join (select *
+                    from cb_history
+                    where last_chg_dt =
+                          (select max(distinct (last_chg_dt)) from cb_history where last_chg_dt <= '2012-12-23')) b
+                   on a.bond_id = b.bond_id
+where a.bond_id in
+      (110007, 110012, 110015, 110016, 110018, 110019, 110020, 110022, 113001, 113002, 113003, 125089, 125731, 126729,
+       129031)
+  and a.last_chg_dt = '2012-12-24';
+
+
+select a.bond_id,
+       a.last_chg_dt,
+       a.price,
+       a.premium_rt,
+       a.is_enforce
+from cb_history a
+
+where a.last_chg_dt = '2012-12-24'

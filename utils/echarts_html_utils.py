@@ -83,7 +83,7 @@ def generate_line_html2(rows, select=None):
     line.add_yaxis("溢价率平均值", y2, yaxis_index=1)
 
     line.set_global_opts(
-        title_opts=opts.TitleOpts(title="可转债整体估值情况", pos_left='center', pos_top=-5),
+        title_opts=opts.TitleOpts(title="用价格中位数估值", pos_left='center', pos_top=-5),
         tooltip_opts=opts.TooltipOpts(
             trigger='axis',
         ),
@@ -120,6 +120,150 @@ def generate_line_html2(rows, select=None):
             name_location='middle',
             is_scale=True,
             axislabel_opts=opts.LabelOpts(formatter='{value}元'),
+            splitline_opts=opts.SplitLineOpts(is_show=False),
+            axisline_opts=opts.AxisLineOpts(
+                is_on_zero=False,
+                symbol=['none', 'arrow']
+            )
+        ),
+        visualmap_opts=opts.VisualMapOpts(is_show=True,
+                                          type_='color',
+                                          pos_top='50',
+                                          pos_left='5',
+                                          min_=min_y,
+                                          max_=max_y,
+                                          is_piecewise=True,
+                                          split_number=5,
+                                          series_index=0,
+                                          pieces=[
+                                              {'min': min_y, 'max': star_up1, 'color': '#93CE07', 'label': '★★★★★'},
+                                              {'min': star_up1, 'max': star_up2, 'color': '#FBDB0F', 'label': '★★★★'},
+                                              {'min': star_up2, 'max': star_up3, 'color': '#FC7D02', 'label': '★★★'},
+                                              {'min': star_up3, 'max': star_up4, 'color': '#FD0100', 'label': '★★'},
+                                              {'min': star_up4, 'max': max_y, 'color': '#AC3B2A', 'label': '★'},
+                                          ]
+                                          ),
+    )
+    line.set_colors(['lightcoral', 'lightskyblue'])
+    line.set_series_opts(
+        symbol='none',
+        smooth=False,
+        linestyle_opts=opts.LineStyleOpts(
+            width=2,
+        ),
+        label_opts=opts.LabelOpts(is_show=False),
+        markline_opts=opts.MarkLineOpts(
+            is_silent=True,
+            symbol='none',
+            label_opts=opts.LabelOpts(
+                position='end',
+                is_show=False,
+                formatter=JsCode("function (params){return params.name}")
+            ),
+
+            linestyle_opts=opts.LineStyleOpts(
+                color='#333',
+                type_='dashed',
+            ),
+            data=[
+                opts.MarkLineItem(y=min_y, name='0%'),
+                opts.MarkLineItem(y=star_up1, name='20%'),
+                opts.MarkLineItem(y=star_up2, name='40%'),
+                opts.MarkLineItem(y=star_up3, name='60%'),
+                opts.MarkLineItem(y=star_up4, name='80%'),
+                opts.MarkLineItem(y=max_y, name='100%'),
+            ]
+        ),
+
+    )
+    line_html = line.render_embed('template.html', env)
+    return line_html
+
+
+def generate_line_html3(rows, select=None):
+    line = Line(opts.InitOpts(height='500px', width='1424px', theme=ThemeType.LIGHT))
+
+    x = []
+    y1 = []
+    y2 = []
+
+    min_y = 10000
+    max_y = 0
+    for row in rows:
+        x.append(row['date'])
+        mid_price = row['mid_price']
+        avg_premium = row['avg_premium']
+        double_low = round(mid_price + avg_premium, 2)
+        if double_low > max_y:
+            max_y = double_low
+        elif double_low < min_y:
+            min_y = double_low
+
+        y1.append(double_low)
+        y2.append(avg_premium)
+    delta = max_y - min_y
+    interval = round(delta / 5, 2)
+    star_up1 = round(min_y + interval * 1, 2)
+    star_up2 = round(min_y + interval * 2, 2)
+    star_up3 = round(min_y + interval * 3, 2)
+    star_up4 = round(min_y + interval * 4, 2)
+
+    line.add_xaxis(x)
+    line.extend_axis(yaxis=opts.AxisOpts(
+        type_='value',
+        name='溢价率平均值(%)',
+        name_rotate=90,
+        name_gap=55,
+        name_location='middle',
+        is_scale=True,
+        axislabel_opts=opts.LabelOpts(formatter='{value}%'),
+        splitline_opts=opts.SplitLineOpts(is_show=False),
+        axisline_opts=opts.AxisLineOpts(
+            is_on_zero=False,
+            symbol=['none', 'arrow']
+        )))
+
+    line.add_yaxis("双低值", y1, yaxis_index=0)
+    line.add_yaxis("溢价率平均值", y2, yaxis_index=1)
+
+    line.set_global_opts(
+        title_opts=opts.TitleOpts(title="用双低值估值", pos_left='center', pos_top=-5),
+        tooltip_opts=opts.TooltipOpts(
+            trigger='axis',
+        ),
+        legend_opts=opts.LegendOpts(
+            is_show=True,
+            pos_top=20,
+            # pos_bottom=-50,
+            selected_mode='multiple'
+        ),
+        datazoom_opts={'start': 0, 'end': 100},
+        toolbox_opts=opts.ToolboxOpts(feature={
+            'dataZoom': {},
+        }
+        ),
+        xaxis_opts=opts.AxisOpts(
+            # data=None,
+            type_='time',
+            name='时间',
+            name_gap=30,
+            is_scale=True,
+            name_location='middle',
+            splitline_opts=opts.SplitLineOpts(is_show=False),
+            # axislabel_opts=opts.LabelOpts(formatter="{value}"), #echarts.format.formatTime('yy-MM-dd', value*1000)
+            axisline_opts=opts.AxisLineOpts(
+                is_on_zero=False,
+                symbol=['none', 'arrow']
+            )
+        ),
+        yaxis_opts=opts.AxisOpts(
+            type_='value',
+            name='双低值',
+            name_rotate=90,
+            name_gap=55,
+            name_location='middle',
+            is_scale=True,
+            axislabel_opts=opts.LabelOpts(formatter='{value}'),
             splitline_opts=opts.SplitLineOpts(is_show=False),
             axisline_opts=opts.AxisLineOpts(
                 is_on_zero=False,

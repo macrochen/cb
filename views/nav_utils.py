@@ -16,6 +16,20 @@ analysis_nav_html_list = [
     '<li class=\'$active\'><a href="/view_stock.html">正股涨幅排行</a></li>',
     '<li class=\'$active\'><a href="/view_turnover.html">换手率排行</a></li>',
 ]
+back_test_nav_html_list = [
+    '<li><a href="/">Home</a></li>',
+    # '<li class=\'$active\'><a href="/view_custom_back_test.html">定制化回测</a></li>',
+    '<li class=\'$active\'><a href="/view_good_year_back_test.html">行情好时的回测</a></li>',
+    '<li class=\'$active\'><a href="/view_bad_year_back_test.html">行情差时的回测</a></li>',
+    '<li class=\'$active\'><a href="/view_long_year_back_test.html">长周期下的回测</a></li>',
+    '<li class=\'$active\'><a href="/view_back_test_1.html">低溢价策略的回测</a></li>',
+    '<li class=\'$active\'><a href="/view_back_test_2.html">低余额+低溢价+双低策略的回测</a></li>',
+    '<li class=\'$active\'><a href="/view_back_test_3.html">低余额+双低策略的回测</a></li>',
+    '<li class=\'$active\'><a href="/view_back_test_4.html">低溢价+双低策略的回测</a></li>',
+    '<li class=\'$active\'><a href="/view_back_test_5.html">双低策略的回测</a></li>',
+    '<li class=\'$active\'><a href="/view_back_test_6.html">高溢价策略的回测</a></li>',
+    '<li class=\'$active\'><a href="/view_back_test_7.html">低价格策略的回测</a></li>',
+]
 personal_nav_html_list = [
     '<li><a href="/">Home</a></li>',
     '<li class=\'$active\'><a href="/view_my_account.html">按账户统计</a></li>',
@@ -59,6 +73,16 @@ def build_personal_nav_html(url, nav_list=personal_nav_html_list):
 def build_analysis_nav_html(url):
     new_list = []
     for li in analysis_nav_html_list:
+        if str(url) in li:
+            new_list.append(li.replace('$active', 'active'))
+        else:
+            new_list.append(li.replace('$active', ''))
+    return ''.join(new_list)
+
+
+def build_back_test_nav_html(url):
+    new_list = []
+    for li in back_test_nav_html_list:
         if str(url) in li:
             new_list.append(li.replace('$active', 'active'))
         else:

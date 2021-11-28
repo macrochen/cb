@@ -133,7 +133,7 @@ def draw_view(url):
             ),
             tooltip_opts=opts.TooltipOpts(is_show=True),
         )
-        html = """<br/><br/><br/><br/><br/><br/><br/>
+        html = """
         <center>
             <input type='text' id='theme_key_word'>&nbsp;<input type='button' value='查 询' id='btn_query' onclick="find_by_key_word()">
             <script>

@@ -54,12 +54,7 @@ def draw_view():
 
         line_html = generate_line_html(dict_rows)
 
-        html = """
-            <br/>
-            <br/>
-            <br/>
-            <br/>
-                <center>
+        html = """<center>
                     """ + line_html + "<br/><br/><br/>" + table_html + """
                 </center>
         """

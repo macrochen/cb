@@ -73,7 +73,7 @@ def draw_view(url):
                 ) e 
               on d.bond_code = e.bond_code
                   """
-        html = '<br><br/><br/><br><br>' + generate_strategy_html(sql, "可转债象限分布", "所有可转债", html,
+        html = generate_strategy_html(sql, "可转债象限分布", "所有可转债", html,
                                                        remark_fields=['到期收益率', '溢价率', '转债价格', '可转债涨跌'],
                                                        use_personal_features=False)
 

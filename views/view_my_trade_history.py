@@ -17,7 +17,7 @@ def draw_my_view(user_id, bond_code, url):
     is_login_user = user_id is not None
     try:
 
-        html = '<br/><br/><br/><br/><br/>'
+        html = ''
 
         cur = None
         if bond_code != '':

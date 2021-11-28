@@ -16,7 +16,7 @@ from views.chart_tree_industry_utils import generate_chart_html
 def draw_view(url):
     try:
 
-        html = '<br/><br/><br/><br/>'
+        html = ''
 
         cur = get_cursor("""
 SELECT industry, sub_industry

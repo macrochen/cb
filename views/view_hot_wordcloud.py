@@ -52,7 +52,7 @@ def draw_view(url):
             ),
             tooltip_opts=opts.TooltipOpts(is_show=True),
         )
-        html = """<br/><br/><br/><br/><br/><br/><br/>""" + chart.render_embed('template.html', env)
+        html = chart.render_embed('template.html', env)
 
         return '可转债热度分析', views.nav_utils.build_analysis_nav_html(url), html
     except Exception as e:

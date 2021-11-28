@@ -235,7 +235,7 @@ def generate_head_column_html(field, is_login_user, record, head_column_link_mak
 
         # https://xueqiu.com/S/SH600998
         suffix = "<br/>"
-        suffix += "<a target='_blank' href='http://quote.eastmoney.com/" + market + stock_code + ".html'><img src='/static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
+        suffix += "<a target='_blank' href='https://quote.eastmoney.com/" + market + stock_code + ".html'><img src='/static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
         suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='/static/img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
 
         # http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157

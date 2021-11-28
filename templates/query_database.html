@@ -1,221 +1,171 @@
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <link rel="icon" href="/static/img/favicon.ico">
-        <script src="https://code.z01.com/v4/dist/js/popper.min.js"></script>
-        <link rel="stylesheet" href="https://code.z01.com/v4/dist/css/bootstrap.min.css" >
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/static/img/favicon.ico">
 
-        <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
-        <!--<link rel="stylesheet" type="text/css" href="https://www.jq22.com/jquery/font-awesome.4.6.0.css">-->
-        <link rel="stylesheet" type="text/css" href="/static/css/bootsnav.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootsnav.css">
 
 
-        <script src="/static/js/jquery.min.js"></script>
-        <script src="/static/js/bootstrap.min.js"></script>
-        <script src="/static/js/jquery.bootstrap-autohidingnavbar.min.js"></script>
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
 
-        <script type="text/javascript" src="/static/js/bootsnav.js"></script>
-        <title>查询可转债数据库</title>
-        <style>
-            html,body {height: 100%;}
-
-            .navbar-brand{
-                padding: 29px 15px;
-                height: auto;
-            }
-            div.navbar.bootsnav{
-                background-color: #f8f8f8;
-                border-color: #e7e7e7;
-                margin-bottom: 10px;
-            }
-            .navbar-nav{
-                float: left;
-            }
-            div.navbar.bootsnav ul.nav > li > a{
-                color: #474747;
-                text-transform: uppercase;
-                padding: 20px;
-            }
-            div.navbar.bootsnav ul.nav > li:hover{
-                background: #f4f4f4;
-            }
-            .nav > li:after{
-                content: "";
-                width: 0;
-                height: 5px;
-                background: #34c9dd;
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                transition: all 0.5s ease 0s;
-            }
-            .nav > li:hover:after{
-                width: 100%;
-            }
-            div.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after{
-                content: "+";
-                font-family: 'FontAwesome';
-                font-size: 16px;
-                font-weight: 500;
-                position: absolute;
-                top: 35%;
-                right: 10%;
-                transition: all 0.4s ease 0s;
-            }
-            div.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{
-                content: "\f105";
-                transform: rotate(90deg);
-            }
-            .dropdown-menu.multi-dropdown{
-                position: absolute;
-                left: -100% !important;
-            }
-            div.navbar.bootsnav li.dropdown ul.dropdown-menu{
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-                border: none;
-            }
-            @media only screen and (max-width:990px){
-                div.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after,
-                div.navbar.bootsnav ul.nav > li.dropdown.on > a.dropdown-toggle:after{ content: " "; }
-                .dropdown-menu.multi-dropdown{ left: 0 !important; }
-                div.navbar.bootsnav ul.nav > li:hover{ background: transparent; }
-                div.navbar.bootsnav ul.nav > li > a{ margin: 0; }
-            }
-
-            .container {max-width: 700px;}
-            .border-top { border-top: 1px solid #e5e5e5; }
-            .border-bottom { border-bottom: 1px solid #e5e5e5; }
-            .border-top-gray { border-top-color: #adb5bd; }
-            .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
-            .lh-condensed { line-height: 1.25; }
+    <script type="text/javascript" src="/static/js/bootsnav.js"></script>
+    <title>查询可转债数据库</title>
+    <style>
+        html, body {
+            height: 100%;
+        }
 
 
+        .container {
+            max-width: 700px;
+        }
 
-            .outer_table {
-              position: relative;
-                /*border: 1px solid;*/
-            }
-            .inner_table {
-              overflow-x: scroll;
-              overflow-y: scroll;
-              width: 1400px;
-              /*margin-left: 100px;*/
-              /*  border: 1px solid;*/
-            }
+        .border-top {
+            border-top: 1px solid #e5e5e5;
+        }
 
-            td, th {
-              border-right :1px solid gray;
-              border-bottom :1px solid gray;
-              text-align:center;
-              width:100px;
-              height:50px;
-              box-sizing: border-box;
-              font-size:7px;
-            }
+        .border-bottom {
+            border-bottom: 1px solid #e5e5e5;
+        }
 
-            th {
-              background-color:lightblue;
-            }
+        .border-top-gray {
+            border-top-color: #adb5bd;
+        }
 
-            table {
-              border-collapse:separate;
-              table-layout: fixed;
-              width: 100%; /* 固定寬度 */
-            }
+        .box-shadow {
+            box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+        }
 
-            td:first-child, th:first-child {
-              position:sticky;
-              left:0; /* 首行在左 */
-              z-index:1;
-              background-color:lightgray;
-            }
+        .lh-condensed {
+            line-height: 1.25;
+        }
 
-            thead tr th {
-              position:sticky;
-              top:0; /* 第一列最上 */
-            }
+        .outer_table {
+            position: relative;
+            /*border: 1px solid;*/
+        }
 
-            th:first-child{
-              z-index:2;
-              background-color:lightblue;
-            }
+        .inner_table {
+            overflow-x: scroll;
+            overflow-y: scroll;
+            width: 1400px;
+            /*margin-left: 100px;*/
+            /*  border: 1px solid;*/
+        }
 
-            .site-link{
-                margin-bottom:2px;
-                margin-right:3px
-            }
+        td, th {
+            border-right: 1px solid gray;
+            border-bottom: 1px solid gray;
+            text-align: center;
+            width: 100px;
+            height: 50px;
+            box-sizing: border-box;
+            font-size: 7px;
+        }
 
-            .next-site-link{
-                margin-bottom:-1px;
-                margin-right:1px
-            }
+        th {
+            background-color: lightblue;
+        }
 
-            .remarked-up{
-                color:red
-            }
-            .remarked-down{
-                color:green
-            }
+        table {
+            border-collapse: separate;
+            table-layout: fixed;
+            width: 100%; /* 固定寬度 */
+        }
 
-        </style>
-    </head>
-    <body>
-      <div class="navbar navbar-default navbar-fixed-top navbar-mobile bootsnav" id="top_navbar">
+        td:first-child, th:first-child {
+            position: sticky;
+            left: 0; /* 首行在左 */
+            z-index: 1;
+            background-color: lightgray;
+        }
+
+        thead tr th {
+            position: sticky;
+            top: 0; /* 第一列最上 */
+        }
+
+        th:first-child {
+            z-index: 2;
+            background-color: lightblue;
+        }
+
+        .site-link {
+            margin-bottom: 2px;
+            margin-right: 3px
+        }
+
+        .next-site-link {
+            margin-bottom: -1px;
+            margin-right: 1px
+        }
+
+        .remarked-up {
+            color: red
+        }
+
+        .remarked-down {
+            color: green
+        }
+
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
         <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
-                <i class="fa fa-bars"></i>
-            </button>
         </div>
-        <div class="collapse navbar-collapse" id="navbar-menu">
-            <ul class="nav navbar-nav" data-in="fadeInDown" data-out="fadeOutUp">
+        <div>
+            <ul class="nav navbar-nav">
                 <li><a href="/">Home</a></li>
             </ul>
         </div>
-      </div>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-        <div class="container">
-            <form class="needs-validation" novalidate action="/query_database.html" method="post">
+    </div>
+</nav>
+<div class="container">
+    <form class="needs-validation" novalidate action="/query_database.html" method="post">
 
-                <div class="mb-3">
-                    <label for="sql_code">SQL语句</label>
-                    <textarea class="form-control" rows="20" cols="200" name="sql_code" id="sql_code" >{{ sql_code }}</textarea>
-                </div>
-                <br/>
-                <center>
-                    <button class="btn btn-primary btn-lg btn-block" type="submit" style="width: 120px">查&nbsp;&nbsp;询</button>
-                </center>
-            </form>
+        <div class="mb-3">
+            <label for="sql_code">SQL语句</label>
+            <textarea class="form-control" rows="20" cols="200" name="sql_code" id="sql_code">{{ sql_code }}</textarea>
         </div>
-      <div id="view_table" class="container" style="width:1500px;max-width: 1500px">
-          {% autoescape false %}
-          <div class="outer_table"><div class="inner_table" {{table_height_style}}>
-                {{ table_html }}
+        <br/>
+        <center>
+            <button class="btn btn-primary btn-lg btn-block" type="submit" style="width: 120px">查&nbsp;&nbsp;询</button>
+        </center>
+    </form>
+</div>
+<div id="view_table" class="container" style="width:1500px;max-width: 1500px">
+    {% autoescape false %}
+    <div class="outer_table">
+        <div class="inner_table" {{table_height_style}}>
+            {{ table_html }}
             {% endautoescape %}
-          </div></div>
-      </div>
-        <script>
-              (function() {
-                'use strict';
-                window.addEventListener('load', function() {
-                  var forms = document.getElementsByClassName('needs-validation');
-                  var validation = Array.prototype.filter.call(forms, function(form) {
-                    form.addEventListener('submit', function(event) {
-                      if (form.checkValidity() === false) {
+        </div>
+    </div>
+</div>
+<script>
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
                         event.preventDefault();
                         event.stopPropagation();
-                      }
-                      form.classList.add('was-validated');
-                    }, false);
-                  });
-
+                    }
+                    form.classList.add('was-validated');
                 }, false);
+            });
 
-              })();
+        }, false);
 
-        </script>
-    </body>
+    })();
+
+</script>
+</body>
 </html>
         

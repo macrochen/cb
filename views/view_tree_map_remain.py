@@ -51,8 +51,7 @@ from (select DISTINCT(_interval) as i, count(_interval) as c_i, sum(cb_mov2_id) 
       order by _interval_idx)
         """)
 
-        html += '<br/><br/><br/><br/><br/>' + \
-                generate_treemap_html(cur,
+        html += generate_treemap_html(cur,
                                       '=========可转债涨跌余额分布=========',
                                       '余额区间',
                                       '数量',

@@ -55,7 +55,7 @@ group by case
              end
 order by cb_mov2_id""")
         rows = cur.fetchall()
-        html += '<br/><br/><br/><br/><br/><br/>' + generate_bar_html(rows, '全网可转债涨跌幅情况')
+        html += generate_bar_html(rows, '全网可转债涨跌幅情况')
 
         return '可转债涨跌幅分布', \
                views.nav_utils.build_analysis_nav_html(url), \

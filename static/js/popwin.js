@@ -3,7 +3,7 @@ function switch_detail(bond_code) {
     // http://quote.eastmoney.com/bond/
     url = $('#pop_win_frame').attr('src')
     if (url.indexOf('jisilu') > -1) {
-        $('#pop_win_frame').attr('src', 'http://quote.eastmoney.com/bond/' + bond_code + '.html');
+        $('#pop_win_frame').attr('src', 'https://quote.eastmoney.com/bond/' + bond_code + '.html');
     } else {
         bond_code = bond_code.substring(2)
         $('#pop_win_frame').attr('src', 'https://www.jisilu.cn/data/convert_bond_detail/' + bond_code);

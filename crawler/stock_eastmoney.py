@@ -533,7 +533,7 @@ def change_data_unit(s, default_change=default_clean_text):
 def get_stock_sum(driver, stock_code):
     stock_code = trade_utils.rebuild_stock_code(stock_code)
 
-    url = "http://quote.eastmoney.com/" + stock_code + '.html'
+    url = "https://quote.eastmoney.com/" + stock_code + '.html'
 
     # fixme 需要把chromedriver放到/usr/local/bin目录下
     # 创建可见的Chrome浏览器， 方便调试

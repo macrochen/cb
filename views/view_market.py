@@ -45,8 +45,7 @@ def draw_market_view(user_id):
 
     strategy_list = get_strategy_list()
 
-
-    html = """<br/><br/><br/><br/><br/><br/>"""
+    html = ""
 
     nav_html_list = ['<li><a href="/">Home</a></li>']
     try:

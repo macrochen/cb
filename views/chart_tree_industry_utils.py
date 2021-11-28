@@ -72,7 +72,7 @@ def get_data(table):
             i += 1
             record = get_record(table, row)
             sub_industry = record['sub_industry']
-            value = record['avg_premium']
+            value = record['value']
             sum += record['sum']
             count += record['count']
             children.append({'name': sub_industry, 'value': value, 'count': record['count'], 'is_child': True, 'suffix': '只可转债'})
