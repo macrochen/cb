@@ -5,7 +5,8 @@ from datetime import datetime, date
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from crawler import cb_ninwen, crawler_utils
+from backtest.jsl_test import generate_long_year_back_test_data, generate_good_year_back_test_data
+from crawler import cb_ninwen, crawler_utils, cb_jsl_daily, stock_10jqka
 from models import InvestYield, db, HoldBond, HoldBondHistory
 from utils import trade_utils, db_utils
 from utils.db_utils import get_cursor, execute_sql_with_rowcount
@@ -21,7 +22,23 @@ def init_job(app):
     scheduler.add_job(sync_cb_data_job, 'cron', hour='11', minute='35', args=[app])
     # 每天下午交易结束之后执行可转债数据同步并更新收益率
     scheduler.add_job(update_data_job_after_trade_is_end, 'cron', hour='15', minute='35', args=[app])
+    
+    # 每个周六爬一次数据
+    scheduler.add_job(task_pre_week, 'cron', day_of_week="6", hour='15', minute='35', args=[app])
+
     scheduler.start()
+
+
+def task_pre_week(app):
+    print("begin to run task_pre_week job...")
+    try:
+        with app.app_context():
+            cb_jsl_daily.do_fetch_data()
+            # 更新回测数据
+            generate_good_year_back_test_data()
+            generate_long_year_back_test_data()
+    except Exception as e:
+        print('task_pre_week is failure. ', e)
 
 
 def sync_cb_data_job(app):
@@ -70,7 +87,10 @@ def do_update_data_before_trade_is_start():
     """, {"modify_date": datetime.now()})
     if rowcount > 0:
         print('init today_sum_buy is successful. count:' + str(rowcount))
-
+    
+    # 更新一下正股诊断信息
+    stock_10jqka.fetch_data()
+    
     return 'OK'
 
 

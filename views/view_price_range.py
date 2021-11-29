@@ -54,7 +54,7 @@ group by case
              end
 order by cb_price2_id""")
         rows = cur.fetchall()
-        html += '<br/><br/><br/><br/><br/><br/>' + generate_bar_html(rows, '全网可转债价格范围分布情况')
+        html += generate_bar_html(rows, '全网可转债价格范围分布情况')
 
         return '可转债价格范围分布', \
                views.nav_utils.build_analysis_nav_html(url), \

@@ -35,7 +35,7 @@ def draw_view(is_login_user, url):
         order by 涨跌 desc
                             """)
         rows = cur.fetchall()
-        html += '<br/><br/><br/><br/><br/>' + generate_bar_html(rows, '全网可转债涨跌TOP20')
+        html += generate_bar_html(rows, '全网可转债涨跌TOP20')
 
         cur = get_cursor("""
 SELECT DISTINCT d.* , e.strategy_type as 策略, case when e.hold_id is not null then  '✔️️' else  '' END as 持有, e.hold_price as 持有成本, e.hold_amount as 持有数量

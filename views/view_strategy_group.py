@@ -132,11 +132,6 @@ def draw_view(user_id):
         scatter_html = generate_scatter_html_with_multi_tables(tables, title="组合策略可转债分布情况", subtitle='每种策略选取top10, 按日/周/月轮动', use_personal_features=use_personal_features)
 
         html = """
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
                     <center>
                         """ + scatter_html + "<br/><br/>" + """
                     </center>

@@ -1,0 +1,155 @@
+<style>
+    body.wait *, body.wait {
+        cursor: progress !important;
+    }
+
+    div.custom_block {
+        text-align: center;
+    }
+
+</style>
+<center class="custom_block">
+    <form id="frm_custom">
+        <table style="width: 650px;border-width: 0;">
+            <tr>
+                <td style="background-color:white;width:30px;padding-right: 5px;text-align:right;border: 0;">时间范围:</td>
+                <td colspan="3"
+                    style="background-color:white;width: 245px;padding-left: 5px;text-align:left;border: 0;">
+                    <input type="text" name="start" style="height:30px" placeholder='yyyy-mm-dd(必填)'>&nbsp;至&nbsp;<input
+                        type="text" name="end" style="height:30px" placeholder='yyyy-mm-dd(选填)'></td>
+            </tr>
+            <tr>
+                <td style="background-color:white;width: 50px;padding-right: 5px;text-align:right;border: 0;">轮动周期:</td>
+                <td style="background-color:white;width: 30px;padding-left: 5px;text-align:left;border: 0;"><input
+                        type="text" name="period" style="height: 30px;width: 100px;" placeholder='10(选填)'>&nbsp;个交易日
+                </td>
+                <td style="background-color:white;width: 80px;/* padding-right: 5px; */text-align:right;border: 0;">
+                    转债数量:
+                </td>
+                <td style="background-color:white;width:80px;padding-left: 5px;text-align:left;border: 0;"><input
+                        type="text" name="count" style="height:30px;width: 100px;" placeholder='15(选填)'>&nbsp;只
+                </td>
+            </tr>
+            {% if current_user and current_user.is_authenticated %}
+            <tr>
+                <td style="background-color:white;width: 50px;padding-right: 5px;text-align:right;border: 0;">价格上限:</td>
+                <td style="background-color:white;width: 30px;padding-left: 5px;text-align:left;border: 0;"><input
+                        type="text" name="max_price" style="height: 30px;width: 170px;"
+                        placeholder='130, 200(超过卖出或不选,选填)'>&nbsp;元
+                </td>
+                <td style="background-color:white;width: 80px;/* padding-right: 5px; */text-align:right;border: 0;">
+                    估值上限:
+                </td>
+                <td style="background-color:white;width:80px;padding-left: 5px;text-align:left;border: 0;"><input
+                        type="text" name="max_double_low" style="height:30px;width: 150px;"
+                        placeholder='150(双低值,超过清仓,选填)'>&nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td style="background-color:white;width: 80px;text-align:right;border: 0;">
+                    涨幅间隔:
+                </td>
+                <td style="background-color:white;width:80px;padding-left: 5px;text-align:left;border: 0;"><input
+                        type="text" name="pre_day" style="height:30px;width: 120px;" placeholder='3,5,7(选填)'>&nbsp;个交易日
+                </td>
+                <td style="background-color:white;width: 50px;padding-right: 5px;text-align:right;border: 0;">涨幅上限:</td>
+                <td style="background-color:white;width: 30px;padding-left: 5px;text-align:left;border: 0;"><input
+                        type="text" name="max_rise" style="height: 30px;width: 120px;" placeholder='20,30(选填)'>&nbsp;%
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4" style="background-color:white;border: 0;text-align:left;width:5px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(注:<font
+                        color='red'>1. 价格上限, 估值上限仅针对单个策略;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.
+                    如果在轮动周期内涨幅过大(比如3个交易日涨幅超过30%), 则卖出调仓</font>)
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td style="background-color:white;width:30px;padding-right: 5px;text-align:right;border: 0;vertical-align:center;">
+                    策略选择:
+                </td>
+                <td colspan="3" style="background-color:white;border: 0;text-align:left;">
+                    <input type="checkbox" name="strategy_type" value="低溢价策略">低溢价策略&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="checkbox" name="strategy_type" value="低余额+低溢价+双低策略">低余额+低溢价+双低策略&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="checkbox" name="strategy_type" value="低余额+双低策略">低余额+双低策略&nbsp;&nbsp;&nbsp;&nbsp;
+                    <br>
+                    <input type="checkbox" name="strategy_type" value="低溢价+双低策略">低溢价+双低策略&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="checkbox" name="strategy_type" value="双低策略">双低策略&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="checkbox" name="strategy_type" value="高溢价策略">高溢价策略&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="checkbox" name="strategy_type" value="低价格策略">低价格策略&nbsp;&nbsp;&nbsp;&nbsp;
+                    <br>
+                </td>
+            </tr>
+            <tr>
+                <td style="background-color:white;width:30px;padding-right: 5px;text-align:right;border: 0;">参数组合:</td>
+                <td colspan="3"
+                    style="background-color:white;width: 245px;padding-left: 5px;text-align:left;border: 0;">
+                    <input type="checkbox" name="is_single_strategy" value="1" style="">当选单个策略后, 将对轮动周期和组合数量参数进行组合回测(所有可选参数设置将失效)
+                </td>
+            </tr>
+
+            {% if current_user and current_user.is_authenticated %}
+            <tr>
+                <td style="background-color:white;width:30px;padding-right: 5px;text-align:right;border: 0;vertical-align: top;">
+                    选债SQL:
+                </td>
+                <td colspan="3" style="background-color:white;border: 0;"><textarea name="select_sql" rows='5'
+                                                                                    cols='90'></textarea></td>
+            </tr>
+            <tr>
+                <td style="background-color:white;width:30px;padding-top:10px;padding-right:5px;text-align:right;border: 0;vertical-align:top;">
+                    调仓SQL:
+                </td>
+                <td colspan="3" style="background-color:white;border: 0;padding-top:10px;text-align:left"><textarea
+                        name="exchange_sql" rows='5' cols='90'></textarea></td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td colspan="4" style="background-color:white;border: 0;"><input type="button" id="btn_back_test"
+                                                                                 value="确 定"
+                                                                                 onclick="do_back_test()"
+                                                                                 style="height: 35px;width: 80px;"></td>
+            </tr>
+        </table>
+    </form>
+</center>
+<script>
+
+    //回车执行查询事件(执行class='btn-query'的单击事件)
+    $(document).keydown(function (event) {
+        if (event.keyCode == "13") {
+            //回车执行的事件
+            $("#btn_back_test").click();
+            return;
+        }
+    });
+
+    function do_back_test() {
+        if ($('#back_test_result').length == 0) {
+            $(document.body).append("<div id='back_test_result'></div>");
+        }
+        $(document).ajaxStart(function () {
+            $('body').addClass('wait');
+
+        }).ajaxComplete(function () {
+
+            $('body').removeClass('wait');
+
+        });
+        const strategy_types = [];
+        $("input[name='strategy_type']:checked").each(function (i) {
+            strategy_types[i] = $(this).val();
+        });
+        $.ajax({
+            data: $('#frm_custom').serialize(),
+            dataType: "text",
+            success: function (result) {
+                $("#back_test_result").html(result);
+                $("body,html").animate({scrollTop: $("#back_test_result").offset().top}, 500);
+            },
+            type: "post",
+            url: "/view_custom_back_test_result.html",
+            traditional: true
+        })
+    }
+</script>

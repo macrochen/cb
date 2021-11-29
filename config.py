@@ -5,6 +5,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 db_file_path = 'db/cb.db3'
+db_daily_file_path = 'db/cb_daily.db3'
 
 class Config:
     # SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
@@ -12,7 +13,7 @@ class Config:
     SESSION_TYPE = 'filesystem'
     SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, db_file_path)
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-
+    MAX_CONTENT_LENGTH = 500 * 1024 * 1024
     @staticmethod
     def init_app(app):
         pass

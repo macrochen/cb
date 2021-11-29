@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
 import os
 import sys
 from datetime import datetime
@@ -11,14 +12,17 @@ from flask_login import login_user, login_required, logout_user
 from prettytable import from_db_cursor
 from sqlalchemy import or_, and_, func
 
+import backtest.jsl_test
+import backtest.test_utils
 import utils.table_html_utils
 import utils.trade_utils
-from config import db_file_path
+from backtest import jsl_test
+from config import db_file_path, db_daily_file_path
 from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney, cb_eastmoney
 from jobs import do_update_data_after_trade_is_end, do_update_data_before_trade_is_start
 from models import User, ChangedBond, HoldBond, ChangedBondSelect, db, TradeHistory, HoldBondHistory, Task
 from utils import trade_utils
-from utils.db_utils import get_connect, get_cursor
+from utils.db_utils import get_connect, get_cursor, get_daily_connect
 from utils.html_utils import get_strategy_options_html
 from views import view_market, view_my_account, view_my_select, view_my_strategy, view_my_yield, view_up_down, \
     view_my_up_down, view_turnover, view_discount, view_stock, view_tree_map_industry, view_industry_premium, \
@@ -26,7 +30,8 @@ from views import view_market, view_my_account, view_my_select, view_my_strategy
     view_tree_map_premium, view_my_price_list, view_my_trade_history, view_cb_trend, view_up_down_range, view_all_cb, \
     view_enforce_list, view_strategy_group, view_tree_map_remain, view_price_range, \
     view_industry_double_low, view_cb_wordcloud, view_hot_wordcloud
-from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html
+from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html, \
+    build_back_test_nav_html
 
 cb = Blueprint('cb', __name__)
 
@@ -743,6 +748,183 @@ def strategy_group_view():
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
+@cb.route('/view_good_year_back_test.html')
+def good_year_back_test_view():
+    content = backtest.test_utils.get_back_test_data("good_year_back_test")
+
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+
+
+@cb.route('/view_bad_year_back_test.html')
+def bad_year_back_test_view():
+    content = backtest.test_utils.get_back_test_data("bad_year_back_test")
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+
+@cb.route('/view_long_year_back_test.html')
+def long_back_test_view():
+    content = backtest.test_utils.get_back_test_data("long_year_back_test")
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+
+@cb.route('/view_back_test_1.html')
+def back_test_1_view():
+    content = backtest.test_utils.get_back_test_data("低溢价策略")
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+
+@cb.route('/view_back_test_2.html')
+def back_test_2_view():
+    content = backtest.test_utils.get_back_test_data("低余额+低溢价+双低策略")
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+
+@cb.route('/view_back_test_3.html')
+def back_test_3_view():
+    content = backtest.test_utils.get_back_test_data("低余额+双低策略")
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+
+@cb.route('/view_back_test_4.html')
+def back_test_4_view():
+    content = backtest.test_utils.get_back_test_data("低溢价+双低策略")
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+
+@cb.route('/view_back_test_5.html')
+def back_test_5_view():
+    content = backtest.test_utils.get_back_test_data("双低策略")
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+
+@cb.route('/view_back_test_6.html')
+def back_test_6_view():
+    content = backtest.test_utils.get_back_test_data("高溢价策略")
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+
+@cb.route('/view_back_test_7.html')
+def back_test_7_view():
+    content = backtest.test_utils.get_back_test_data("低价格策略")
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+
+@cb.route('/view_custom_back_test.html')
+@login_required
+def custom_back_test_view():
+    content = render_template("custom_backtest.html")
+    return render_template("page_with_navbar.html",
+                           title='轮动策略回测分析',
+                           navbar=build_back_test_nav_html(request.url_rule),
+                           content=content)
+
+@cb.route('/view_custom_back_test_result.html', methods=['POST'])
+@login_required
+def custom_back_test_result_view():
+    content = ''
+    try:
+        s_start = request.form.get("start")
+        start = datetime.strptime(s_start, '%Y-%m-%d')
+
+        end = None
+        s_end = request.form.get("end")
+        if s_end is not None and s_end.strip(' ') != '':
+            end = datetime.strptime(s_end, '%Y-%m-%d')
+        s_period = request.form.get("period")
+        s_period = '' if s_period is None else s_period
+        period = 10
+        if s_period is not None and s_period.strip(' ') != '':
+            period = int(s_period)
+
+        s_count = request.form.get("count")
+        s_count = '' if s_count is None else s_count
+        count = 15
+        if s_count is not None and s_count.strip(' ') != '':
+            count = int(s_count)
+
+        s_max_price = request.form.get("max_price")
+        s_max_price = '' if s_max_price is None else s_max_price
+        max_price = 130 # 不同的策略值不一样
+        if s_max_price is not None and s_max_price.strip(' ') != '':
+            max_price = int(s_max_price)
+
+        s_max_double_low = request.form.get("max_double_low")
+        s_max_double_low = '' if s_max_double_low is None else s_max_double_low
+        max_double_low = 150
+        if s_max_double_low is not None and s_max_double_low.strip(' ') != '':
+            max_double_low = int(s_max_double_low)
+
+        s_pre_day = request.form.get("pre_day")
+        s_pre_day = '' if s_pre_day is None else s_pre_day
+        pre_day = 5
+        if s_pre_day is not None and s_pre_day.strip(' ') != '':
+            pre_day = int(s_pre_day)
+
+        s_max_rise = request.form.get("max_rise")
+        s_max_rise = '' if s_max_rise is None else s_max_rise
+        max_rise = 30
+        if s_max_rise is not None and s_max_rise.strip(' ') != '':
+            max_rise = int(s_max_rise)
+
+        strategy_types = request.form.getlist("strategy_type")
+        if strategy_types is None or len(strategy_types) == 0:
+            return 'strategy_type is required '
+
+        is_single_strategy = request.form.get("is_single_strategy")
+        if is_single_strategy is not None and is_single_strategy == '1':
+            if len(strategy_types) != 1:
+                return 'when is_single_strategy is selected. strategy_type only select one.'
+            is_single_strategy = True
+        else:
+            is_single_strategy = False
+
+        content += backtest.jsl_test.test_group(start,
+                                                end=end,
+                                                roll_period=period,
+                                                bond_count=count,
+                                                strategy_types=strategy_types,
+                                                is_single_strategy=is_single_strategy,
+                                                pre_day=pre_day,
+                                                max_rise=max_rise,
+                                                max_double_low=max_double_low,
+                                            )
+    except BaseException as e:
+        logging.exception(e)
+        content = 'occur error:' + str(e)
+    return content
+
+
 @cb.route('/view_enforce_list.html')
 def enforce_list_view():
     # current_user = None
@@ -819,9 +1001,10 @@ def get_task_data(task_name):
         task = Task()
     return dict(task)
 
+
 @cb.route('/download_db_data.html')
 @login_required
-def download_db_data():
+def download_cb_data():
     today = datetime.now()
     ymd = today.strftime('%Y-%m-%d')
     file_name = 'dump/data_' + ymd + '.sql'
@@ -835,10 +1018,36 @@ def download_db_data():
     directory = os.getcwd()  # 假设在当前目录
     return send_from_directory(directory, file_name, as_attachment=True)
 
+
+@cb.route('/download_cb_daily_data.html')
+@login_required
+def download_cb_daily_data():
+    today = datetime.now()
+    ymd = today.strftime('%Y-%m-%d')
+    file_name = 'dump/cb_daily_' + ymd + '.sql'
+
+    with open(file_name, 'w') as f:
+        with get_daily_connect() as con:
+            for line in con.iterdump():
+                f.write('%s\n' % line)
+
+    # 需要知道2个参数, 第1个参数是本地目录的path, 第2个参数是文件名(带扩展名)
+    directory = os.getcwd()  # 假设在当前目录
+    return send_from_directory(directory, file_name, as_attachment=True)
+
+
 @cb.route('/upload_db_data.html')
 @login_required
 def upload_db_data():
-    return render_template("upload_db_data.html")
+    return render_template("upload_db_data.html", save_data_url="/save_db_data.html")
+
+
+
+@cb.route('/upload_cb_daily_data.html')
+@login_required
+def upload_cb_daily_data():
+    return render_template("upload_db_data.html", save_data_url="/save_cb_daily_data.html")
+
 
 @cb.route('/save_db_data.html', methods=['POST'])
 @login_required
@@ -850,6 +1059,23 @@ def save_db_data():
     s = file.read().decode('utf-8')
     # 灌入上传的数据
     with get_connect() as con:
+        con.executescript(s)
+
+    return 'OK'
+
+
+@cb.route('/save_cb_daily_data.html', methods=['POST'])
+@login_required
+def save_cb_daily_data():
+    # 删除整个db
+    if os.path.exists(db_daily_file_path):
+        os.unlink(db_daily_file_path)
+
+    # 获取文件(字符串?)
+    file = request.files['file']
+    s = file.read().decode('utf-8')
+    # 灌入上传的数据
+    with get_daily_connect() as con:
         con.executescript(s)
 
     return 'OK'

@@ -19,7 +19,7 @@ header = {
 }
 
 
-def get_content():
+def get_rows():
     url = "http://www.ninwin.cn/index.php?m=cb&a=cb_all&show_cb_only=Y&show_listed_only=Y"
 
     cookies = {}
@@ -457,7 +457,7 @@ def insert_db(rows):
 
 def fetch_data():
     create_db()
-    rows = get_content()
+    rows = get_rows()
     insert_db(rows)
     return 'OK'
 

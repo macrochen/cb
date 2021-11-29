@@ -20,7 +20,7 @@ from views.view_utils import add_popwin_js_code
 def draw_view(is_login_user, url):
     try:
 
-        html = '<br/><br/><br/><br/><br/>'
+        html = ''
 
         # =========我的转债价格TOP20柱状图=========
         cur = get_cursor("""
