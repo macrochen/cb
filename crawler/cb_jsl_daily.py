@@ -15,7 +15,7 @@ header = {
 }
 
 
-def get_cb_data(bond_id, last_date=None, bond_nm=None):
+def get_daily_rows(bond_id, bond_nm=None):
     url = "https://www.jisilu.cn/data/cbnew/detail_hist/" + bond_id
 
     response = requests.get(url, headers=header)
@@ -25,10 +25,10 @@ def get_cb_data(bond_id, last_date=None, bond_nm=None):
 
     content = response.text
 
-    return parse_content(content, last_date, bond_nm)
+    return parse_content(content, bond_nm)
 
 
-def get_delisted_rows(last_date):
+def get_delisted_rows():
     url = "https://www.jisilu.cn/data/cbnew/delisted/"
 
     response = requests.get(url, headers=header)
@@ -38,7 +38,7 @@ def get_delisted_rows(last_date):
 
     content = response.text
 
-    return parse_content(content, last_date, last_date_field_name='delist_dt', row_builder=row_mapper)
+    return parse_content(content, row_builder=row_mapper)
 
 
 def row_mapper(row, cell, bond_nm):
@@ -57,7 +57,7 @@ def get_data(url):
     return parse_content(content)
 
 
-def parse_content(content, last_date=None, bond_nm=None, last_date_field_name=None, row_builder=None):
+def parse_content(content, bond_nm=None, row_builder=None):
     data = json.loads(content)
 
     print("load data is successful")
@@ -68,10 +68,10 @@ def parse_content(content, last_date=None, bond_nm=None, last_date_field_name=No
     if len(rows) == 0:
         print("未获取到数据。")
 
-    return build_rows(rows, last_date, bond_nm, last_date_field_name, row_builder)
+    return build_rows(rows, bond_nm, row_builder)
 
 
-def build_rows(rows, last_date, bond_nm=None, last_date_field_name=None, row_builder=None):
+def build_rows(rows, bond_nm=None, row_builder=None):
     new_rows = []
     # 遍历所有行
     for row in rows:
@@ -79,9 +79,6 @@ def build_rows(rows, last_date, bond_nm=None, last_date_field_name=None, row_bui
         try:
             # 只更新最新的记录
             cell = row['cell']
-            if last_date is not None:
-                if cell['last_chg_dt' if last_date_field_name is None else last_date_field_name] < last_date:
-                    break
 
             if bond_nm is None:
                 bond_nm = cell['bond_nm']
@@ -90,6 +87,18 @@ def build_rows(rows, last_date, bond_nm=None, last_date_field_name=None, row_bui
                 build_row(new_row, cell, bond_nm)
             else:
                 row_builder(new_row, cell, bond_nm)
+            # 检查是否添加过
+            bond_id = new_row['bond_id']
+            last_chg_dt = new_row['last_chg_dt']
+
+            with db_utils.get_daily_connect() as con:
+                cur = con.cursor()
+                cur.execute("select count(*) from cb_history where bond_id=:bond_id and last_chg_dt=:last_chg_dt",
+                            {"bond_id": bond_id, "last_chg_dt": last_chg_dt})
+                result = cur.fetchone()
+                if result[0] > 0:
+                    continue
+
         except Exception as e:
             print("数据解析出错.row=" + str(new_row), e)
             raise e
@@ -175,21 +184,18 @@ def percentage2float(cell, name, default_value=0):
 
 
 def do_fetch_data():
-
-    last_date = get_last_date()
-
-    # 上市中的
+    # 上市中的, 从ningwen拿上市的可转债列表
     rows = cb_ninwen.get_rows()
-
-    add_rows(last_date, rows, 'cb_name_id')
+    # 从jsl遍历每一个转债的交易记录
+    add_rows(rows, bond_nm_field_name='cb_name_id')
 
     # 退市的
-    rows = get_delisted_rows(last_date)
+    rows = get_delisted_rows()
 
-    add_rows(last_date, rows)
+    add_rows(rows)
 
 
-def add_rows(last_date, rows, bond_nm_field_name='bond_nm'):
+def add_rows(rows, bond_nm_field_name='bond_nm'):
     size = len(rows)
     i = 0
     for row in rows:
@@ -202,24 +208,12 @@ def add_rows(last_date, rows, bond_nm_field_name='bond_nm'):
         #         continue
         bond_id = row['bond_code']
         bond_nm = row[bond_nm_field_name]
-        cb_data = get_cb_data(str(bond_id), last_date, bond_nm)
-        insert_db(cb_data)
+        daily_rows = get_daily_rows(str(bond_id), bond_nm)
+        insert_db(daily_rows)
         i += 1
-        print("insert complete:" + str(i) + "/" + str(size))
+        print("market bonds insert complete:" + str(i) + "/" + str(size))
         # 暂停3s再执行， 避免被网站屏蔽掉
         time.sleep(3)
-
-
-def get_last_date():
-    last_date = None
-    with db_utils.get_daily_connect() as con:
-        cur = con.cursor()
-        cur.execute("SELECT last_chg_dt from cb_history order by last_chg_dt desc limit 1")
-        last_date = cur.fetchone()[0]
-    if last_date is None:
-        print("last_date is None")
-        raise Exception("last_date is None")
-    return last_date
 
 
 # 退市数据
@@ -4253,10 +4247,10 @@ def do_fetch_data_delisted():
         #     result = cur.fetchone()
         #     if result[0] > 0:
         #         continue
-        cb_data = get_cb_data(bond_id, bond_nm)
-        insert_db(cb_data)
+        daily_rows = get_daily_rows(bond_id)
+        insert_db(daily_rows)
         i += 1
-        print("insert complete:" + str(i) + "/" + str(size))
+        print("delisted bonds insert complete:" + str(i) + "/" + str(size))
 
 
 cb_list_new = {
@@ -6696,7 +6690,8 @@ def insert_db(rows):
                 result = cur.execute(
                     """insert into cb_history(bond_id, bond_nm, last_chg_dt, ytm_rt, premium_rt, convert_value, price, volume, stock_volume, curr_iss_amt, amt_change, turnover_rt) 
                     values(:bond_id, :bond_nm, :last_chg_dt, :ytm_rt, :premium_rt, :convert_value, :price, :volume, :stock_volume, :curr_iss_amt, :amt_change, :turnover_rt)""",
-                    {"bond_id": row["bond_id"], "bond_nm": row["bond_nm"], "last_chg_dt": row["last_chg_dt"], "ytm_rt": row.get("ytm_rt"),
+                    {"bond_id": row["bond_id"], "bond_nm": row["bond_nm"], "last_chg_dt": row["last_chg_dt"],
+                     "ytm_rt": row.get("ytm_rt"),
                      "premium_rt": row.get("premium_rt"), "convert_value": row.get("convert_value"),
                      "price": row.get("price"),
                      "volume": row.get("volume"), "stock_volume": row.get("stock_volume"),

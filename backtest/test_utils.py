@@ -21,22 +21,6 @@ def get_next_day(current, cur=None):
     return None
 
 
-# 解析group bond id参数
-def parse_bond_ids_params(bond_ids, params):
-    ids = ""
-    first = True
-    i = 0
-    for bond_id in bond_ids:
-        i += 1
-        if first:
-            first = False
-        else:
-            ids += ','
-        ids += ':id_' + str(i)
-        params.setdefault("id_" + str(i), bond_id)
-    return ids
-
-
 # 计算收益率并保存到结果中
 def calc_test_result(test_result, current_total_money, current_day, previous_day):
     start_total_money = test_result.get("start_total_money")
@@ -64,6 +48,11 @@ def init_test_result(day, total_money, remain_money):
                 'day_rate': 0,
                 'all_rate': 0
             }
+        },
+        'roll_rows': {
+            day: [
+                # {'bond_id', 'price', 'premium', 'old_price', 'amount', 'percent'}
+            ]
         }
     }
 
@@ -100,7 +89,8 @@ def get_total_money(group, test_result):
 def update_bond(group, rows):
     for row in rows:
         bond = group.get(row[0])
-        price = row[2]
+        old_price = bond['price']
+        new_price = row[2]
 
         premium = row[3]
         # 异常数据, price可能为none
@@ -108,8 +98,9 @@ def update_bond(group, rows):
             bond['premium'] = premium
 
         # 异常数据, price可能为none
-        if price is not None:
-            bond['price'] = price
+        if new_price is not None:
+            bond['price'] = new_price
+            bond['old_price'] = old_price
 
 
 def get_max_drawdown(x, rates, moneys):

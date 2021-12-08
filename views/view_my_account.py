@@ -113,10 +113,6 @@ where h.bond_code = c.bond_code and hold_owner='me' GROUP by account order by æŠ
         scatter_html = utils.echarts_html_utils.generate_scatter_html_with_multi_tables(tables, select=select)
 
         html = """
-            <br/>
-            <br/>
-            <br/>
-            <br/>
             <center>
                 """ + sum_html + pie_html + scatter_html + "<br/>"  + '<br/>' + """
             </center>

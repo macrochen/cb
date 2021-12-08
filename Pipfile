@@ -22,6 +22,7 @@ beautifulsoup4 = "==4.10.0"
 demjson = "==2.2.4"
 lxml = "==4.6.3"
 xpinyin = "*"
+webdriver-manager = "*"
 
 [dev-packages]
 

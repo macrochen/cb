@@ -19,10 +19,11 @@
 import datetime
 import threading
 
-from backtest.test_utils import get_next_day, parse_bond_ids_params, calc_test_result, init_test_result, do_push_bond, \
+from backtest.test_utils import get_next_day, calc_test_result, init_test_result, do_push_bond, \
     get_total_money, update_bond, get_pre_total_money
 from backtest.view_test import generate_line_html, generate_timeline_html
 from utils import db_utils
+from utils.bond_utils import is_too_expensive, parse_bond_ids_params
 
 global_test_context = threading.local()
 
@@ -54,7 +55,7 @@ def test(start):
     while str(trade_day) <= str(end):
         while True:
 
-            break_roll, previous_day, total_money = do_trade(trade_day, group, previous_day, test_result, trade_times)
+            break_roll, previous_day, total_money = do_trade(trade_day, group, previous_day, test_result)
 
             add_time_data(trade_day, group)
 
@@ -94,7 +95,7 @@ def add_time_data(day, group):
     global_test_context.time_data.setdefault(day, data)
 
 
-def do_trade(current_day, group, previous_day, test_result, trade_times):
+def do_trade(current_day, group, previous_day, test_result):
     # 用来和七天前的价格进行比较, 如果涨幅过大(30%), 提前止盈
     params = {"current": current_day, "pre_day": global_test_context.pre_day}
     keys = sorted(group.keys())
@@ -105,9 +106,9 @@ def do_trade(current_day, group, previous_day, test_result, trade_times):
         # 异常数据, 跳过
         if rows is None:
             return False, previous_day, get_pre_total_money(previous_day, test_result)
-
+        # 有可能那天停牌了, 导致两边数据不一致
         if len(rows) != len(group):
-            print("data is error")
+            print("data is conflict")
 
         # 为了计算盈亏, 主要更新价格
         update_bond(group, rows)
@@ -116,7 +117,7 @@ def do_trade(current_day, group, previous_day, test_result, trade_times):
         calc_test_result(test_result, total_money, current_day, previous_day)
 
         # 太贵了, 清仓(并没有实际的卖出操作, 只是总金额不再随价格变动)
-        if global_test_context.need_check_double_low and is_too_expensive(rows, group):
+        if global_test_context.need_check_double_low and is_too_expensive(rows, group, global_test_context.max_double_low):
             print("clean all bonds at " + str(current_day) + " bonds:" + str(rows))
             return True, current_day, total_money
 
@@ -126,6 +127,13 @@ def do_trade(current_day, group, previous_day, test_result, trade_times):
 
 
 def get_hold_rows(cur, ids, params):
+    # fixme cb_enforece 退市时间不准, 直接用最后交易时间更新
+    # UPDATE cb_enforce
+    # SET delist_dt = (SELECT max(last_chg_dt)
+    #                  FROM cb_history
+    #                  WHERE cb_history.bond_id = cb_enforce.bond_id
+    #                  group by cb_history.bond_id
+    #                  order by last_chg_dt)
     # fixme 未考虑价格为null的情况
     cur.execute("""
         select a.bond_id,
@@ -189,7 +197,7 @@ def push_bond(group, cur, buy_num, exclude_ids, params, total_money, test_result
     remain_money = do_push_bond(group, rows, total_money)
 
     # 对新的组合再次检查, 看是否满足条件
-    expensive = global_test_context.need_check_double_low and is_too_expensive(None, group)
+    expensive = global_test_context.need_check_double_low and is_too_expensive(None, group, global_test_context.max_double_low)
     if expensive is False:
         # 只有继续下一个交易,才需要更新剩下的零头
         test_result['remain_money'] = remain_money
@@ -200,6 +208,10 @@ def pop_bond(group, rows, current_day):
     sell_total_money = 0
     total_money = 0
     sell_num = 0
+
+    # 应该group已经用rows更新过了, 所以直接用group判断
+    if global_test_context.need_check_double_low and is_too_expensive(None, group, global_test_context.max_double_low):
+        return len(rows), total_money
 
     for row in rows:
         bond_id = row[0]
@@ -229,13 +241,10 @@ def pop_bond(group, rows, current_day):
             sell_num += 1
         # 一周涨幅超过30%的轮出
         elif row[6] is not None and row[6] >= max_rise:
-            print("pop bond:" + bond_nm + " when raise 30% at " + str(current_day))
+            print("pop bond:" + bond_nm + " when raise " + str(max_rise) + "% at " + str(current_day))
             sell_total_money += price * bond.get("amount")
             group.pop(bond_id)
             sell_num += 1
-
-    if global_test_context.need_check_double_low and is_too_expensive(rows, group):
-        return len(rows), total_money
 
     return sell_num, sell_total_money
 
@@ -262,7 +271,7 @@ def start_roll(current_day, total_money):
         rows = global_test_context.get_start_rows(cur, current_day)
 
         # 没找到可转债, 或者太贵了, 不满足轮动条件, 不买, 进入下一个交易日
-        if len(rows) == 0 or (global_test_context.need_check_double_low and is_too_expensive(rows)):
+        if len(rows) == 0 or (global_test_context.need_check_double_low and is_too_expensive(rows, max_double_low=global_test_context.max_double_low)):
             # 取下一个交易日
             next_day = get_next_day(current_day, cur)
             if next_day is not None:
@@ -277,45 +286,19 @@ def start_roll(current_day, total_money):
     return group, current_day, remain_money
 
 
-def is_too_expensive(rows, group=None):
-    low_150_count = 0
-    total_num = 0
-    if rows is None and group is not None:
-        total_num = len(group.values())
-        for bond in group.values():
-            if (bond['price'] + bond['premium'] * 100) < global_test_context.max_double_low:
-                low_150_count += 1
-    else:
-        total_num = len(rows)
-        for row in rows:
-            bond_id = row[0]
-            price = row[2]
-            premium = row[3]
-            if price is None and group is not None:
-                bond = group.get(bond_id)
-                price = bond.get("price")
-                premium = bond.get("premium")
-
-            if price + premium * 100 < global_test_context.max_double_low:
-                low_150_count += 1
-
-    # 双低值小于150的数量是否小于等于2/3
-    expensive = low_150_count < round(total_num * 2 / 3, 0)
-    if expensive and group is not None:
-        print("it's too expensive to sell all bonds: " + str(rows))
-        group.clear()
-
-    return expensive
-
 def test_group(start,
                end=None,
                roll_period=10,
                bond_count=15,
-               strategy_types=['低溢价策略', '低余额+低溢价+双低策略', '低余额+双低策略', '双低策略', '高溢价策略', '低价格策略'],
+               strategy_types=['低溢价策略', '低余额+低溢价+双低策略', '低余额+双低策略', '低溢价+双低策略', '双低策略', '高收益率策略', '低价格策略'],
                is_single_strategy=False,
                pre_day=7,
                max_rise=30,
+               max_price=None,
                max_double_low=150,
+               select_sql=None,
+               exchange_sql=None,
+               is_save_test_result=False
                ):
     global_test_context.need_check_double_low = True
     global_test_context.roll_period = roll_period
@@ -323,6 +306,10 @@ def test_group(start,
     global_test_context.pre_day = pre_day
     global_test_context.max_rise = max_rise
     global_test_context.max_double_low = max_double_low
+    global_test_context.select_sql = select_sql
+    global_test_context.exchange_sql = exchange_sql
+    if len(strategy_types) == 1:
+        global_test_context.max_price = max_price
 
     if end is None:
         end = datetime.datetime.now()
@@ -349,7 +336,7 @@ def test_group(start,
             roll_maker = low_premium_plus_double_low_roll
         elif strategy_type == '双低策略':
             roll_maker = double_low_roll
-        elif strategy_type == '高溢价策略':
+        elif strategy_type == '高收益率策略':
             roll_maker = high_yield_roll
         elif strategy_type == '低价格策略':
             roll_maker = low_price_roll
@@ -359,7 +346,8 @@ def test_group(start,
 
     html = generate_line_html(new_rows, roll_period, start, end, bond_count, line_names, title=title)
 
-    # do_save_back_test_result(strategy_types[0], html)
+    if is_save_test_result:
+        do_save_back_test_result(strategy_types[0], html)
 
     if global_test_context.need_time_data:
         html += '<br/><br/>' + generate_timeline_html(global_test_context.time_data)
@@ -368,7 +356,7 @@ def test_group(start,
 
 
 def low_price_roll(new_rows, start):
-    global_test_context.max_price = 130
+    global_test_context.max_price = 130 if global_test_context.max_price is None else global_test_context.max_price
     global_test_context.need_check_double_low = False
     global_test_context.get_start_rows = low_price_get_start_rows
     global_test_context.get_push_rows = low_price_get_push_rows
@@ -376,7 +364,7 @@ def low_price_roll(new_rows, start):
 
 
 def high_yield_roll(new_rows, start):
-    global_test_context.max_price = 130
+    global_test_context.max_price = 130 if global_test_context.max_price is None else global_test_context.max_price
     global_test_context.need_check_double_low = False
     global_test_context.get_start_rows = high_ytm_get_start_rows
     global_test_context.get_push_rows = high_ytm_get_push_rows
@@ -384,28 +372,28 @@ def high_yield_roll(new_rows, start):
 
 
 def double_low_roll(new_rows, start):
-    global_test_context.max_price = 130
+    global_test_context.max_price = 130 if global_test_context.max_price is None else global_test_context.max_price
     global_test_context.get_start_rows = double_low_get_start_rows
     global_test_context.get_push_rows = double_low_get_push_rows
     fill_rate(new_rows, start)
 
 
 def low_premium_plus_double_low_roll(new_rows, start):
-    global_test_context.max_price = 200
+    global_test_context.max_price = 200 if global_test_context.max_price is None else global_test_context.max_price
     global_test_context.get_start_rows = get_start_rows
     global_test_context.get_push_rows = get_push_rows
     fill_rate(new_rows, start)
 
 
 def low_remain_plus_double_low_roll(new_rows, start):
-    global_test_context.max_price = 200
+    global_test_context.max_price = 200 if global_test_context.max_price is None else global_test_context.max_price
     global_test_context.get_start_rows = low_remain_get_start_rows
     global_test_context.get_push_rows = low_remain_get_push_rows
     fill_rate(new_rows, start)
 
 
 def low_remain_plus_premium_plus_double_low_roll(new_rows, start):
-    global_test_context.max_price = 200
+    global_test_context.max_price = 200 if global_test_context.max_price is None else global_test_context.max_price
     global_test_context.get_start_rows = low_remain_premium_get_start_rows
     global_test_context.get_push_rows = low_remain_premium_get_push_rows
     fill_rate(new_rows, start)
@@ -475,6 +463,7 @@ def init_rows(start, end):
 
 
 def get_start_rows(cur, start):
+
     cur.execute("""
     select bond_id, bond_nm, price, premium_rt, round(price + premium_rt * 100, 2)
     from (select *
@@ -487,7 +476,8 @@ def get_start_rows(cur, start):
           limit 30)
     order by price + premium_rt * 100, premium_rt
     limit :count            
-                """, {"start": start, 'count': global_test_context.bond_count})
+                """ if global_test_context.select_sql is None else global_test_context.select_sql,
+                {"start": start, 'count': global_test_context.bond_count})
     rows = cur.fetchall()
     return rows
 
@@ -498,13 +488,12 @@ def get_push_rows(cur, ids, params):
             from (select *
                   from cb_history
                   where last_chg_dt = :current
-                    and price not null and price > 0
                     and bond_id not in (SELECT bond_id from cb_enforce where enforce_dt <= :current or delist_dt <= :current)
                     and bond_id not in (""" + ids + """)
                   order by premium_rt
                   limit 30)
             order by price + premium_rt * 100, premium_rt
-            limit :count """, params)
+            limit :count """ if global_test_context.exchange_sql is None else global_test_context.exchange_sql, params)
     return cur.fetchall()
 
 
@@ -521,7 +510,8 @@ def low_remain_get_start_rows(cur, start):
           limit 30)
     order by price + premium_rt * 100, curr_iss_amt
     limit :count            
-                """, {"start": start, 'count': global_test_context.bond_count})
+                """ if global_test_context.select_sql is None else global_test_context.select_sql,
+                {"start": start, 'count': global_test_context.bond_count})
     rows = cur.fetchall()
     return rows
 
@@ -532,7 +522,6 @@ def low_remain_get_push_rows(cur, ids, params):
             from (select *
                   from cb_history
                   where last_chg_dt = :current
-                    and price not null and price > 0
                     and bond_id not in (SELECT bond_id from cb_enforce where enforce_dt <= :current or delist_dt <= :current)
                     and bond_id not in (""" + ids + """)
                   order by curr_iss_amt
@@ -558,7 +547,8 @@ def low_remain_premium_get_start_rows(cur, start):
               limit 30)
         order by price + premium_rt * 100, curr_iss_amt
         limit :count            
-                """, {"start": start, 'count': global_test_context.bond_count})
+                """ if global_test_context.select_sql is None else global_test_context.select_sql,
+                {"start": start, 'count': global_test_context.bond_count})
     rows = cur.fetchall()
     return rows
 
@@ -569,7 +559,7 @@ def low_remain_premium_get_push_rows(cur, ids, params):
         from (select *
               from (select *
                     from cb_history
-                    where price not null and price > 0 and price < 200
+                    where price < 200
                       and last_chg_dt = :current
                       and bond_id not in (SELECT bond_id from cb_enforce where enforce_dt <= :current or delist_dt <= :current)
                       and price is not NULL
@@ -593,7 +583,8 @@ def double_low_get_start_rows(cur, start):
             and price is not NULL
           order by price + premium_rt * 100, premium_rt
           limit :count            
-                """, {"start": start, 'count': global_test_context.bond_count})
+                """ if global_test_context.select_sql is None else global_test_context.select_sql,
+                {"start": start, 'count': global_test_context.bond_count})
     rows = cur.fetchall()
     return rows
 
@@ -603,7 +594,6 @@ def double_low_get_push_rows(cur, ids, params):
         select bond_id, bond_nm,price, premium_rt, round(price + premium_rt * 100, 2)
                   from cb_history
                   where last_chg_dt = :current
-                    and price not null and price > 0
                     and bond_id not in (SELECT bond_id from cb_enforce where enforce_dt <= :current or delist_dt <= :current)
                     and bond_id not in (""" + ids + """)
                   order by price + premium_rt * 100, premium_rt
@@ -618,10 +608,10 @@ def high_ytm_get_start_rows(cur, start):
           where price < 130
             and last_chg_dt = :start
             and bond_id not in (SELECT bond_id from cb_enforce where enforce_dt <= :start or delist_dt <= :start)
-            and price is not NULL
           order by ytm_rt desc
           limit :count            
-                """, {"start": start, 'count': global_test_context.bond_count})
+                """ if global_test_context.select_sql is None else global_test_context.select_sql,
+                {"start": start, 'count': global_test_context.bond_count})
     rows = cur.fetchall()
     return rows
 
@@ -631,7 +621,6 @@ def high_ytm_get_push_rows(cur, ids, params):
         select bond_id, bond_nm,price, premium_rt
                   from cb_history
                   where last_chg_dt = :current
-                    and price not null and price > 0
                     and bond_id not in (SELECT bond_id from cb_enforce where enforce_dt <= :current or delist_dt <= :current)
                     and bond_id not in (""" + ids + """)
                   order by ytm_rt desc
@@ -648,7 +637,8 @@ def low_premium_get_start_rows(cur, start):
             and price is not NULL
           order by premium_rt
           limit :count            
-                """, {"start": start, 'count': global_test_context.bond_count})
+                """ if global_test_context.select_sql is None else global_test_context.select_sql,
+                {"start": start, 'count': global_test_context.bond_count})
     rows = cur.fetchall()
     return rows
 
@@ -658,7 +648,6 @@ def low_premium_get_push_rows(cur, ids, params):
         select bond_id, bond_nm,price, premium_rt
                   from cb_history
                   where last_chg_dt = :current
-                    and price not null and price > 0
                     and bond_id not in (SELECT bond_id from cb_enforce where enforce_dt <= :current or delist_dt <= :current)
                     and bond_id not in (""" + ids + """)
                   order by premium_rt
@@ -675,7 +664,8 @@ def low_price_get_start_rows(cur, start):
             and price is not NULL
           order by price
           limit :count            
-                """, {"start": start, 'count': global_test_context.bond_count})
+                """ if global_test_context.select_sql is None else global_test_context.select_sql,
+                {"start": start, 'count': global_test_context.bond_count})
     rows = cur.fetchall()
     return rows
 
@@ -685,7 +675,6 @@ def low_price_get_push_rows(cur, ids, params):
         select bond_id, bond_nm,price, premium_rt
                   from cb_history
                   where last_chg_dt = :current
-                    and price not null and price > 0
                     and bond_id not in (SELECT bond_id from cb_enforce where enforce_dt <= :current or delist_dt <= :current)
                     and bond_id not in (""" + ids + """)
                   order by price

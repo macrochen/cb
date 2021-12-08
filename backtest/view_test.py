@@ -626,7 +626,7 @@ def generate_line_html(rows, period, start, end, bond_num, line_names=[], title=
 def get_subtitle(bond_num, end, period, start):
     s = "回测时间:" + datetime.datetime.strftime(start, '%Y-%m-%d') + "~" + datetime.datetime.strftime(end, '%Y-%m-%d')
     if period is not None and bond_num is not None:
-        s += ", 轮动周期:" + str(period) + "个交易日, " + str(bond_num) + "只可转债"
+        s += ", " + str(bond_num) + "只可转债, " + str(period) + "个交易日轮动"
     return s
 
 def get_line_data(rows, line_names=[]):

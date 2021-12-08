@@ -4,3 +4,4 @@ __pycache__
 /view/view*
 /unused/*
 /dump
+/db/*

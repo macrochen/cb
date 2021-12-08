@@ -31,7 +31,7 @@ def build_table_html(table, remark_fields=[],
     rows = table._get_rows(options)
     table_height_style_content = ''
     if table_width is not None:
-        table_height_style_content = 'width: ' + table_width
+        table_height_style_content = 'width: ' + str(table_width)
 
     if len(rows) > table_rows_size:
         table_height_style_content = ',height: ' + str(50*10) + 'px' #'style:' + str(50*15) + 'px'
@@ -211,8 +211,8 @@ def generate_table_html_with_data(type, cur, html, need_title=True, ext_field_na
 def generate_head_column_html(field, is_login_user, record, head_column_link_maker=None,
                               edit_link_maker=None):
     # 标题增加链接
-    # 可转债: http://quote.eastmoney.com/bond/sz128051.html
-    # 正股: http://quote.eastmoney.com/sz002741.html
+    # 可转债: https://quote.eastmoney.com/bond/sz128051.html
+    # 正股: https://quote.eastmoney.com/sz002741.html
     prefix = ''
     prefix_append = ''
     suffix = ''
