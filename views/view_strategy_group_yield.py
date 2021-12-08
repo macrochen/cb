@@ -23,27 +23,32 @@ def draw_view():
 
         cur = get_cursor("""
             SELECT
-            date_string as 时间, 
-            strategy_double_low_day_yield || '%' as 双低策略日收益率,
-            strategy_high_yield_day_yield || '%' as 高收益率策略日收益率,
-            strategy_low_premium_day_yield || '%' as 低溢价率策略日收益率,
-            cb_day_yield || '%' as 可转债指数日收益率,
-            hs_day_yield || '%' as 沪深300日收益率,
-            
-            round(cb_all_yield-1.84, 2) as 可转债指数累积收益率,
-            round(hs_all_yield-0.06, 2) as 沪深300累积收益率,
-            strategy_double_low_all_yield as 双低策略累积收益率,
-            strategy_high_yield_all_yield as 高收益率策略累积收益率,
-            strategy_low_premium_all_yield as 低溢价率策略累积收益率
-            from invest_yield where strategy_double_low_day_yield is not NULL
+            date as 时间, 
+            day_rate_1 || '%' as 低溢价率策略日收益率,
+            day_rate_2 || '%' as 高收益率策略日收益率,
+            day_rate_3 || '%' as '低余额+双低策略日收益率',
+            day_rate_4 || '%' as '低溢价率+双低策略日收益率',
+            --cb_day_yield || '%' as 可转债指数日收益率,
+            --hs_day_yield || '%' as 沪深300日收益率,
+
+            --round(cb_all_yield-1.84, 2) as 可转债指数累积收益率,
+            --round(hs_all_yield-0.06, 2) as 沪深300累积收益率,
+            all_rate_1 as 低溢价率策略累积收益率,
+            all_rate_2 as 高收益率策略累积收益率,
+            all_rate_3 as '低余额+双低策略累积收益率',
+            all_rate_4 as '低溢价率+双低策略累积收益率'
+            from strategy_group_yield
             order by date  desc   
         """)
 
         # 日收益率看表格, 累积收益率看折线图
         table, table_html = generate_table_html_with_data(None, cur, html, need_title=False,
-             remark_fields=['可转债指数日收益率', '沪深300日收益率', '双低策略日收益率', '高收益率策略日收益率', '低溢价率策略日收益率'],
-             ignore_fields=['可转债指数累积收益率', '沪深300累积收益率', '双低策略累积收益率', '高收益率策略累积收益率', '低溢价率策略累积收益率'],
-             nav_html_list=nav_html_list, table_width='800px')
+                                                          remark_fields=['可转债指数日收益率', '沪深300日收益率', '低溢价率策略日收益率',
+                                                                         '高收益率策略日收益率', '低余额+双低策略日收益率', '低溢价率+双低策略日收益率'],
+                                                          ignore_fields=['可转债指数累积收益率', '沪深300累积收益率', '低余额+双低策略累积收益率',
+                                                                         '低溢价率+双低策略累积收益率', '高收益率策略累积收益率',
+                                                                         '低溢价率策略累积收益率'],
+                                                          nav_html_list=nav_html_list, table_width='800px')
 
         rows = []
         dict_rows = []
@@ -79,33 +84,36 @@ def generate_line_html(rows, select=None):
 
     for row in rows:
         x.append(row['时间'])
-        y1.append(row['双低策略累积收益率'])
-        y2.append(row['高收益率策略累积收益率'])
         y3.append(row['低溢价率策略累积收益率'])
-        y4.append(row['可转债指数累积收益率'])
-        y5.append(row['沪深300累积收益率'])
+        y2.append(row['高收益率策略累积收益率'])
+        y1.append(row['低余额+双低策略累积收益率'])
+        y1.append(row['低溢价率+双低策略累积收益率'])
+        # y4.append(row['可转债指数累积收益率'])
+        # y5.append(row['沪深300累积收益率'])
 
     line.add_xaxis(x)
 
-    line.add_yaxis("双低策略", y1)
-    line.add_yaxis("高收益率策略", y2)
     line.add_yaxis("低溢价率策略", y3)
-    line.add_yaxis("可转债指数", y4)
-    line.add_yaxis("沪深300", y5)
+    line.add_yaxis("高收益率策略", y2)
+    line.add_yaxis("低余额+双低策略", y1)
+    line.add_yaxis("低溢价+双低策略", y1)
+    # line.add_yaxis("可转债指数", y4)
+    # line.add_yaxis("沪深300", y5)
 
     line.set_global_opts(
-        title_opts=opts.TitleOpts(title="策略组合收益率", subtitle='策略收益率采用加权计算', pos_left='center', pos_top=-5),
+        title_opts=opts.TitleOpts(title="策略组合收益率", pos_left='center', pos_top=-5),
         tooltip_opts=opts.TooltipOpts(
             trigger='axis',
             formatter=JsCode(
                 "function (params) {"
                 "return '<table style=\"width:150px;\">'+"
                 "'<tr ><td style=\"height:20px;background-color:white;border:0px\" colspan=2>'+ params[0].data[0] +'</td></tr>' +"
-                "'<tr ><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[0].color+'\">双低策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[0].value[1] + '%</td></tr>' +"
                 "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[1].color+'\">高收益率策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[1].value[1] + '%</td></tr>' +"
                 "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[2].color+'\">低溢价率策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[2].value[1] + '%</td></tr>' +"
-                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[3].color+'\">可转债指数</td><td style=\"height:15px;background-color:white;border:0px\">' + params[3].value[1] + '%</td></tr>' +"
-                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[4].color+'\">沪深300</td><td style=\"height:15px;background-color:white;border:0px\">' + params[4].value[1] + '%</td></tr>' +"
+                "'<tr ><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[0].color+'\">低余额+双低策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[3].value[1] + '%</td></tr>' +"
+                "'<tr ><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[0].color+'\">低溢价率+双低策略</td><td style=\"height:15px;background-color:white;border:0px\">' + params[4].value[1] + '%</td></tr>' +"
+                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[3].color+'\">可转债指数</td><td style=\"height:15px;background-color:white;border:0px\">' + params[5].value[1] + '%</td></tr>' +"
+                "'<tr><td style=\"height:15px;background-color:white;border:0px;text-align: left;color:'+params[4].color+'\">沪深300</td><td style=\"height:15px;background-color:white;border:0px\">' + params[6].value[1] + '%</td></tr>' +"
                 "'</table>';}"
             )
         ),

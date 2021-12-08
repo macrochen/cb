@@ -494,7 +494,7 @@ def get_click_js_code(chart_id):
 
 
 def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况", subtitle=None, select=None,
-                                            use_personal_features=True):
+                                            use_personal_features=True, price_field_name='转债价格'):
     chart_id = str(abs(hash(title)))
     scatter = Scatter(opts.InitOpts(
         height='700px',
@@ -520,7 +520,7 @@ def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况
         rows = table._rows
         for row in rows:
             record = get_record(table, row)
-            x1 = record['转债价格']
+            x1 = record[price_field_name]
             x.append(x1)
             y1 = record['溢价率'].replace('%', '') * 1
             amount = record.get("持有数量", 0)
@@ -528,13 +528,6 @@ def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况
             bond_code = record['bond_code']
             bond_code = trade_utils.rebuild_bond_code(bond_code)
             y.append([y1])
-            rotate = record.get("轮动", None)
-            color = None
-            if rotate is not None and rotate != '持有':
-                if rotate == '轮入':
-                    color = 'green'
-                else:
-                    color = 'red'
 
             # todo symbol 轮出:triangle 轮入:diamond
             if use_personal_features and record.get('hold_id') is not None and amount > 0:
@@ -545,7 +538,6 @@ def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况
                         opacity=0.5,
                         border_color='#000',
                         border_width=1,
-                        color=color
                     ),
                     value=[bond_name, x1, y1, bond_code, amount]
                 ))
@@ -556,7 +548,6 @@ def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况
                     itemstyle_opts=opts.ItemStyleOpts(
                         # color='#fff',
                         # border_color='#000'
-                        color=color
                     ),
                     value=[bond_name, x1, y1, bond_code]
                 ))

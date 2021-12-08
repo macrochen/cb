@@ -748,6 +748,13 @@ def strategy_group_view():
     return render_template("page_with_navbar.html", title=title, navbar=navbar, content=content)
 
 
+@cb.route('/init_strategy_groups.html')
+@login_required
+def init_strategy_groups_view():
+    view_strategy_group.init_strategy_groups()
+    return "OK"
+
+
 @cb.route('/view_good_year_back_test.html')
 def good_year_back_test_view():
     content = backtest.test_utils.get_back_test_data("good_year_back_test")
@@ -875,7 +882,7 @@ def custom_back_test_result_view():
 
         s_max_price = request.form.get("max_price")
         s_max_price = '' if s_max_price is None else s_max_price
-        max_price = 130 # 不同的策略值不一样
+        max_price = None  # 不同的策略值不一样, 所以只针对单个策略
         if s_max_price is not None and s_max_price.strip(' ') != '':
             max_price = int(s_max_price)
 
@@ -909,6 +916,11 @@ def custom_back_test_result_view():
         else:
             is_single_strategy = False
 
+        s_select_sql = request.form.get("select_sql")
+        select_sql = None if len(strategy_types) != 1 else (None if s_select_sql is None or s_select_sql.strip(' ') == '' else s_select_sql)
+        s_exchange_sql = request.form.get("exchange_sql")
+        exchange_sql = None if len(strategy_types) != 1 else None if s_exchange_sql is None or s_exchange_sql.strip(' ') == '' else s_exchange_sql
+
         content += backtest.jsl_test.test_group(start,
                                                 end=end,
                                                 roll_period=period,
@@ -917,7 +929,10 @@ def custom_back_test_result_view():
                                                 is_single_strategy=is_single_strategy,
                                                 pre_day=pre_day,
                                                 max_rise=max_rise,
+                                                max_price=max_price,
                                                 max_double_low=max_double_low,
+                                                select_sql=select_sql,
+                                                exchange_sql=exchange_sql,
                                             )
     except BaseException as e:
         logging.exception(e)
@@ -1053,7 +1068,8 @@ def upload_cb_daily_data():
 @login_required
 def save_db_data():
     # 删除整个db
-    os.unlink(db_file_path)
+    if os.path.exists(db_file_path):
+        os.unlink(db_file_path)
     # 获取文件(字符串?)
     file = request.files['file']
     s = file.read().decode('utf-8')

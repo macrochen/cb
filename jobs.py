@@ -5,13 +5,13 @@ from datetime import datetime, date
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from backtest.jsl_test import generate_long_year_back_test_data, generate_good_year_back_test_data
+from backtest.jsl_test import generate_long_year_back_test_data, generate_good_year_back_test_data, test_group
 from crawler import cb_ninwen, crawler_utils, cb_jsl_daily, stock_10jqka
 from models import InvestYield, db, HoldBond, HoldBondHistory
 from utils import trade_utils, db_utils
 from utils.db_utils import get_cursor, execute_sql_with_rowcount
 from utils.trade_utils import get_ymd, calc_mid_data, calc_mid_data_with_avg_premium
-from views.view_strategy_group import get_strategy_yield_rate
+from views.view_strategy_group import update_groups
 
 
 def init_job(app):
@@ -19,12 +19,12 @@ def init_job(app):
     # 每天上午交易开始前执行初始化
     scheduler.add_job(update_data_job_before_trade_is_start, 'cron', hour='5', minute='0', args=[app])
     # 每天上午交易结束之后执行可转债数据同步
-    scheduler.add_job(sync_cb_data_job, 'cron', hour='11', minute='35', args=[app])
+    scheduler.add_job(sync_cb_data_job, 'cron', hour='12', minute='0', args=[app])
     # 每天下午交易结束之后执行可转债数据同步并更新收益率
     scheduler.add_job(update_data_job_after_trade_is_end, 'cron', hour='15', minute='35', args=[app])
     
     # 每个周六爬一次数据
-    scheduler.add_job(task_pre_week, 'cron', day_of_week="6", hour='15', minute='35', args=[app])
+    scheduler.add_job(task_pre_week, 'cron', day_of_week="5", hour='15', minute='35', args=[app])
 
     scheduler.start()
 
@@ -33,10 +33,14 @@ def task_pre_week(app):
     print("begin to run task_pre_week job...")
     try:
         with app.app_context():
-            cb_jsl_daily.do_fetch_data()
             # 更新回测数据
             generate_good_year_back_test_data()
             generate_long_year_back_test_data()
+
+            strategy_types = ['低溢价策略', '低余额+低溢价+双低策略', '低余额+双低策略', '低溢价+双低策略', '双低策略', '高收益率策略', '低价格策略']
+            start = datetime.strptime('2018-01-01', '%Y-%m-%d')
+            for name in strategy_types:
+                test_group(start, strategy_types=[name], is_single_strategy=True, is_save_test_result=True)
     except Exception as e:
         print('task_pre_week is failure. ', e)
 
@@ -113,8 +117,14 @@ def do_update_data_after_trade_is_end():
     # 更新可转债价格中位数
     update_cb_index()
 
-    # 归档当前的组合策略数据
-    archive_top_bond()
+    # # 归档当前的组合策略数据
+    # archive_top_bond()
+
+    # 爬每日交易数据
+    cb_jsl_daily.do_fetch_data()
+
+    # 更新轮动组合数据
+    update_groups()
 
     return 'OK'
 
@@ -283,15 +293,15 @@ def build_invest_yield(invest_yield, previous):
     invest_yield.cb_all_yield = round(previous.cb_all_yield + cb_day_yield, 2)
     invest_yield.hs_all_yield = round(previous.hs_all_yield + hs_day_yield, 2)
 
-    double_low, high_yield, low_premium = get_strategy_yield_rate()
-    # 日收益率
-    invest_yield.strategy_double_low_day_yield = double_low
-    invest_yield.strategy_high_yield_day_yield = high_yield
-    invest_yield.strategy_low_premium_day_yield = low_premium
-    # 累积收益率
-    invest_yield.strategy_double_low_all_yield = round(previous.strategy_double_low_all_yield + double_low, 2)
-    invest_yield.strategy_high_yield_all_yield = round(previous.strategy_high_yield_all_yield + high_yield, 2)
-    invest_yield.strategy_low_premium_all_yield = round(previous.strategy_low_premium_all_yield + low_premium, 2)
+    # double_low, high_yield, low_premium = get_strategy_yield_rate()
+    # # 日收益率
+    # invest_yield.strategy_double_low_day_yield = double_low
+    # invest_yield.strategy_high_yield_day_yield = high_yield
+    # invest_yield.strategy_low_premium_day_yield = low_premium
+    # # 累积收益率
+    # invest_yield.strategy_double_low_all_yield = round(previous.strategy_double_low_all_yield + double_low, 2)
+    # invest_yield.strategy_high_yield_all_yield = round(previous.strategy_high_yield_all_yield + high_yield, 2)
+    # invest_yield.strategy_low_premium_all_yield = round(previous.strategy_low_premium_all_yield + low_premium, 2)
 
 
 def get_seconds(ymd):
