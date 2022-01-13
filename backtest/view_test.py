@@ -7,6 +7,7 @@ from pyecharts.globals import ThemeType
 
 from backtest.test_utils import get_max_drawdown
 from utils.html_utils import env
+import numpy as np
 
 # from empyrical import max_drawdown, alpha_beta
 
@@ -629,20 +630,58 @@ def get_subtitle(bond_num, end, period, start):
         s += ", " + str(bond_num) + "只可转债, " + str(period) + "个交易日轮动"
     return s
 
+
 def get_line_data(rows, line_names=[]):
     data = []
     x = []
-    base = None
-    price_value = 0
-    original_price = 1000
 
     lines_data = {}
     for line_name in line_names:
-        lines_data.setdefault(line_name, {"rate": [], "money": []})
+        lines_data.setdefault(line_name, {"rate": [], "money": [], "day_rate": []})
 
-    index_line_data = {"rate": [], "money": []}
+    add_base_data(lines_data, rows, x)
+
+    for line_data in lines_data.values():
+        mdd, start, end, max_profit = get_max_drawdown(x, line_data['rate'], line_data['money'])
+        line_data.setdefault('mdd', mdd)
+        line_data.setdefault('max_profit', max_profit)
+        line_data.setdefault('sharp_ratio', get_sharpe_ratio(line_data['day_rate']))
+
+    for line, line_data in lines_data.items():
+        current_rate = line_data['rate'][len(line_data['rate']) - 1]
+        data.append(
+            [line
+             + "(最大回撤:" + str(line_data['mdd']) + "%, "
+             + "夏普比率:" + str(line_data['sharp_ratio']) + "%, "
+             + "最高收益:" + str(line_data['max_profit']) + "%, "
+             + "当前收益:" + str(current_rate) + "%)",
+             line_data['rate'], current_rate])
+
+    data = sorted(data, key=lambda d: d[2], reverse=True)
+    return x, data
+
+
+def get_sharpe_ratio(return_list):
+    '''夏普比率'''
+    average_return = np.mean(return_list)
+    return_stdev = np.std(return_list)
+    # 10年国债无风险收益率: https://www.chinabond.com.cn/d2s/cbData.html
+    sharpe_ratio = (average_return - 0.027957) * np.sqrt(252) / return_stdev  # 默认252个工作日,无风险利率为0.02
+    return round(sharpe_ratio, 2)
+
+
+def add_base_data(lines_data, rows, x):
+    base = None
+    original_price = 1000
+    pre_price = None
+    base_rate = 0
+    day_rate = 0
+    index_line_data = {"rate": [], "money": [], "day_rate": []}
     for date, value in rows.items():
+        # fixme idx_data目前是写死的, 后面需要动态更新
         price = idx_data.get(datetime.datetime.strftime(date, '%Y-%m-%d'))
+        if pre_price is None:
+            pre_price = price
 
         if base is None:
             if price is not None:
@@ -654,32 +693,19 @@ def get_line_data(rows, line_names=[]):
         for v in lines_data.values():
             v['rate'].append(value[i][0])
             v['money'].append(value[i][1])
+            v['day_rate'].append(value[i][2])
             i += 1
 
         if price is not None:
-            price_value = round((price - base) / base * 100, 2)
+            base_rate = round((price - base) / base * 100, 2)
+            day_rate = round((price - pre_price) / pre_price * 100, 2)
             original_price = price
-        index_line_data['rate'].append(price_value)
+        index_line_data['rate'].append(base_rate)
         index_line_data['money'].append(original_price)
+        index_line_data['day_rate'].append(day_rate)
 
+        pre_price = original_price
     lines_data.setdefault('可转债等权指数', index_line_data)
-
-    for line_data in lines_data.values():
-        mdd, start, end, max_profit = get_max_drawdown(x, line_data['rate'], line_data['money'])
-        line_data.setdefault('mdd', mdd)
-        line_data.setdefault('max_profit', max_profit)
-
-    for line, line_data in lines_data.items():
-        current_rate = line_data['rate'][len(line_data['rate']) - 1]
-        data.append(
-            [line
-             + "(最大回撤:" + str(line_data['mdd']) + "%, "
-             + "最高收益:" + str(line_data['max_profit']) + "%, "
-             + "当前收益:" + str(current_rate) + "%)",
-             line_data['rate'], current_rate])
-
-    data = sorted(data, key=lambda d: d[2], reverse=True)
-    return x, data
 
 
 if __name__ == "__main__":

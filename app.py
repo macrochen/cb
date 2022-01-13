@@ -21,6 +21,7 @@ def create_app(config_name='default'):
 
 def init_router(app):
     login_manager.init_app(app)  # 实例化扩展类
+    login_manager.login_view = 'cb.sign'
     app.register_blueprint(cb)
 
 if __name__ == "__main__":

@@ -43,7 +43,9 @@ strategy_config = {
           where bond_code not in (""" + s_ids + """)
                 and enforce_get not in ('强赎中') or enforce_get is NULL
           order by AT_yield desc 
-          limit :count """},
+          limit :count """,
+        "view_sort": " order by AT_yield desc "
+    },
     '低溢价率策略': {
         "id": "1",
         "period": 15,
@@ -64,7 +66,9 @@ strategy_config = {
           where bond_code not in (""" + s_ids + """)
                 and enforce_get not in ('强赎中') or enforce_get is NULL
           order by cb_premium_id
-          limit :count """},
+          limit :count """,
+        "view_sort": " order by cb_premium_id "
+    },
     '低余额+双低策略': {
         "id": "3",
         "period": 20,
@@ -94,7 +98,9 @@ strategy_config = {
                   order by remain_amount
                   limit 30)
             order by cb_price2_id + cb_premium_id * 100, remain_amount
-            limit :count """},
+            limit :count """,
+        "view_sort": " order by cb_price2_id + cb_premium_id * 100, remain_amount "
+    },
     '低溢价率+双低策略': {
         "id": "4",
         "period": 10,
@@ -124,7 +130,9 @@ strategy_config = {
                   order by cb_premium_id
                   limit 30)
             order by cb_price2_id + cb_premium_id * 100, cb_premium_id
-            limit :count """
+            limit :count """,
+        "view_sort": " order by cb_price2_id + cb_premium_id * 100, cb_premium_id "
+
     },
 }
 
@@ -142,14 +150,14 @@ def init_strategy_groups():
             if has_been_executed_by_name(cur, id, strategy_name):
                 continue
 
-            rows = get_new_rows(cur, strategy_name)
+            new_rows = get_new_rows(cur, strategy_name)
 
             # 没找到可转债, 或者太贵了, 不满足轮动条件, 不买
-            if len(rows) == 0 or _is_too_expensive(rows):
+            if len(new_rows) == 0 or _is_too_expensive(new_rows):
                 return
 
             # 等权分配资金买入
-            remain_money, _1, _2 = do_buy_bonds(cur, rows, total_money, strategy_name)
+            remain_money, _1, _2 = do_buy_bonds(cur, new_rows, total_money, strategy_name)
             save_yield_rate(cur, id, strategy_name, total_money, remain_money)
 
             print(strategy_name + " has been initialized.")
@@ -261,21 +269,21 @@ def get_new_rows(cur, strategy_name):
     return rows
 
 
-def do_buy_bonds(cur, rows, total_money, strategy_name, exclude_codes=[], size=None):
+def do_buy_bonds(cur, new_rows, total_money, strategy_name, exclude_codes=[], size=None):
     # 一份的金额
-    size = size if size is not None else len(rows)
+    size = size if size is not None else len(new_rows)
     percent = round(1 / size * 100, 2)
-    part = round(total_money * 1 / len(rows), 2)
+    part = round(total_money * 1 / len(new_rows), 2)
 
     buy_total_money = 0
-    for row in rows:
-        bond_code = row[0]
+    for new_row in new_rows:
+        bond_code = new_row[0]
         if bond_code in exclude_codes:
             continue
 
-        bond_name = row[1]
-        price = row[2]
-        premium = row[3]
+        bond_name = new_row[1]
+        price = new_row[2]
+        premium = new_row[3]
         amount = math.floor(part / (price * 10)) * 10
         result = cur.execute("""
             insert into strategy_group (strategy_name, bond_code, bond_name, price, amount, premium, create_date, modify_date, before_percent, after_percent, desc) values 
@@ -286,7 +294,7 @@ def do_buy_bonds(cur, rows, total_money, strategy_name, exclude_codes=[], size=N
             raise Exception(
                 "insert strategy_group is failure.strategy_name:" + strategy_name + ", bond_code:" + str(bond_code))
 
-        save_snapshot(cur, strategy_name, bond_code)
+        save_snapshot(cur, strategy_name, bond_code, price)
 
         buy_total_money += round(amount * price, 2)
 
@@ -296,10 +304,10 @@ def do_buy_bonds(cur, rows, total_money, strategy_name, exclude_codes=[], size=N
     return round(total_money - buy_total_money, 2), percent, part
 
 
-def save_snapshot(cur, strategy_name, bond_code):
+def save_snapshot(cur, strategy_name, bond_code, old_price):
     result = cur.execute("""
-        insert into strategy_group_snapshot (strategy_name, bond_code, bond_name, price, amount, premium, date, before_percent, after_percent, desc) 
-        select strategy_name, bond_code, bond_name, price, amount, premium, date() as date, before_percent, after_percent, desc from strategy_group
+        insert into strategy_group_snapshot (strategy_name, bond_code, bond_name, old_price, price, amount, premium, date, before_percent, after_percent, desc) 
+        select strategy_name, bond_code, bond_name, """ + old_price + """ as old_price, price, amount, premium, date() as date, before_percent, after_percent, desc from strategy_group
         where strategy_name=:strategy_name and bond_code=:bond_code and modify_date=date()
             """,
                          {'strategy_name': strategy_name, 'bond_code': bond_code, })
@@ -322,6 +330,7 @@ def start_roll_bonds(cur, strategy_name, remain_money):
     update_ids = []
     add_ids = []
     new_id_price_pair = {}
+    old_id_price_pair = {}
     for new_row in new_rows:
         new_id = new_row[0]
         price = new_row[2]
@@ -329,26 +338,28 @@ def start_roll_bonds(cur, strategy_name, remain_money):
             # 重合的更新
             update_ids.append(new_id)
             new_id_price_pair[new_id] = price
+            old_id_price_pair[new_id] = group_id_dict[new_id][2]
             del group_id_dict[new_id]
         else:
             add_ids.append(new_id)
 
     # 剩下的卖出清仓
     for bond_code, group in group_id_dict.items():
-        sell_bond(cur, bond_code, group[4], strategy_name, '轮动卖出')
+        sell_bond(cur, bond_code, group[4], strategy_name, '轮动卖出', group[2])
 
     # 分配资金
     # 新增的买入建仓
     remain_money, percent, part = do_buy_bonds(cur, new_rows, new_total_money, strategy_name,
                                                exclude_codes=update_ids)
     # 已有的进行调仓
-    change_position(cur, new_id_price_pair, part, percent, strategy_name, update_ids)
+    change_position(cur, new_id_price_pair, old_id_price_pair, part, percent, strategy_name, update_ids)
     return new_total_money, remain_money
 
 
-def change_position(cur, new_id_price_pair, part, percent, strategy_name, update_ids):
+def change_position(cur, new_id_price_pair, old_id_price_pair, part, percent, strategy_name, update_ids):
     for update_id in update_ids:
         new_price = new_id_price_pair[update_id]
+        old_price = old_id_price_pair[update_id]
         new_amount = math.floor(part / (new_price * 10)) * 10
 
         result = cur.execute("""
@@ -372,7 +383,7 @@ def change_position(cur, new_id_price_pair, part, percent, strategy_name, update
                 "update strategy_group is failure. param:strategy_name=" + strategy_name + ", bond_code=" + str(
                     update_id))
 
-        save_snapshot(cur, strategy_name, update_id)
+        save_snapshot(cur, strategy_name, update_id, old_price)
 
 
 def do_update_group(cur, id, strategy_name, yield_row=None):
@@ -408,11 +419,11 @@ def do_update_group(cur, id, strategy_name, yield_row=None):
             return
 
         new_remain_money = sell_total_money + remain_money
-        buy_rows = get_buy_rows(cur, params, s_ids, sell_num)
+        new_rows = get_buy_rows(cur, params, s_ids, sell_num)
         # 如果没有找到, 说明太贵了, 没有可买入的
         # fixme 什么时候补充未买入的?
-        if len(buy_rows) > 0:
-            new_remain_money, _1, _2 = do_buy_bonds(cur, buy_rows, new_remain_money, strategy_name,
+        if len(new_rows) > 0:
+            new_remain_money, _1, _2 = do_buy_bonds(cur, new_rows, new_remain_money, strategy_name,
                                                     size=len(current_rows))
 
         update_remain_money(cur, id, strategy_name, new_remain_money)
@@ -466,15 +477,16 @@ def do_sell_bonds(cur, current_rows, group_bonds, strategy_name):
         price = current_row[2]
         group_bond = group_bonds[bond_code]
         amount = group_bond[3]
+        old_price = group_bond[2]
         before_percent = group_bond[4]
         if price >= global_test_context.max_price:
             sell_num += 1
             sell_total_money += price * amount
-            sell_bond(cur, bond_code, before_percent, strategy_name, "价格超过" + str(global_test_context.max_price) + "卖出")
+            sell_bond(cur, bond_code, before_percent, strategy_name, "价格超过" + str(global_test_context.max_price) + "卖出", old_price)
         elif current_row[4] == '强赎中':
             sell_num += 1
             sell_total_money += price * amount
-            sell_bond(cur, bond_code, before_percent, strategy_name, "强赎卖出")
+            sell_bond(cur, bond_code, before_percent, strategy_name, "强赎卖出", old_price)
         else:
             # 一周涨幅超过30%
             # 查7天(5个交易日)前的历史交易价格
@@ -489,7 +501,7 @@ def do_sell_bonds(cur, current_rows, group_bonds, strategy_name):
                 sell_num += 1
                 sell_total_money += price * amount
                 sell_bond(cur, bond_code, before_percent, strategy_name,
-                          "涨幅超过" + str(global_test_context.max_rise) + "%卖出")
+                          "涨幅超过" + str(global_test_context.max_rise) + "%卖出", old_price)
     return sell_num, sell_total_money
 
 
@@ -511,7 +523,7 @@ def get_buy_rows(cur, params, s_ids, sell_num):
     return buy_rows
 
 
-def sell_bond(cur, bond_code, before_percent, strategy_name, desc):
+def sell_bond(cur, bond_code, before_percent, strategy_name, desc, old_price):
     result = cur.execute("""
                         update strategy_group 
                         set after_percent=0, desc=:desc, before_percent=:before_percent, modify_date=date()
@@ -527,7 +539,7 @@ def sell_bond(cur, bond_code, before_percent, strategy_name, desc):
         raise Exception("sell bond is failure. strategy_name:" + strategy_name + ", bond_code:" + bond_code)
 
     # 作为快照存一份
-    save_snapshot(cur, strategy_name, bond_code)
+    save_snapshot(cur, strategy_name, bond_code, old_price)
 
 
 def get_pre_price_row(bond_id):
@@ -642,7 +654,7 @@ def draw_view(user_id):
     tables = {}
     try:
         for strategy_name, config in strategy_config.items():
-            table = get_strategy_table(strategy_name)
+            table = get_strategy_table(strategy_name, config)
             html += generate_strategy_table_html(strategy_name, config, table, tables, nav_html_list,
                                                  use_personal_features=use_personal_features)
 
@@ -667,7 +679,7 @@ def draw_view(user_id):
         raise e
 
 
-def get_strategy_table(strategy_name):
+def get_strategy_table(strategy_name, config):
     sql = """
         select data_id                                                     as nid,
                b.bond_code,
@@ -694,6 +706,7 @@ def get_strategy_table(strategy_name):
         where strategy_name = :strategy_name
           and after_percent > 0
 """
+    sql += config['view_sort']
     params = {'strategy_name': strategy_name}
     return get_table(sql, params)
 
@@ -701,10 +714,11 @@ def get_strategy_table(strategy_name):
 def get_roll_table(strategy_name, date):
     sql = """
         select data_id                                                     as nid,
-               b.bond_code,
+               a.bond_code,
                stock_code,
                bond_name                                                   as 名称,
-               price                                                       as 买入价,
+               case when old_price = price or old_price is NULL then price 
+               else old_price || '->' ||  price end                        as 价格,
                round(premium * 100, 2) || '%'                              as 溢价率,
                amount                                                      as 持有数量,
                before_percent || '%->' || after_percent || '%'             as 占比,
@@ -806,7 +820,11 @@ def get_yield_rate_of_strategy(table):
     for row in table._rows:
         record = get_record(table, row)
         amount = record.get('持有数量')
-        price = float(record.get('当前价'))
+        _当前价 = record.get('当前价')
+        if _当前价 is None:
+            continue
+
+        price = float(_当前价)
         rate = float(record.get('可转债涨跌').replace('%', '')) / 100
         cost += price / (1 + rate) * amount
         value += price * amount

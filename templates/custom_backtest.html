@@ -75,16 +75,17 @@
                     <br>
                     <input type="checkbox" name="strategy_type" value="低溢价+双低策略">低溢价+双低策略&nbsp;&nbsp;&nbsp;&nbsp;
                     <input type="checkbox" name="strategy_type" value="双低策略">双低策略&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="checkbox" name="strategy_type" value="三低策略">三低策略&nbsp;&nbsp;&nbsp;&nbsp;
                     <input type="checkbox" name="strategy_type" value="高收益率策略">高收益率策略&nbsp;&nbsp;&nbsp;&nbsp;
                     <input type="checkbox" name="strategy_type" value="低价格策略">低价格策略&nbsp;&nbsp;&nbsp;&nbsp;
                     <br>
                 </td>
             </tr>
             <tr>
-                <td style="background-color:white;width:30px;padding-right: 5px;text-align:right;border: 0;">参数组合:</td>
+                <td style="background-color:white;width:30px;padding-right: 5px;text-align:right;border: 0;">多场景:</td>
                 <td colspan="3"
                     style="background-color:white;width: 245px;padding-left: 5px;text-align:left;border: 0;">
-                    <input type="checkbox" name="is_single_strategy" value="1" style="">当选单个策略后, 将对轮动周期和组合数量参数进行组合回测(所有可选参数设置将失效)
+                    <input type="checkbox" name="is_multi_scenarios" value="1" style="">当选单个策略后, 将对轮动周期和组合数量参数进行组合多场景回测(所有可选参数设置将失效)
                 </td>
             </tr>
 
@@ -106,7 +107,7 @@
             {% endif %}
             <tr>
                 <td colspan="4" style="background-color:white;border: 0;"><input type="button" id="btn_back_test"
-                                                                                 value="确 定"
+                                                                                 value="执 行"
                                                                                  onclick="do_back_test()"
                                                                                  style="height: 35px;width: 80px;"></td>
             </tr>

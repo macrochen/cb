@@ -27,6 +27,7 @@ back_test_nav_html_list = [
     '<li class=\'$active\'><a href="/view_back_test_3.html">低余额+双低策略的回测</a></li>',
     '<li class=\'$active\'><a href="/view_back_test_4.html">低溢价+双低策略的回测</a></li>',
     '<li class=\'$active\'><a href="/view_back_test_5.html">双低策略的回测</a></li>',
+    '<li class=\'$active\'><a href="/view_back_test_8.html">三低策略的回测</a></li>',
     '<li class=\'$active\'><a href="/view_back_test_6.html">高溢价策略的回测</a></li>',
     '<li class=\'$active\'><a href="/view_back_test_7.html">低价格策略的回测</a></li>',
 ]
@@ -34,6 +35,7 @@ personal_nav_html_list = [
     '<li><a href="/">Home</a></li>',
     '<li class=\'$active\'><a href="/view_my_account.html">按账户统计</a></li>',
     '<li class=\'$active\'><a href="/view_my_strategy.html">按策略统计</a></li>',
+    '<li class=\'$active\'><a href="/new_sync_trade_data.html">同步交易数据</a></li>',
     '<li class=\'$active\'><a href="/view_my_up_down.html">可转债涨跌排行</a></li>',
     '<li class=\'$active\'><a href="/view_my_price_list.html">可转债价格排行</a></li>',
     '<li class=\'$active\'><a href="/view_my_yield.html">我的收益率</a></li>',

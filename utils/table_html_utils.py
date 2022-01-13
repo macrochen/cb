@@ -93,6 +93,9 @@ def build_table_html(table, remark_fields=[],
             prefix, prefix_append, suffix = generate_head_column_html(name, is_login_user, record,
                                                                       head_column_link_maker=head_column_link_maker,
                                                                       edit_link_maker=edit_link_maker)
+            if prefix is None and prefix_append is None and suffix is None:
+                continue
+
             if name == '名称':
                 bond_code = record.get('bond_code')
                 if bond_code.startswith('123'):
@@ -220,6 +223,8 @@ def generate_head_column_html(field, is_login_user, record, head_column_link_mak
         return "<a href='" + head_column_link_maker(record, field) + "'>", "</a>", ""
     elif field == '名称':
         bond_code = record.get('bond_code')
+        if bond_code is None:
+            return None, None, None
         new_bond_code = rebuild_bond_code(bond_code)
         nid = record['nid']
         stock_code = record['stock_code']
@@ -235,8 +240,9 @@ def generate_head_column_html(field, is_login_user, record, head_column_link_mak
 
         # https://xueqiu.com/S/SH600998
         suffix = "<br/>"
-        suffix += "<a target='_blank' href='https://quote.eastmoney.com/" + market + stock_code + ".html'><img src='/static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
-        suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='/static/img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
+        if stock_code is not None:
+            suffix += "<a target='_blank' href='https://quote.eastmoney.com/" + market + stock_code + ".html'><img src='/static/img/eastmoney.png' alt='东方财富' title='东方财富查看正股信息' width='14' height='14' class='next-site-link'/></a> "
+            suffix += "<a target='_blank' href='http://doctor.10jqka.com.cn/" + stock_code + "/'><img src='/static/img/ths.png' alt='同花顺' title='同花顺正股诊断' width='14' height='14' class='next-site-link'/></a>"
 
         # http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=157
         suffix += "&nbsp;<a target='_blank' href='http://www.ninwin.cn/index.php?m=cb&c=graph_k&a=graph_k&id=" + str(
