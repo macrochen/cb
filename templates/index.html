@@ -45,7 +45,9 @@ html,body {height: 100%;}
 		<ul class="nav navbar-nav">
             <li><a href="#" onclick="process_wrapper('/realtime_update_data.html');return false">实时刷新</a></li>
             <li><a href="/view_market.html">可转债策略</a></li>
-            <li><a href="/view_strategy_group.html">可转债轮动(模拟盘)</a></li>
+            {% if current_user and current_user.is_authenticated %}
+            <li><a href="/view_strategy_group.html">可转债轮动</a></li>
+            {% endif %}
 			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         可转债回测
@@ -65,6 +67,7 @@ html,body {height: 100%;}
                     <li><a href="/view_back_test_3.html">低余额+双低策略的回测</a></li>
                     <li><a href="/view_back_test_4.html">低溢价+双低策略的回测</a></li>
                     <li><a href="/view_back_test_5.html">双低策略的回测</a></li>
+                    <li><a href="/view_back_test_8.html">三低策略的回测</a></li>
                     <li><a href="/view_back_test_6.html">高溢价策略的回测</a></li>
                     <li><a href="/view_back_test_7.html">低价格策略的回测</a></li>
 				</ul>
@@ -137,7 +140,10 @@ html,body {height: 100%;}
                     <li><a href="#" onclick="process_wrapper('/update_data_before_trade_is_start.html');return false">开盘前更新数据</a></li>
                     <li><a href="#" onclick="process_wrapper('/update_data_after_trade_is_end.html');return false">收盘后更新数据</a></li>
                     <li class="divider"></li>
-                    <li><a href="#" onclick="process_wrapper('/init_strategy_groups.html');return false">初始化轮动模拟盘</a></li>
+                    <li><a href="#" onclick="process_wrapper('/init_strategy_groups.html');return false">初始化轮动</a></li>
+                    <li><a href="#" onclick="process_wrapper('/update_strategy_groups.html');return false">更新轮动数据</a></li>
+                    <li class="divider"></li>
+                    <li><a href="#" onclick="process_wrapper('/update_back_test_data.html');return false">更新回测数据</a></li>
                     <li class="divider"></li>
                     <li><a href="#" onclick="process_wrapper('/cb_ninwen.html');return false">更新所有可转债数据</a></li>
                     <li class="divider"></li>

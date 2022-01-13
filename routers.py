@@ -18,8 +18,10 @@ import utils.table_html_utils
 import utils.trade_utils
 from backtest import jsl_test
 from config import db_file_path, db_daily_file_path
-from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney, cb_eastmoney
-from jobs import do_update_data_after_trade_is_end, do_update_data_before_trade_is_start
+from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney, cb_eastmoney, \
+    cb_jsl_daily
+from jobs import do_update_data_after_trade_is_end, do_update_data_before_trade_is_start, \
+    do_update_data_exclude_group_after_trade_is_end, do_update_back_test_data
 from models import User, ChangedBond, HoldBond, ChangedBondSelect, db, TradeHistory, HoldBondHistory, Task
 from utils import trade_utils
 from utils.db_utils import get_connect, get_cursor, get_daily_connect
@@ -32,6 +34,7 @@ from views import view_market, view_my_account, view_my_select, view_my_strategy
     view_industry_double_low, view_cb_wordcloud, view_hot_wordcloud
 from views.nav_utils import build_select_nav_html, build_personal_nav_html_list, build_personal_nav_html, \
     build_back_test_nav_html
+from views.view_strategy_group import update_groups
 
 cb = Blueprint('cb', __name__)
 
@@ -48,6 +51,19 @@ def load_user(user_id):  # 创建用户加载回调函数，接受用户 ID 作�
 @cb.route('/index.html')
 def index():
     return render_template("index.html")
+
+
+# @cb.before_request
+# def check_need_login():
+#     url = str(request.url_rule)
+#     if url == '/login.html' or url == '/logout.html':
+#         return
+#
+#     # 检查登录的逻辑
+#     user_id = session.get('_user_id')
+#     if user_id is None:
+#         return render_template('index.html', sign=True)
+
 
 @cb.route('/login.html', methods=['POST'])
 def login():
@@ -755,92 +771,76 @@ def init_strategy_groups_view():
     return "OK"
 
 
+@cb.route('/update_strategy_groups.html')
+@login_required
+def update_strategy_groups_view():
+
+    # 爬每日交易数据
+    cb_jsl_daily.do_fetch_data()
+
+    # 更新轮动组合数据
+    update_groups()
+
+    return "OK"
+
+
 @cb.route('/view_good_year_back_test.html')
 def good_year_back_test_view():
-    content = backtest.test_utils.get_back_test_data("good_year_back_test")
-
-    return render_template("page_with_navbar.html",
-                           title='轮动策略回测分析',
-                           navbar=build_back_test_nav_html(request.url_rule),
-                           content=content)
-
+    return get_test_view("good_year_back_test")
 
 
 @cb.route('/view_bad_year_back_test.html')
 def bad_year_back_test_view():
-    content = backtest.test_utils.get_back_test_data("bad_year_back_test")
-    return render_template("page_with_navbar.html",
-                           title='轮动策略回测分析',
-                           navbar=build_back_test_nav_html(request.url_rule),
-                           content=content)
+    return get_test_view("bad_year_back_test")
 
 
 @cb.route('/view_long_year_back_test.html')
 def long_back_test_view():
-    content = backtest.test_utils.get_back_test_data("long_year_back_test")
-    return render_template("page_with_navbar.html",
-                           title='轮动策略回测分析',
-                           navbar=build_back_test_nav_html(request.url_rule),
-                           content=content)
+    return get_test_view("long_year_back_test")
 
 
 @cb.route('/view_back_test_1.html')
 def back_test_1_view():
-    content = backtest.test_utils.get_back_test_data("低溢价策略")
-    return render_template("page_with_navbar.html",
-                           title='轮动策略回测分析',
-                           navbar=build_back_test_nav_html(request.url_rule),
-                           content=content)
+    return get_test_view("低溢价策略")
 
 
 @cb.route('/view_back_test_2.html')
 def back_test_2_view():
-    content = backtest.test_utils.get_back_test_data("低余额+低溢价+双低策略")
-    return render_template("page_with_navbar.html",
-                           title='轮动策略回测分析',
-                           navbar=build_back_test_nav_html(request.url_rule),
-                           content=content)
+    return get_test_view("低余额+低溢价+双低策略")
 
 
 @cb.route('/view_back_test_3.html')
 def back_test_3_view():
-    content = backtest.test_utils.get_back_test_data("低余额+双低策略")
-    return render_template("page_with_navbar.html",
-                           title='轮动策略回测分析',
-                           navbar=build_back_test_nav_html(request.url_rule),
-                           content=content)
+    return get_test_view("低余额+双低策略")
 
 
 @cb.route('/view_back_test_4.html')
 def back_test_4_view():
-    content = backtest.test_utils.get_back_test_data("低溢价+双低策略")
-    return render_template("page_with_navbar.html",
-                           title='轮动策略回测分析',
-                           navbar=build_back_test_nav_html(request.url_rule),
-                           content=content)
+    return get_test_view("低溢价+双低策略")
 
 
 @cb.route('/view_back_test_5.html')
 def back_test_5_view():
-    content = backtest.test_utils.get_back_test_data("双低策略")
-    return render_template("page_with_navbar.html",
-                           title='轮动策略回测分析',
-                           navbar=build_back_test_nav_html(request.url_rule),
-                           content=content)
+    return get_test_view("双低策略")
+
+
+@cb.route('/view_back_test_8.html')
+def back_test_8_view():
+    return get_test_view("三低策略")
 
 
 @cb.route('/view_back_test_6.html')
 def back_test_6_view():
-    content = backtest.test_utils.get_back_test_data("高溢价策略")
-    return render_template("page_with_navbar.html",
-                           title='轮动策略回测分析',
-                           navbar=build_back_test_nav_html(request.url_rule),
-                           content=content)
+    return get_test_view("高溢价策略")
 
 
 @cb.route('/view_back_test_7.html')
 def back_test_7_view():
-    content = backtest.test_utils.get_back_test_data("低价格策略")
+    return get_test_view("低价格策略")
+
+
+def get_test_view(strategy_name):
+    content = backtest.test_utils.get_back_test_data(strategy_name)
     return render_template("page_with_navbar.html",
                            title='轮动策略回测分析',
                            navbar=build_back_test_nav_html(request.url_rule),
@@ -908,13 +908,13 @@ def custom_back_test_result_view():
         if strategy_types is None or len(strategy_types) == 0:
             return 'strategy_type is required '
 
-        is_single_strategy = request.form.get("is_single_strategy")
-        if is_single_strategy is not None and is_single_strategy == '1':
+        is_multi_scenarios = request.form.get("is_multi_scenarios")
+        if is_multi_scenarios is not None and is_multi_scenarios == '1':
             if len(strategy_types) != 1:
-                return 'when is_single_strategy is selected. strategy_type only select one.'
-            is_single_strategy = True
+                return 'when is_multi_scenarios is selected. strategy_type only select one.'
+            is_multi_scenarios = True
         else:
-            is_single_strategy = False
+            is_multi_scenarios = False
 
         s_select_sql = request.form.get("select_sql")
         select_sql = None if len(strategy_types) != 1 else (None if s_select_sql is None or s_select_sql.strip(' ') == '' else s_select_sql)
@@ -926,14 +926,14 @@ def custom_back_test_result_view():
                                                 roll_period=period,
                                                 bond_count=count,
                                                 strategy_types=strategy_types,
-                                                is_single_strategy=is_single_strategy,
+                                                is_multi_scenarios=is_multi_scenarios,
                                                 pre_day=pre_day,
                                                 max_rise=max_rise,
                                                 max_price=max_price,
                                                 max_double_low=max_double_low,
                                                 select_sql=select_sql,
                                                 exchange_sql=exchange_sql,
-                                            )
+                                                )
     except BaseException as e:
         logging.exception(e)
         content = 'occur error:' + str(e)
@@ -1147,11 +1147,17 @@ def execute_sql():
 @cb.route('/update_data_after_trade_is_end.html')
 @login_required
 def update_data_after_trade_is_end():
-    return do_update_data_after_trade_is_end()
+    return do_update_data_exclude_group_after_trade_is_end(True)
 
 
 @cb.route('/update_data_before_trade_is_start.html')
 @login_required
 def update_data_before_trade_is_start():
     return do_update_data_before_trade_is_start()
+
+
+@cb.route('/update_back_test_data.html')
+@login_required
+def update_back_test_data():
+    return do_update_back_test_data()
 

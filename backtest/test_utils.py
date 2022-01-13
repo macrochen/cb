@@ -38,8 +38,8 @@ def get_pre_total_money(previous_day, test_result):
     return test_result['rows'].get(previous_day).get("total_money")
 
 
-def init_test_result(day, total_money, remain_money):
-    return {
+def create_test_result(day, total_money, remain_money, group, need_roll_row):
+    result = {
         "start_total_money": total_money,
         'remain_money': remain_money,
         'rows': {
@@ -49,19 +49,39 @@ def init_test_result(day, total_money, remain_money):
                 'all_rate': 0
             }
         },
-        'roll_rows': {
-            day: [
-                # {'bond_id', 'price', 'premium', 'old_price', 'amount', 'percent'}
-            ]
-        }
     }
+    if need_roll_row:
+        rows = []
+        rows.append({'bond_id': '',
+                     'bond_name': '',
+                     'price': '',
+                     'amount': '',
+                     'premium': '',
+                     'percent': '',
+                     'desc': ''})
+        for bond_id, bond in group.items():
+            rows.append({'bond_id': bond_id,
+                         'bond_name': bond['bond_nm'],
+                         'price': bond['price'],
+                         'amount': bond['amount'],
+                         'premium': round(bond['premium'] * 100, 2),
+                         'percent': bond['percent'],
+                         'desc': '建仓'
+                         })
+        result['roll_rows'] = {
+            day: rows
+        }
+
+    return result
 
 
-def do_push_bond(group, rows, total_money):
+def do_push_bond(group, rows, total_money, row_size=None, old_group=None):
     """注意row的顺序: bond_id, bond_nm, price, premium..."""
 
     # 一份的金额
     part = round(total_money * 1 / len(rows), 2)
+    size = len(rows) if row_size is None else row_size
+    percent = round(1 / size * 100, 2)
 
     buy_total_money = 0
     for row in rows:
@@ -69,9 +89,29 @@ def do_push_bond(group, rows, total_money):
         bond_nm = row[1]
         price = row[2]
         premium = row[3]
+
+        # 在原来的组合中存在的
+        if old_group is not None and old_group.get(bond_id) is not None:
+            old_price = old_group[bond_id]['old_price']
+            old_premium = old_group[bond_id]['old_premium']
+            old_percent = old_group[bond_id]['old_percent']
+        else:
+            old_price = row[2]
+            old_premium = row[3]
+            old_percent = percent
+
         amount = math.floor(part / (price * 10)) * 10
         buy_total_money += round(amount * price, 2)
-        group.setdefault(bond_id, {'bond_nm': bond_nm, "amount": amount, 'price': price, 'premium': premium})
+        group.setdefault(bond_id,
+                         {'bond_nm': bond_nm,
+                          "amount": amount,
+                          'price': price,
+                          'old_price': old_price,
+                          'premium': premium,
+                          'old_premium': old_premium,
+                          'percent': percent,
+                          'old_percent': old_percent,
+                          })
 
     buy_total_money = round(buy_total_money, 2)
 
@@ -86,21 +126,25 @@ def get_total_money(group, test_result):
     return round(total_money, 2)
 
 
-def update_bond(group, rows):
-    for row in rows:
-        bond = group.get(row[0])
-        old_price = bond['price']
-        new_price = row[2]
+def update_bond(group, new_rows):
+    new_total_money = get_new_total_money(group, new_rows)
 
-        premium = row[3]
-        # 异常数据, price可能为none
-        if premium is not None:
-            bond['premium'] = premium
+    for new_row in new_rows:
+        bond = group.get(new_row[0])
+        new_price = new_row[2]
+        bond['price'] = new_price
+        bond['premium'] = new_row[3]
+        bond['percent'] = round(round(new_price * bond['amount'], 2) / new_total_money * 100, 2)
 
-        # 异常数据, price可能为none
-        if new_price is not None:
-            bond['price'] = new_price
-            bond['old_price'] = old_price
+
+def get_new_total_money(group, new_rows):
+    new_total_money = 0
+    for row in new_rows:
+        bond_code = row[0]
+        price = row[2]
+        bond = group.get(bond_code)
+        new_total_money += round(price * bond['amount'], 2)
+    return new_total_money
 
 
 def get_max_drawdown(x, rates, moneys):
@@ -132,5 +176,8 @@ def get_max_drawdown(x, rates, moneys):
 def get_back_test_data(name):
     with db_utils.get_daily_connect() as con:
         cur = con.cursor()
-        cur.execute("select data from cb_backtest_data where name=:name", {"name": name})
-        return cur.fetchone()[0]
+        cur.execute("select data, desc from cb_backtest_data where name=:name", {"name": name})
+        one = cur.fetchone()
+        main_content = one[0]
+        ref = one[1]
+        return ('' if ref is None else "策略参考: &nbsp;" + ref) + main_content

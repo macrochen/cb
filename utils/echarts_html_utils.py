@@ -520,6 +520,9 @@ def generate_scatter_html_with_multi_tables(tables, title="可转债分布情况
         rows = table._rows
         for row in rows:
             record = get_record(table, row)
+            if record['溢价率'] is None:
+                continue
+
             x1 = record[price_field_name]
             x.append(x1)
             y1 = record['溢价率'].replace('%', '') * 1

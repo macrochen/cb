@@ -33,16 +33,20 @@ def task_pre_week(app):
     print("begin to run task_pre_week job...")
     try:
         with app.app_context():
-            # 更新回测数据
-            generate_good_year_back_test_data()
-            generate_long_year_back_test_data()
-
-            strategy_types = ['低溢价策略', '低余额+低溢价+双低策略', '低余额+双低策略', '低溢价+双低策略', '双低策略', '高收益率策略', '低价格策略']
-            start = datetime.strptime('2018-01-01', '%Y-%m-%d')
-            for name in strategy_types:
-                test_group(start, strategy_types=[name], is_single_strategy=True, is_save_test_result=True)
+            do_update_back_test_data()
     except Exception as e:
         print('task_pre_week is failure. ', e)
+
+
+def do_update_back_test_data():
+    # 更新回测数据
+    generate_good_year_back_test_data()
+    generate_long_year_back_test_data()
+
+    strategy_types = ['低溢价策略', '低余额+低溢价+双低策略', '低余额+双低策略', '低溢价+双低策略', '双低策略', '三低策略', '高收益率策略', '低价格策略']
+    start = datetime.strptime('2018-01-01', '%Y-%m-%d')
+    for name in strategy_types:
+        test_group(start, strategy_types=[name], is_multi_scenarios=True, is_save_test_result=True)
 
 
 def sync_cb_data_job(app):
@@ -98,10 +102,11 @@ def do_update_data_before_trade_is_start():
     return 'OK'
 
 
-def do_update_data_after_trade_is_end():
-    # 检查是否交易日
-    if trade_utils.is_trade_date() is False:
-        return 'OK'
+def do_update_data_exclude_group_after_trade_is_end(need_check_trade_day):
+    if need_check_trade_day:
+        # 检查是否交易日
+        if trade_utils.is_trade_date() is False:
+            return 'OK'
 
     # 更新当天的可转债数据
     cb_ninwen.fetch_data()
@@ -117,113 +122,21 @@ def do_update_data_after_trade_is_end():
     # 更新可转债价格中位数
     update_cb_index()
 
-    # # 归档当前的组合策略数据
-    # archive_top_bond()
 
-    # 爬每日交易数据
-    cb_jsl_daily.do_fetch_data()
+def do_update_data_after_trade_is_end():
+    # 检查是否交易日
+    if trade_utils.is_trade_date() is False:
+        return 'OK'
 
-    # 更新轮动组合数据
-    update_groups()
+    do_update_data_exclude_group_after_trade_is_end(False)
+
+    # # 爬每日交易数据
+    # cb_jsl_daily.do_fetch_data()
+    #
+    # # 更新轮动组合数据
+    # update_groups()
 
     return 'OK'
-
-
-def archive_top_bond():
-    # 当日如果已经新增了策略的数据, 先删除
-    rowcount = execute_sql_with_rowcount("""
-    delete from changed_bond_top_history where create_date = :create_date
-    """, {'create_date': date.today()})
-    print("delete relevant strategy cb data for the day. count: " + str(rowcount))
-
-    # 获取数据并插入
-    # 双低
-    rowcount = execute_sql_with_rowcount("""
-insert into changed_bond_top_history
-select c.*,
-       date() as create_date,
-       '双低策略' as strategy_name,
-       d.sort_num+1 as sort_num
-from changed_bond c,
-     (select id,
-             (select count(*)
-              from (select cb_premium_id * 100 + cb_price2_id as sort_value, BT_yield
-                    from changed_bond_view
-                    order by cb_premium_id * 100 + cb_price2_id, BT_yield desc
-                    limit 20) b
-              where case
-                        when a.sort_value > b.sort_value then true
-                        when a.sort_value = b.sort_value then a.BT_yield < b.BT_yield
-                        else false end) as sort_num
-      from (select id, cb_premium_id * 100 + cb_price2_id as sort_value, BT_yield
-            from changed_bond_view
-            order by cb_premium_id * 100 + cb_price2_id, BT_yield desc
-            limit 20) a) d
-where c.id = d.id
-order by d.sort_num
-limit 20
-    """)
-    if rowcount == 20:
-        print('insert double low strategy data is successful')
-    # 低溢价
-    rowcount = execute_sql_with_rowcount("""
-insert into changed_bond_top_history
-select c.*,
-       date()         as create_date,
-       '低溢价率策略'       as strategy_name,
-       d.sort_num + 1 as sort_num
-from changed_bond c,
-     (select id,
-             (select count(*)
-              from (select cb_premium_id, cb_price2_id, remain_amount
-                    from changed_bond_view
-                    order by cb_premium_id, cb_price2_id, remain_amount
-                    limit 35) b
-              where case
-                        when a.cb_premium_id > b.cb_premium_id then true
-                        when a.cb_premium_id = b.cb_premium_id then a.cb_price2_id > b.cb_price2_id
-                        else (case
-                                  when a.cb_price2_id = b.cb_price2_id then a.remain_amount > b.remain_amount
-                                  else false end)
-                        end) as sort_num
-      from (select id, cb_premium_id, cb_price2_id, remain_amount
-            from changed_bond_view
-            order by cb_premium_id, cb_price2_id, remain_amount
-            limit 35) a) d
-where c.id = d.id
-order by d.sort_num
-limit 35
-        """)
-    if rowcount == 35:
-        print('insert low premium strategy data is successful')
-    # 高收益率
-    rowcount = execute_sql_with_rowcount("""
-insert into changed_bond_top_history
-select c.*,
-       date()   as create_date,
-       '高收益率策略' as strategy_name,
-       d.sort_num+1 as sort_num
-from changed_bond c,
-     (select id,
-             (select count(*)
-              from (select BT_yield, cb_price2_id
-                    from changed_bond_view
-                    order by BT_yield desc, cb_price2_id
-                    limit 15) b
-              where case
-                        when a.BT_yield < b.BT_yield then true
-                        when a.BT_yield = b.BT_yield then a.cb_price2_id > b.cb_price2_id
-                        else false end) as sort_num
-      from (select id, BT_yield, cb_price2_id
-            from changed_bond_view
-            order by BT_yield desc, cb_price2_id
-            limit 15) a) d
-where c.id = d.id
-order by d.sort_num
-limit 15
-        """)
-    if rowcount == 15:
-        print('insert hight yield strategy data is successful')
 
 
 def update_cb_index():
