@@ -19,18 +19,17 @@
                         type="text" name="end" style="height:30px" placeholder='yyyy-mm-dd(选填)'></td>
             </tr>
             <tr>
-                <td style="background-color:white;width: 50px;padding-right: 5px;text-align:right;border: 0;">轮动周期:</td>
-                <td style="background-color:white;width: 30px;padding-left: 5px;text-align:left;border: 0;"><input
-                        type="text" name="period" style="height: 30px;width: 100px;" placeholder='10(选填)'>&nbsp;个交易日
-                </td>
                 <td style="background-color:white;width: 80px;/* padding-right: 5px; */text-align:right;border: 0;">
                     转债数量:
                 </td>
                 <td style="background-color:white;width:80px;padding-left: 5px;text-align:left;border: 0;"><input
                         type="text" name="count" style="height:30px;width: 100px;" placeholder='15(选填)'>&nbsp;只
                 </td>
+                <td style="background-color:white;width: 50px;padding-right: 5px;text-align:right;border: 0;">轮动周期:</td>
+                <td style="background-color:white;width: 30px;padding-left: 5px;text-align:left;border: 0;"><input
+                        type="text" name="period" style="height: 30px;width: 100px;" placeholder='10(选填)'>&nbsp;个交易日
+                </td>
             </tr>
-            {% if current_user and current_user.is_authenticated %}
             <tr>
                 <td style="background-color:white;width: 50px;padding-right: 5px;text-align:right;border: 0;">价格上限:</td>
                 <td style="background-color:white;width: 30px;padding-left: 5px;text-align:left;border: 0;"><input
@@ -63,7 +62,6 @@
                     如果在轮动周期内涨幅过大(比如3个交易日涨幅超过30%), 则卖出调仓</font>)
                 </td>
             </tr>
-            {% endif %}
             <tr>
                 <td style="background-color:white;width:30px;padding-right: 5px;text-align:right;border: 0;vertical-align:center;">
                     策略选择:
@@ -85,7 +83,7 @@
                 <td style="background-color:white;width:30px;padding-right: 5px;text-align:right;border: 0;">多场景:</td>
                 <td colspan="3"
                     style="background-color:white;width: 245px;padding-left: 5px;text-align:left;border: 0;">
-                    <input type="checkbox" name="is_multi_scenarios" value="1" style="">当选单个策略后, 将对轮动周期和组合数量参数进行组合多场景回测(所有可选参数设置将失效)
+                    <input type="checkbox" name="is_multi_scenarios" value="1" style="">仅在选择单个策略时有效, 将对轮动周期和组合数量参数进行组合多场景回测(转债个数和轮动周期参数设置将失效)
                 </td>
             </tr>
 

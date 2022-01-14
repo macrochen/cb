@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 import re
 import time
-from datetime import datetime, date
+from datetime import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from backtest.jsl_test import generate_long_year_back_test_data, generate_good_year_back_test_data, test_group
-from crawler import cb_ninwen, crawler_utils, cb_jsl_daily, stock_10jqka
+from backtest.jsl_test import generate_long_year_back_test_data, test_group, generate_bad_year_back_test_data, \
+    generate_good_year_back_test_data
+from crawler import cb_ninwen, crawler_utils, stock_10jqka
 from models import InvestYield, db, HoldBond, HoldBondHistory
 from utils import trade_utils, db_utils
 from utils.db_utils import get_cursor, execute_sql_with_rowcount
-from utils.trade_utils import get_ymd, calc_mid_data, calc_mid_data_with_avg_premium
-from views.view_strategy_group import update_groups
+from utils.trade_utils import get_ymd, calc_mid_data_with_avg_premium
 
 
 def init_job(app):
@@ -22,7 +22,7 @@ def init_job(app):
     scheduler.add_job(sync_cb_data_job, 'cron', hour='12', minute='0', args=[app])
     # 每天下午交易结束之后执行可转债数据同步并更新收益率
     scheduler.add_job(update_data_job_after_trade_is_end, 'cron', hour='15', minute='35', args=[app])
-    
+
     # 每个周六爬一次数据
     scheduler.add_job(task_pre_week, 'cron', day_of_week="5", hour='15', minute='35', args=[app])
 
@@ -40,10 +40,15 @@ def task_pre_week(app):
 
 def do_update_back_test_data():
     # 更新回测数据
+    generate_bad_year_back_test_data()
     generate_good_year_back_test_data()
     generate_long_year_back_test_data()
 
-    strategy_types = ['低溢价策略', '低余额+低溢价+双低策略', '低余额+双低策略', '低溢价+双低策略', '双低策略', '三低策略', '高收益率策略', '低价格策略']
+    strategy_types = [
+        '低溢价策略', '低余额+低溢价+双低策略', '低余额+双低策略', '低溢价+双低策略', '双低策略',
+        '三低策略',
+        '高收益率策略', '低价格策略'
+    ]
     start = datetime.strptime('2018-01-01', '%Y-%m-%d')
     for name in strategy_types:
         test_group(start, strategy_types=[name], is_multi_scenarios=True, is_save_test_result=True)
@@ -95,10 +100,10 @@ def do_update_data_before_trade_is_start():
     """, {"modify_date": datetime.now()})
     if rowcount > 0:
         print('init today_sum_buy is successful. count:' + str(rowcount))
-    
+
     # 更新一下正股诊断信息
     stock_10jqka.fetch_data()
-    
+
     return 'OK'
 
 
@@ -195,7 +200,8 @@ def build_invest_yield(invest_yield, previous):
 
     invest_yield.my_real_yield = my_real_yield
     invest_yield.my_real_profit = my_real_profit
-    invest_yield.my_today_profit = round(my_real_profit - (0 if previous.my_real_profit is None else previous.my_real_profit), 2)
+    invest_yield.my_today_profit = round(
+        my_real_profit - (0 if previous.my_real_profit is None else previous.my_real_profit), 2)
 
     # 日收益率
     invest_yield.my_day_yield = my_day_yield
@@ -278,4 +284,5 @@ where h.bond_code = c.bond_code and hold_owner='me'
 if __name__ == "__main__":
     # sync_cb_data_job()
     # archive_top_bond()
+    # do_update_back_test_data()
     pass

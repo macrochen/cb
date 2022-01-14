@@ -34,13 +34,14 @@ def test(start, end=None):
     end = datetime.datetime.now() if end is None else end
     # 轮动周期
     roll_period = global_test_context.roll_period
-    # 轮动周期计数器
-    roll_counter = 0
+    # 轮动周期计数器(启动时已经执行了一次)
+    roll_counter = 1
     # 交易次数
     trade_times = 0
+    break_roll = False
     trade_day = next_day
     while str(trade_day) <= str(end):
-        while True:
+        while roll_counter < roll_period and not break_roll and (trade_day is not None and str(trade_day) <= str(end)):
 
             break_roll, previous_day = do_trade(trade_day, group, previous_day, test_result)
 
@@ -52,8 +53,9 @@ def test(start, end=None):
             trade_times += 1
 
             # 当轮动到期或者高估时, 提前终止轮动, 重新开启一轮
-            if roll_counter >= roll_period or break_roll or trade_day is None or str(trade_day) > str(end):
-                break
+            # if roll_counter > roll_period or break_roll or trade_day is None or str(trade_day) > str(end):
+            #     print('stop')
+            #     break
 
         if trade_day is None or str(trade_day) > str(end):
             break
@@ -65,7 +67,7 @@ def test(start, end=None):
 
         previous_day = trade_day
         trade_day = get_next_day(trade_day)
-        roll_counter = 0
+        roll_counter = 1
         if trade_day is None:
             break
 
@@ -78,8 +80,10 @@ def add_time_data(day, group):
 
     data = {}
     for bond_id, bond in group.items():
-        data.setdefault(bond['bond_nm'], int(bond['price'] * bond['amount']))
+        data.setdefault(bond['bond_nm'], bond['price'])
+        # data.setdefault(bond['bond_nm'], int(bond['price'] * bond['amount']))
         # data.setdefault(bond['bond_nm'], int(bond['price']))
+    # sorted_data = sorted(data.items(), key=lambda i: i[1])
     global_test_context.time_data.setdefault(day, data)
 
 
@@ -429,7 +433,9 @@ def test_group(start,
         if roll_maker is not None:
             roll_rows, trade_times = roll_by_strategy(roll_maker, start, end, is_multi_scenarios, line_names, new_rows)
 
-    html = generate_line_html(new_rows, roll_period, start, end, bond_count, line_names, title=title)
+    html = generate_line_html(new_rows, roll_period, start, end, bond_count, line_names, title=title,
+                              max_price=global_test_context.max_price,
+                              max_double_low=global_test_context.max_double_low)
 
     html += generate_roll_html(roll_rows, trade_times)
 
@@ -448,22 +454,39 @@ def generate_roll_html(roll_rows, trade_times):
         return ''
     clean_num = 0
     roll_num = 0
+    create_roll_num = 0
     over_rise_num = 0
     roll_row_html = """<div class="panel-group" id="accordion">"""
-    for date, rows in roll_rows.items():
+    sorted_items = sorted(roll_rows.items(), key=lambda item: item[0], reverse=True)
+    for date, rows in sorted_items:
         d = date.strftime('%Y-%m-%d')
         collapse_id = d.replace("-", "_")
         if '高估清仓' in rows[1]['desc']:
-            d += '[清仓]'
+            d += ' [清仓]'
             clean_num += 1
         elif '轮动' in rows[1]['desc']:
-            d += '[定时调仓]'
-            roll_num += 1
+            i = 0
+            for row in rows:
+                del row['price']
+                del row['old_price']
+                del row['premium']
+                del row['old_premium']
+                del row['old_amount']
+                del row['old_percent']
+                if row['desc'] == '轮动买入' or row['desc'] == '':
+                    i += 1
+            if len(rows) == i:
+                d += ' [建仓]'
+                create_roll_num += 1
+            else:
+                d += ' [定时调仓]'
+                roll_num += 1
         elif '建仓' in rows[1]['desc']:
-            d += '[建仓]'
+            d += ' [建仓]'
+            create_roll_num += 1
         else:
             if '超过' in rows[1]['desc']:
-                d += '[超涨调仓]'
+                d += ' [超涨调仓]'
                 over_rise_num += 1
         collapse_name = d
         rows = sorted(rows, key=lambda x: x['desc'])
@@ -488,14 +511,16 @@ def generate_roll_html(roll_rows, trade_times):
                 """.format(collapse_id=collapse_id, collapse_name=collapse_name, collapse_content=roll_table_html)
 
     roll_row_html += "</div>"
-    html = "<br/>调仓记录: (共" + str(trade_times) + "个交易日, 定时调仓:" + str(roll_num) + "次, 超涨调仓:" + str(
+    html = "<br/>调仓记录: (共" + str(trade_times) + "个交易日, 建仓:" + str(create_roll_num) + "次, 定时调仓:" + str(
+        roll_num) + "次, 超涨调仓:" + str(
         over_rise_num) + "次, 清仓:" + str(
         clean_num) + "次)<br/>" + roll_row_html
     return html
 
 
 def low_price_roll(new_rows, start, end=None):
-    global_test_context.max_price = 130 if global_test_context.max_price is None else global_test_context.max_price
+    global_test_context.max_price = 130 if hasattr(global_test_context,
+                                                   'max_price') is True else global_test_context.max_price
     global_test_context.need_check_double_low = False
     global_test_context.get_start_rows = low_price_get_start_rows
     global_test_context.get_push_rows = low_price_get_push_rows
@@ -503,7 +528,8 @@ def low_price_roll(new_rows, start, end=None):
 
 
 def high_yield_roll(new_rows, start, end=None):
-    global_test_context.max_price = 130 if global_test_context.max_price is None else global_test_context.max_price
+    global_test_context.max_price = 130 if not hasattr(global_test_context,
+                                                       'max_price') or global_test_context.max_price is None else global_test_context.max_price
     global_test_context.need_check_double_low = False
     global_test_context.get_start_rows = high_ytm_get_start_rows
     global_test_context.get_push_rows = high_ytm_get_push_rows
@@ -511,36 +537,42 @@ def high_yield_roll(new_rows, start, end=None):
 
 
 def double_low_roll(new_rows, start, end=None):
-    global_test_context.max_price = 130 if global_test_context.max_price is None else global_test_context.max_price
+    global_test_context.max_price = 130 if not hasattr(global_test_context,
+                                                       'max_price') or global_test_context.max_price is None else global_test_context.max_price
     global_test_context.get_start_rows = double_low_get_start_rows
     global_test_context.get_push_rows = double_low_get_push_rows
     return fill_rate(new_rows, start, end)
 
 
 def three_low_roll(new_rows, start, end=None):
-    global_test_context.max_price = 2000 if global_test_context.max_price is None else global_test_context.max_price
-    global_test_context.max_double_low = 2000 if global_test_context.max_double_low is None else global_test_context.max_double_low
+    global_test_context.max_price = 2000 if not hasattr(global_test_context,
+                                                        'max_price') or global_test_context.max_price is None else global_test_context.max_price
+    global_test_context.max_double_low = 2000 if not hasattr(global_test_context,
+                                                             'max_double_low') or global_test_context.max_double_low is None else global_test_context.max_double_low
     global_test_context.get_start_rows = three_low_get_start_rows
     global_test_context.get_push_rows = three_low_get_push_rows
     return fill_rate(new_rows, start, end)
 
 
 def low_premium_plus_double_low_roll(new_rows, start, end=None):
-    global_test_context.max_price = 200 if global_test_context.max_price is None else global_test_context.max_price
+    global_test_context.max_price = 200 if not hasattr(global_test_context,
+                                                       'max_price') or global_test_context.max_price is None else global_test_context.max_price
     global_test_context.get_start_rows = get_start_rows
     global_test_context.get_push_rows = get_push_rows
     return fill_rate(new_rows, start, end)
 
 
 def low_remain_plus_double_low_roll(new_rows, start, end=None):
-    global_test_context.max_price = 200 if global_test_context.max_price is None else global_test_context.max_price
+    global_test_context.max_price = 200 if not hasattr(global_test_context,
+                                                       'max_price') or global_test_context.max_price is None else global_test_context.max_price
     global_test_context.get_start_rows = low_remain_get_start_rows
     global_test_context.get_push_rows = low_remain_get_push_rows
     return fill_rate(new_rows, start, end)
 
 
 def low_remain_plus_premium_plus_double_low_roll(new_rows, start, end=None):
-    global_test_context.max_price = 200 if global_test_context.max_price is None else global_test_context.max_price
+    global_test_context.max_price = 200 if not hasattr(global_test_context,
+                                                       'max_price') or global_test_context.max_price is None else global_test_context.max_price
     global_test_context.get_start_rows = low_remain_premium_get_start_rows
     global_test_context.get_push_rows = low_remain_premium_get_push_rows
     return fill_rate(new_rows, start, end)
@@ -618,7 +650,7 @@ def get_start_rows(cur, start):
     select bond_id, bond_nm, price, premium_rt, round(price + premium_rt * 100, 2)
     from (select *
           from cb_history
-          where price < 200
+          where price < :max_price
             and last_chg_dt = :start
             and bond_id not in (SELECT bond_id from cb_enforce where enforce_dt <= :start or delist_dt <= :start)
           order by premium_rt
@@ -626,7 +658,7 @@ def get_start_rows(cur, start):
     order by price + premium_rt * 100, premium_rt
     limit :count            
                 """ if global_test_context.select_sql is None else global_test_context.select_sql,
-                {"start": start, 'count': global_test_context.bond_count})
+                {"start": start, 'count': global_test_context.bond_count, 'max_price': global_test_context.max_price})
     rows = cur.fetchall()
     return rows
 
