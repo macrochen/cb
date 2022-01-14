@@ -501,7 +501,7 @@ def generate_timeline_html(time_data):
         _date = datetime.datetime.strftime(date, '%Y-%m-%d')
         x = []
         y = []
-        bonds = sorted(bonds.items(), key=lambda x: x[0], reverse=False)
+        bonds = sorted(bonds.items(), key=lambda i: i[1], reverse=False)
         for name, money, in bonds:
             x.append(name)
             y.append(money)
@@ -509,8 +509,8 @@ def generate_timeline_html(time_data):
         bar = (
             Bar(init_opts=opts.InitOpts(theme=ThemeType.ROMANTIC))
                 .add_xaxis(x)
-                # .add_yaxis("价格", y)
-                .add_yaxis("投入资金", y)
+                .add_yaxis("价格", y)
+                # .add_yaxis("投入资金", y)
                 .reversal_axis()
                 .set_series_opts(label_opts=opts.LabelOpts(is_show=True, position='right'),
                                  )
@@ -523,7 +523,7 @@ def generate_timeline_html(time_data):
     return "<center>" + tl.render_embed('template.html', env) + "</center>"
 
 
-def generate_line_html(rows, period, start, end, bond_num, line_names=[], title=None):
+def generate_line_html(rows, period, start, end, bond_num, line_names=[], title=None, max_price=None, max_double_low=None):
     # 用散点图展示
     line = Line(opts.InitOpts(height='700px', width='1424px', theme=ThemeType.LIGHT))
 
@@ -550,7 +550,7 @@ def generate_line_html(rows, period, start, end, bond_num, line_names=[], title=
 
     line.set_global_opts(
         title_opts=opts.TitleOpts(title=title if title is not None else "各种轮动策略回测结果",
-                                  subtitle=get_subtitle(bond_num, end, period, start),
+                                  subtitle=get_subtitle(bond_num, end, period, start, max_price, max_double_low),
                                   pos_left='center'),
         tooltip_opts=opts.TooltipOpts(
             trigger='axis',
@@ -624,10 +624,11 @@ def generate_line_html(rows, period, start, end, bond_num, line_names=[], title=
     return "<br/>" + line_html
 
 
-def get_subtitle(bond_num, end, period, start):
+def get_subtitle(bond_num, end, period, start, max_price, max_double_low):
     s = "回测时间:" + datetime.datetime.strftime(start, '%Y-%m-%d') + "~" + datetime.datetime.strftime(end, '%Y-%m-%d')
     if period is not None and bond_num is not None:
         s += ", " + str(bond_num) + "只可转债, " + str(period) + "个交易日轮动"
+    s += ", 价格上限:" + str(max_price) + "元, 估值上限:" + str(max_double_low) + ""
     return s
 
 

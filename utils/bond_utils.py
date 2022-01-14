@@ -47,7 +47,7 @@ def update_test_result(test_result, current_day, group, rows, need_roll_row):
         if new_price is not None:
             add_roll_row_with_bond(test_result, current_day, bond_id, bond, '高估清仓')
         else:
-            print('not get price at rows' + str(rows) + ' for bond_id:' + bond_id)
+            print('not get price at rows' + str(rows) + ' for bond_id:' + str(bond_id))
 
 
 def parse_bond_ids_params(bond_ids, params):

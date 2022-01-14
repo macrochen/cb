@@ -18,7 +18,7 @@ analysis_nav_html_list = [
 ]
 back_test_nav_html_list = [
     '<li><a href="/">Home</a></li>',
-    # '<li class=\'$active\'><a href="/view_custom_back_test.html">定制化回测</a></li>',
+    '<li class=\'$active\'><a href="/view_custom_back_test.html">定制化回测</a></li>',
     '<li class=\'$active\'><a href="/view_good_year_back_test.html">行情好时的回测</a></li>',
     '<li class=\'$active\'><a href="/view_bad_year_back_test.html">行情差时的回测</a></li>',
     '<li class=\'$active\'><a href="/view_long_year_back_test.html">长周期下的回测</a></li>',

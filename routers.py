@@ -831,7 +831,7 @@ def back_test_8_view():
 
 @cb.route('/view_back_test_6.html')
 def back_test_6_view():
-    return get_test_view("高溢价策略")
+    return get_test_view("高收益率策略")
 
 
 @cb.route('/view_back_test_7.html')
@@ -848,7 +848,7 @@ def get_test_view(strategy_name):
 
 
 @cb.route('/view_custom_back_test.html')
-@login_required
+# @login_required
 def custom_back_test_view():
     content = render_template("custom_backtest.html")
     return render_template("page_with_navbar.html",
@@ -857,7 +857,7 @@ def custom_back_test_view():
                            content=content)
 
 @cb.route('/view_custom_back_test_result.html', methods=['POST'])
-@login_required
+# @login_required
 def custom_back_test_result_view():
     content = ''
     try:
@@ -1132,14 +1132,20 @@ def update_database():
 @login_required
 def execute_sql():
     sql_code = request.form['sql_code']
+    db_type = request.form['db_type']
     if sql_code is None or sql_code.strip(' ') == '':
         raise Exception('SQL不能为空')
 
     if not sql_code.lower().strip().startswith('update') and not sql_code.lower().strip().startswith('insert'):
         raise Exception("仅允许update/insert操作")
 
-    with get_connect() as con:
-        con.executescript(sql_code)
+    if db_type == 'daily':
+        with get_daily_connect() as con:
+            con.executescript(sql_code)
+    else:
+        with get_connect() as con:
+            con.executescript(sql_code)
+
 
     return 'OK'
 
