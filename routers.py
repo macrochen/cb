@@ -1111,7 +1111,16 @@ def query_database_view():
         if not sql_code.lower().strip().startswith('select'):
             raise Exception("仅允许select操作")
 
-        cur = get_cursor(sql_code)
+        db_type = request.form['db_type']
+        cur = None
+        if db_type == 'daily':
+            with get_daily_connect() as con:
+                cur = con.cursor()
+                cur.execute(sql_code)
+        else:
+            with get_connect() as con:
+                cur = con.cursor()
+                cur.execute(sql_code)
         table = from_db_cursor(cur)
 
         if table.rowcount > 10:

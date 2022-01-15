@@ -2,6 +2,8 @@
 
 from datetime import datetime
 
+from crawler import crawler_utils
+from crawler.crawler_utils import get_chrome_driver
 from utils import db_utils
 
 header = {
@@ -81,6 +83,45 @@ def insert_db(rows):
         raise e
 
 
+def update_idx_data():
+    driver = get_chrome_driver("https://www.jisilu.cn/data/cbnew/cb_index/", 15)
+
+    table = driver.find_element_by_id('table_cb_index_body')
+
+    s = table.text
+    lines = s.splitlines()
+    rows = []
+    for line in lines:
+        ss = line.split()
+        d = ss[0]
+        idx_data = ss[1]
+
+        row = {'date': d, 'idx_data': idx_data}
+        rows.append(row)
+
+    driver.close()
+
+    err_row = None
+    try:
+        i = 0
+        with db_utils.get_connect() as con:
+            cur = con.cursor()
+            for row in rows:
+                err_row = row
+                result = cur.execute("""update cb_index_history set idx_data = :idx_data where strftime('%Y-%m-%d', date) = :date""",
+                                     {'date': row['date'], 'idx_data': row['idx_data']})
+                if result.rowcount != 1:
+                    print('update db_index is failure. row:' + row['date'])
+                else:
+                    i += 1
+
+        print("update db_index is complete. count:" + str(i))
+
+    except Exception as e:
+        # cur_file.close()
+        print("db操作出现异常. err_row" + str(err_row), e)
+        raise e
+
 def fetch_data():
     rows = get_content()
     insert_db(rows)
@@ -89,5 +130,6 @@ def fetch_data():
 
 if __name__ == "__main__":
     # fetch_data()
+    # update_idx_data()
 
     print("可转债数据抓取更新完成")

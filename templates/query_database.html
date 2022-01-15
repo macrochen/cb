@@ -128,6 +128,14 @@
     <form class="needs-validation" novalidate action="/query_database.html" method="post">
 
         <div class="mb-3">
+            <label for="sql_code">数据库</label><br/>
+            <select style="height: 30px;width: 150px" name="db_type">
+                <option value="cb" selected>核心数据库</option>
+                <option value="daily">回测数据库</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
             <label for="sql_code">SQL语句</label>
             <textarea class="form-control" rows="20" cols="200" name="sql_code" id="sql_code">{{ sql_code }}</textarea>
         </div>

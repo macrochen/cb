@@ -3,6 +3,7 @@
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 
+
 def get_chrome_driver(url, time_to_wait=10, options=webdriver.ChromeOptions()):
     # options = webdriver.ChromeOptions()
     options.add_argument('--no-sandbox')
