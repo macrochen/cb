@@ -377,7 +377,7 @@ def test_group(start,
                pre_day=7,
                max_rise=30,
                max_price=None,
-               max_double_low=150,
+               max_double_low=None,
                select_sql=None,
                exchange_sql=None,
                is_save_test_result=False
@@ -520,146 +520,139 @@ def generate_roll_html(roll_rows, trade_times):
 
 
 def low_price_roll(new_rows, start, end=None):
-    no_max_price_attr = is_no_max_price_attr()
-    old_max_price = None
-    if no_max_price_attr is False:
-        old_max_price = global_test_context.max_price
-    global_test_context.max_price = 130 if no_max_price_attr else global_test_context.max_price
+    old_max_price = set_max_price(130)
+    old_max_double_low = set_max_double_low(150)
+
     global_test_context.need_check_double_low = False
     global_test_context.get_start_rows = low_price_get_start_rows
     global_test_context.get_push_rows = low_price_get_push_rows
     result = fill_rate(new_rows, start, end)
 
     # 避免多个策略同时回测相互影响
-    global_test_context.max_price = old_max_price
+    reset_max_value(old_max_price, old_max_double_low)
 
     return result
 
 
 def high_yield_roll(new_rows, start, end=None):
-    no_max_price_attr = is_no_max_price_attr()
-    old_max_price = None
-    if no_max_price_attr is False:
-        old_max_price = global_test_context.max_price
-    global_test_context.max_price = 130 if no_max_price_attr else global_test_context.max_price
+    old_max_price = set_max_price(130)
+    old_max_double_low = set_max_double_low(150)
     global_test_context.need_check_double_low = False
     global_test_context.get_start_rows = high_ytm_get_start_rows
     global_test_context.get_push_rows = high_ytm_get_push_rows
     result = fill_rate(new_rows, start, end)
 
     # 避免多个策略同时回测相互影响
-    global_test_context.max_price = old_max_price
+    reset_max_value(old_max_price, old_max_double_low)
 
     return result
 
 
 def double_low_roll(new_rows, start, end=None):
-    no_max_price_attr = is_no_max_price_attr()
-    old_max_price = None
-    if no_max_price_attr is False:
-        old_max_price = global_test_context.max_price
-    global_test_context.max_price = 130 if no_max_price_attr else global_test_context.max_price
+    old_max_price = set_max_price(130)
+    old_max_double_low = set_max_double_low(150)
     global_test_context.get_start_rows = double_low_get_start_rows
     global_test_context.get_push_rows = double_low_get_push_rows
     result = fill_rate(new_rows, start, end)
 
     # 避免多个策略同时回测相互影响
-    global_test_context.max_price = old_max_price
+    reset_max_value(old_max_price, old_max_double_low)
 
     return result
 
 
 def three_low_roll(new_rows, start, end=None):
-    no_max_price_attr = is_no_max_price_attr()
-    old_max_price = None
-    if no_max_price_attr is False:
-        old_max_price = global_test_context.max_price
-    global_test_context.max_price = 2000 if no_max_price_attr else global_test_context.max_price
-
-    no_max_double_low_attr = is_no_max_double_low_attr()
-    old_max_double_low = None
-    if no_max_double_low_attr is False:
-        old_max_double_low = global_test_context.max_double_low
-    global_test_context.max_double_low = 2000 if no_max_double_low_attr else global_test_context.max_double_low
+    old_max_price = set_max_price(2000)
+    old_max_double_low = set_max_double_low(2000)
 
     global_test_context.get_start_rows = three_low_get_start_rows
     global_test_context.get_push_rows = three_low_get_push_rows
     result = fill_rate(new_rows, start, end)
 
     # 避免多个策略同时回测相互影响
-    global_test_context.max_price = old_max_price
-    global_test_context.max_double_low = old_max_double_low
+    reset_max_value(old_max_price, old_max_double_low)
 
     return result
 
 
-def is_no_max_double_low_attr():
-    return not hasattr(global_test_context, 'max_double_low') or global_test_context.max_double_low is None
-
-
 def low_premium_plus_double_low_roll(new_rows, start, end=None):
-    no_max_price_attr = is_no_max_price_attr()
-    old_max_price = None
-    if no_max_price_attr is False:
-        old_max_price = global_test_context.max_price
-    global_test_context.max_price = 200 if no_max_price_attr else global_test_context.max_price
+    old_max_price = set_max_price(200)
+    old_max_double_low = set_max_double_low(150)
     global_test_context.get_start_rows = get_start_rows
     global_test_context.get_push_rows = get_push_rows
     result = fill_rate(new_rows, start, end)
 
     # 避免多个策略同时回测相互影响
-    global_test_context.max_price = old_max_price
+    reset_max_value(old_max_price, old_max_double_low)
 
     return result
 
 
 def low_remain_plus_double_low_roll(new_rows, start, end=None):
-    no_max_price_attr = is_no_max_price_attr()
-    old_max_price = None
-    if no_max_price_attr is False:
-        old_max_price = global_test_context.max_price
-    global_test_context.max_price = 200 if no_max_price_attr else global_test_context.max_price
+    old_max_price = set_max_price(200)
+    old_max_double_low = set_max_double_low(150)
     global_test_context.get_start_rows = low_remain_get_start_rows
     global_test_context.get_push_rows = low_remain_get_push_rows
     result = fill_rate(new_rows, start, end)
 
     # 避免多个策略同时回测相互影响
-    global_test_context.max_price = old_max_price
+    reset_max_value(old_max_price, old_max_double_low)
 
     return result
 
 
 def low_remain_plus_premium_plus_double_low_roll(new_rows, start, end=None):
-    no_max_price_attr = is_no_max_price_attr()
-    old_max_price = None
-    if no_max_price_attr is False:
-        old_max_price = global_test_context.max_price
-    global_test_context.max_price = 200 if no_max_price_attr else global_test_context.max_price
+    old_max_price = set_max_price(200)
+    old_max_double_low = set_max_double_low(150)
     global_test_context.get_start_rows = low_remain_premium_get_start_rows
     global_test_context.get_push_rows = low_remain_premium_get_push_rows
     result = fill_rate(new_rows, start, end)
 
     # 避免多个策略同时回测相互影响
-    global_test_context.max_price = old_max_price
+    reset_max_value(old_max_price, old_max_double_low)
 
     return result
 
 
 def low_premium_roll(new_rows, start, end):
-    no_max_price_attr = is_no_max_price_attr()
-    old_max_price = None
-    if no_max_price_attr is False:
-        old_max_price = global_test_context.max_price
-    global_test_context.max_price = 20000
+    old_max_price = set_max_price(2000)
+    old_max_double_low = set_max_double_low(2000)
     global_test_context.need_check_double_low = False
     global_test_context.get_start_rows = low_premium_get_start_rows
     global_test_context.get_push_rows = low_premium_get_push_rows
     result = fill_rate(new_rows, start, end)
 
     # 避免多个策略同时回测相互影响
-    global_test_context.max_price = old_max_price
+    reset_max_value(old_max_price, old_max_double_low)
 
     return result
+
+
+def reset_max_value(old_max_price, old_max_double_low):
+    global_test_context.max_price = old_max_price
+    global_test_context.max_double_low = old_max_double_low
+
+
+def set_max_double_low(max_double_low):
+    no_max_double_low_attr = is_no_max_double_low_attr()
+    old_max_double_low = None
+    if no_max_double_low_attr is False:
+        old_max_double_low = global_test_context.max_double_low
+    global_test_context.max_double_low = max_double_low if no_max_double_low_attr else global_test_context.max_double_low
+    return old_max_double_low
+
+
+def set_max_price(max_price):
+    no_max_price_attr = is_no_max_price_attr()
+    old_max_price = None
+    if no_max_price_attr is False:
+        old_max_price = global_test_context.max_price
+    global_test_context.max_price = max_price if no_max_price_attr else global_test_context.max_price
+    return old_max_price
+
+
+def is_no_max_double_low_attr():
+    return not hasattr(global_test_context, 'max_double_low') or global_test_context.max_double_low is None
 
 
 def is_no_max_price_attr():

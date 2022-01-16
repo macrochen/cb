@@ -888,7 +888,7 @@ def custom_back_test_result_view():
 
         s_max_double_low = request.form.get("max_double_low")
         s_max_double_low = '' if s_max_double_low is None else s_max_double_low
-        max_double_low = 150
+        max_double_low = None
         if s_max_double_low is not None and s_max_double_low.strip(' ') != '':
             max_double_low = int(s_max_double_low)
 
