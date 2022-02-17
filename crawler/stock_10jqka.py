@@ -127,10 +127,10 @@ def get_stock_sum(driver, stock_code):
     return get_sum_data(driver)
 
 
-def fetch_data(task_name):
+def fetch_data():
     driver = crawler_utils.get_chrome_driver(None)
 
-    update_stock_sum(driver, task_name)
+    update_stock_sum(driver, "update_diagnostic")
     # print(get_stock_sum('002002'))
     driver.close()
     # modify_data_unit_error()
