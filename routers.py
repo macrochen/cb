@@ -784,6 +784,15 @@ def update_strategy_groups_view():
     return "OK"
 
 
+@cb.route('/fetch_cb_history.html')
+@login_required
+def fetch_cb_history_view():
+    # 爬每日交易数据
+    cb_jsl_daily.do_fetch_data()
+
+    return "OK"
+
+
 @cb.route('/view_good_year_back_test.html')
 def good_year_back_test_view():
     return get_test_view("good_year_back_test")

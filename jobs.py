@@ -7,7 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from backtest.jsl_test import generate_long_year_back_test_data, test_group, generate_bad_year_back_test_data, \
     generate_good_year_back_test_data
-from crawler import cb_ninwen, crawler_utils, stock_10jqka
+from crawler import cb_ninwen, crawler_utils, stock_10jqka, cb_jsl_daily
 from crawler.cb_index import update_idx_data
 from models import InvestYield, db, HoldBond, HoldBondHistory
 from utils import trade_utils, db_utils
@@ -34,6 +34,8 @@ def task_pre_week(app):
     print("begin to run task_pre_week job...")
     try:
         with app.app_context():
+            # 添加可转债历史数据
+            cb_jsl_daily.do_fetch_data()
             # 更新指数信息
             update_idx_data()
             do_update_back_test_data()
