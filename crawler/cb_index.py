@@ -46,7 +46,7 @@ def build_rows(date, mid_price, avg_premium):
     i = 0
     for d in date:
         p = mid_price[i]
-        row = {'date': datetime.strptime(d, '%Y-%m-%d'), 'mid_price': p, 'avg_premium':avg_premium[i]}
+        row = {'date': datetime.strptime(d, '%Y-%m-%d'), 'mid_price': p, 'avg_premium': avg_premium[i]}
         rows.append(row)
         i += 1
     return rows
@@ -68,8 +68,9 @@ def insert_db(rows):
             cur = con.cursor()
             for row in rows:
                 err_row = row
-                result = cur.execute("""insert into cb_index_history( date, mid_price, avg_premium) values(:date, :mid_price, :avg_premium)""",
-                                     {'date': row['date'], 'mid_price': row['mid_price'], 'avg_premium': row['avg_premium']})
+                result = cur.execute(
+                    """insert into cb_index_history( date, mid_price, avg_premium) values(:date, :mid_price, :avg_premium)""",
+                    {'date': row['date'], 'mid_price': row['mid_price'], 'avg_premium': row['avg_premium']})
                 if result.rowcount != 1:
                     print('insert db_index is failure. row:' + row['date'])
                 else:
@@ -95,8 +96,10 @@ def update_idx_data():
         ss = line.split()
         d = ss[0]
         idx_data = ss[1]
+        mid_price = ss[5]
+        avg_premium = ss[8].replace('%', '')
 
-        row = {'date': d, 'idx_data': idx_data}
+        row = {'date': d, 'idx_data': idx_data, 'mid_price': mid_price, 'avg_premium': avg_premium}
         rows.append(row)
 
     driver.close()
@@ -104,23 +107,39 @@ def update_idx_data():
     err_row = None
     try:
         i = 0
+        n = 0
         with db_utils.get_connect() as con:
             cur = con.cursor()
             for row in rows:
                 err_row = row
-                result = cur.execute("""update cb_index_history set idx_data = :idx_data where strftime('%Y-%m-%d', date) = :date""",
-                                     {'date': row['date'], 'idx_data': row['idx_data']})
+                params = {'date': row['date'],
+                          'idx_data': row['idx_data'],
+                          'mid_price': row['mid_price'],
+                          'avg_premium': row['avg_premium']
+                          }
+                result = cur.execute(
+                    """update cb_index_history set idx_data = :idx_data, mid_price=:mid_price, avg_premium=:avg_premium where strftime('%Y-%m-%d', date) = :date""",
+                    params
+                )
                 if result.rowcount != 1:
-                    print('update db_index is failure. row:' + row['date'])
+                    # print('update db_index is failure. row:' + row['date'])
+                    result = cur.execute(
+                        """insert into cb_index_history( date, idx_data, mid_price, avg_premium) values(:date, :idx_data, :mid_price, :avg_premium)""",
+                        params)
+                    if result.rowcount != 1:
+                        print('insert db_index is failure. row:' + row['date'])
+                    else:
+                        n += 1
                 else:
                     i += 1
 
-        print("update db_index is complete. count:" + str(i))
+        print("update/insert db_index is complete. count(update/insert):" + str(i) + '/' + str(n))
 
     except Exception as e:
         # cur_file.close()
         print("db操作出现异常. err_row" + str(err_row), e)
         raise e
+
 
 def fetch_data():
     rows = get_content()

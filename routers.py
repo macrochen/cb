@@ -19,7 +19,7 @@ import utils.trade_utils
 from backtest import jsl_test
 from config import db_file_path, db_daily_file_path
 from crawler import cb_ninwen, cb_jsl, cb_ninwen_detail, stock_10jqka, stock_xueqiu, stock_eastmoney, cb_eastmoney, \
-    cb_jsl_daily
+    cb_jsl_daily, cb_index
 from jobs import do_update_data_after_trade_is_end, do_update_data_before_trade_is_start, \
     do_update_data_exclude_group_after_trade_is_end, do_update_back_test_data
 from models import User, ChangedBond, HoldBond, ChangedBondSelect, db, TradeHistory, HoldBondHistory, Task
@@ -793,6 +793,15 @@ def fetch_cb_history_view():
     return "OK"
 
 
+@cb.route('/fetch_cb_index_history.html')
+@login_required
+def fetch_cb_index_history_view():
+    # 爬每日交易数据
+    cb_index.update_idx_data()
+
+    return "OK"
+
+
 @cb.route('/view_good_year_back_test.html')
 def good_year_back_test_view():
     return get_test_view("good_year_back_test")
@@ -901,11 +910,11 @@ def custom_back_test_result_view():
         if s_max_double_low is not None and s_max_double_low.strip(' ') != '':
             max_double_low = int(s_max_double_low)
 
-        s_pre_day = request.form.get("pre_day")
-        s_pre_day = '' if s_pre_day is None else s_pre_day
-        pre_day = 5
-        if s_pre_day is not None and s_pre_day.strip(' ') != '':
-            pre_day = int(s_pre_day)
+        pre_day = 1
+        # s_pre_day = request.form.get("pre_day")
+        # s_pre_day = '' if s_pre_day is None else s_pre_day
+        # if s_pre_day is not None and s_pre_day.strip(' ') != '':
+        #     pre_day = int(s_pre_day)
 
         s_max_rise = request.form.get("max_rise")
         s_max_rise = '' if s_max_rise is None else s_max_rise

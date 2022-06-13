@@ -45,21 +45,22 @@
                 </td>
             </tr>
             <tr>
-                <td style="background-color:white;width: 80px;text-align:right;border: 0;">
-                    涨幅间隔:
-                </td>
-                <td style="background-color:white;width:80px;padding-left: 5px;text-align:left;border: 0;"><input
-                        type="text" name="pre_day" style="height:30px;width: 120px;" placeholder='3,5,7(选填)'>&nbsp;个交易日
-                </td>
-                <td style="background-color:white;width: 50px;padding-right: 5px;text-align:right;border: 0;">涨幅上限:</td>
+<!--                <td style="background-color:white;width: 80px;text-align:right;border: 0;">-->
+<!--                    涨幅间隔:-->
+<!--                </td>-->
+<!--                <td style="background-color:white;width:80px;padding-left: 5px;text-align:left;border: 0;"><input-->
+<!--                        type="text" name="pre_day" style="height:30px;width: 120px;" placeholder='3,5,10(选填)'>&nbsp;个交易日-->
+<!--                </td>-->
+                <td style="background-color:white;width: 50px;padding-right: 5px;text-align:right;border: 0;">单日脉冲&nbsp;<br/>涨幅卖出:</td>
                 <td style="background-color:white;width: 30px;padding-left: 5px;text-align:left;border: 0;"><input
-                        type="text" name="max_rise" style="height: 30px;width: 120px;" placeholder='20,30(选填)'>&nbsp;%
+                        type="text" name="max_rise" style="height: 30px;width: 120px;" placeholder='10,20,30(选填)'>&nbsp;%
                 </td>
+                <td colspan="2" style="background-color:white;width: 80px;text-align:right;border: 0;">&nbsp;</td>
             </tr>
             <tr>
                 <td colspan="4" style="background-color:white;border: 0;text-align:left;width:5px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(注:<font
                         color='red'>1. 价格上限, 估值上限仅针对单个策略;<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.
-                    如果在轮动周期内涨幅过大(比如3个交易日涨幅超过30%), 则卖出调仓</font>)
+                    单日脉冲涨幅卖出指价格单日涨幅过大(比如超过10%), 则卖出调仓</font>)
                 </td>
             </tr>
             <tr>

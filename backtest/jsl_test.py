@@ -374,7 +374,7 @@ def test_group(start,
                bond_count=15,
                strategy_types=['低溢价策略', '低余额+低溢价+双低策略', '低余额+双低策略', '低溢价+双低策略', '双低策略', '高收益率策略', '低价格策略', '三低策略'],
                is_multi_scenarios=False,
-               pre_day=7,
+               pre_day=5,
                max_rise=30,
                max_price=None,
                max_double_low=None,
@@ -468,9 +468,9 @@ def generate_roll_html(roll_rows, trade_times):
         elif '轮动' in rows[1]['desc']:
             i = 0
             for row in rows:
-                del row['price']
+                # del row['price']
                 del row['old_price']
-                del row['premium']
+                # del row['premium']
                 del row['old_premium']
                 del row['old_amount']
                 del row['old_percent']
