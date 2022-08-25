@@ -23,7 +23,7 @@ def get_rows():
     url = "http://www.ninwin.cn/index.php?m=cb&a=cb_all&show_cb_only=Y&show_listed_only=Y"
 
     cookies = {}
-    s = "csrf_token=8919ea04925831e8; __51cke__=; P0s_winduser=RaqSRnBfFwDoLZv5tGFqXXLD4fXwVZQynHEOTJOsq1fzXIiXiCJW%2FWYIGis%3D; P0s_cbQuestion=1; __tins__4771153=%7B%22sid%22%3A%201631088120422%2C%20%22vd%22%3A%207%2C%20%22expires%22%3A%201631089976917%7D; __51laig__=234; PHPSESSID=jpl3tag9rff4l4mtdndsm36n44; P0s_visitor=Ncd58ncEEFs83Y9d2knG3OnEWpLyZm3YRPK8yFD6ja5fvV52; P0s_lastvisit=242%091631159109%09%2Findex.php%3Fm%3DmyAdmin%26c%3Dlog"
+    s = "P0s_cbQuestion=1; csrf_token=216f798ce49d1be2; __51cke__=; P0s_Pw_verify_code=vncTbZ65Qg4%3D; P0s_winduser=RaqSRnBfFwDoLZv5tGFqXXLD4fXwVZQynHEOTJOsq1fzXIiXiCJW%2FWYIGis%3D; PHPSESSID=ihpqn4sqn20iauiul3osm482r9; P0s_visitor=pfeG6Lu2iNkFXdjC09XzE6P1sp4ttEL8j63p%2BfXxYb3skOA8; __tins__4771153=%7B%22sid%22%3A%201661416565452%2C%20%22vd%22%3A%2017%2C%20%22expires%22%3A%201661419375094%7D; __51laig__=18; P0s_lastvisit=1022%091661417583%09%2Findex.php%3Fm%3Dcb%26c%3DdataServer%26a%3DcheckQuestion"
     for ss in s.split(";"):
         name, value = ss.strip().split("=", 1)
         cookies[name] = value
