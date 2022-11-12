@@ -102,7 +102,7 @@ def build_table_html(table, remark_fields=[],
                     value = '<font color=red>*</font>' + value
 
             lines.append(
-                ("            <td " + remark_color + ">" + prefix + "%s" + prefix_append + "" + suffix + "</td>") % value.replace("\n", linebreak)
+                ("            <td " + remark_color + ">" + prefix + "{}" + prefix_append + "" + suffix + "</td>").format(value.replace("\n", linebreak)
                 # fixme 重构成函数变量
                 .replace('转债标的 ', '')
                 .replace('标准普尔 ', '')
@@ -118,7 +118,7 @@ def build_table_html(table, remark_fields=[],
                 .replace('深股通 ', '')
                 .replace('创业板综 ', '')
                 .replace('沪股通 ', '')
-                )
+                ))
         if support_selected_operation is not None:
             lines.append("        <td><input type='checkbox' name='select_bond' value='" + str(record.get('id')) + "'></td>")
         lines.append("        </tr>")
