@@ -24,6 +24,8 @@ def init_router(app):
     login_manager.login_view = 'cb.sign'
     app.register_blueprint(cb)
 
+app = create_app('production')
+
 if __name__ == "__main__":
     # development 开发环境
     # production 生产环境
